@@ -44,10 +44,10 @@ public class Game implements ISavable{
 	public static Paint getDefaultPaint(){
 		return new Paint(DEFAULT_PAINT);
 	}
-	
+
 	public static final float SCALE_FACTOR = 3f;
 	public static final float SCALE_FACTOR_1 = 1f / SCALE_FACTOR;
-	
+
 	private Context context;
 	private View view;
 	private ExtendedRandom random;
@@ -76,7 +76,7 @@ public class Game implements ISavable{
 
 	private float scrollX = 0;
 	private float scrollY = 0;
-	
+
 	private int objectModCount = 0;
 
 	public Game(Context context, View view){
@@ -128,7 +128,7 @@ public class Game implements ISavable{
 		scripts.execute(this, "script/start.js", new String[0], new Object[0]);
 
 		for(Item key : Item.getItems())
-			player.getInventory().add(key, 99);
+			player.getInventory().add(key, key.getStackSize());
 
 		//MP
 		//this.mpClient = new TinyMPClient(this);
@@ -280,7 +280,7 @@ public class Game implements ISavable{
 	public EntityPlayer getPlayer(){
 		return player;
 	}
-	
+
 	public LinkedHashMap<String, Object> getGlobals(){
 		return globals;
 	}
@@ -292,7 +292,7 @@ public class Game implements ISavable{
 	public String getGlobals(String key){
 		return String.valueOf(getGlobal(key));
 	}
-	
+
 	public int getGlobali(String key){
 		return Util.tryGetInt(getGlobals(key));
 	}
@@ -308,15 +308,15 @@ public class Game implements ISavable{
 	public void decGlobal(String key, int amount){
 		setGlobal(key, Util.tryGetInt(getGlobals(key), 0) - amount);
 	}
-	
+
 	public void setGlobali(String key, int i){
 		setGlobal(key, String.valueOf(i));
 	}
-	
+
 	public void setGlobalb(String key, boolean b){
 		setGlobal(key, String.valueOf(b));
 	}
-	
+
 	public void setGlobal(String key, Object value){
 		globals.put(key, value);
 	}
@@ -387,7 +387,7 @@ public class Game implements ISavable{
 	private Paint fpsPaint;
 	public void draw(Canvas canvas){
 		canvas.drawColor(Color.BLACK);
-		
+
 		screen.apply(canvas);
 		scrollX = player.getX() * SCALE_FACTOR - 1280f / 2f;
 		scrollY = player.getY() * SCALE_FACTOR - 720f / 2f;
