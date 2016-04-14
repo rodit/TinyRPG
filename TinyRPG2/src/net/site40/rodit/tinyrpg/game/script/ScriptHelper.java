@@ -8,6 +8,7 @@ import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.battle.Battle;
 import net.site40.rodit.tinyrpg.game.entity.Entity;
 import net.site40.rodit.tinyrpg.game.entity.EntityLiving;
+import net.site40.rodit.tinyrpg.game.entity.EntityStats;
 import net.site40.rodit.tinyrpg.game.gui.Gui;
 import net.site40.rodit.tinyrpg.game.gui.GuiLoading;
 import net.site40.rodit.tinyrpg.game.item.Item;
@@ -101,9 +102,7 @@ public class ScriptHelper {
 	}
 
 	public static float fPointF(float f0, float f1){
-		String f0s = (int)f0 + "";
-		String f1s = (int)f1 + "";
-		return Float.valueOf(f0s + "." + f1s);
+		return EntityStats.fPointF(f0, f1);
 	}
 
 	public String replace(String haystack, String needle, String replace){
