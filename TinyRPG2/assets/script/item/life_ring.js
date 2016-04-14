@@ -1,8 +1,8 @@
 function onEquip(user){
-	user.stats.luck += self.level;
+	user.stats.hpMulti += self.level * 2 / 10;
 }
 function onUnEquip(user){
-	user.stats.luck -= self.level;
+	user.stats.hpMulti -= self.level * 2 / 10;
 }
 
 self.registerCallbacks(onEquip, onUnEquip);
