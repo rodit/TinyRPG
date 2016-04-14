@@ -16,11 +16,19 @@ public class EntityStats implements ISavable{
 	private float luck;
 	private float magika;
 	private float forge;
+	private float hpMulti;
+	private float speedMulti;
+	private float strengthMulti;
+	private float defenceMulti;
+	private float luckMulti;
+	private float magikaMulti;
+	private float forgeMulti;
 	
 	public EntityStats(){
 		this.level = 1;
 		this.xp = 0;
 		this.speed = this.strength = this.defence = this.luck = this.magika = this.forge = 0f;
+		this.hpMulti = this.speedMulti = this.strengthMulti = this.defenceMulti = this.luckMulti = this.magikaMulti = this.forgeMulti = 1f;
 	}
 	
 	public int getLevel(){
@@ -44,11 +52,11 @@ public class EntityStats implements ISavable{
 	}
 	
 	public float getMoveSpeed(){
-		return fPointF(1f, speed);
+		return fPointF(1f, getSpeed());
 	}
 	
 	public float getSpeed(){
-		return speed;
+		return speed * speedMulti;
 	}
 	
 	public void setSpeed(float speed){
@@ -56,7 +64,7 @@ public class EntityStats implements ISavable{
 	}
 	
 	public float getStrength(){
-		return strength;
+		return strength * strengthMulti;
 	}
 	
 	public void setStrength(float strength){
@@ -64,7 +72,7 @@ public class EntityStats implements ISavable{
 	}
 	
 	public float getDefence(){
-		return defence;
+		return defence * defenceMulti;
 	}
 	
 	public void setDefence(float defence){
@@ -72,7 +80,7 @@ public class EntityStats implements ISavable{
 	}
 	
 	public float getLuck(){
-		return luck;
+		return luck * luckMulti;
 	}
 	
 	public void setLuck(float stamina){
@@ -80,7 +88,7 @@ public class EntityStats implements ISavable{
 	}
 	
 	public float getMagika(){
-		return magika;
+		return magika * magikaMulti;
 	}
 	
 	public void setMagika(float magika){
@@ -88,7 +96,7 @@ public class EntityStats implements ISavable{
 	}
 	
 	public float getForge(){
-		return forge;
+		return forge * forgeMulti;
 	}
 	
 	public void setForge(float forge){
@@ -97,6 +105,10 @@ public class EntityStats implements ISavable{
 	
 	public float getLevelFactor(){
 		return 1f + (float)level / 100f;
+	}
+	
+	public int getMaxHealth(int maxHealth){
+		return (int)((float)maxHealth * hpMulti);
 	}
 	
 	@Override
@@ -109,6 +121,13 @@ public class EntityStats implements ISavable{
 		out.write(luck);
 		out.write(magika);
 		out.write(forge);
+		out.write(hpMulti);
+		out.write(speedMulti);
+		out.write(strengthMulti);
+		out.write(defenceMulti);
+		out.write(luckMulti);
+		out.write(magikaMulti);
+		out.write(forgeMulti);
 	}
 	
 	@Override
@@ -121,6 +140,13 @@ public class EntityStats implements ISavable{
 		luck = in.readFloat();
 		magika = in.readFloat();
 		forge = in.readFloat();
+		hpMulti = in.readFloat();
+		speedMulti = in.readFloat();
+		strengthMulti = in.readFloat();
+		defenceMulti = in.readFloat();
+		luckMulti = in.readFloat();
+		magikaMulti = in.readFloat();
+		forgeMulti = in.readFloat();
 	}
 	
 	public static float fPointF(float f0, float f1){

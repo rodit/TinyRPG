@@ -56,8 +56,7 @@ public class EntityLiving extends Entity{
 		this.health = health;
 		this.maxHealth = maxHealth;
 		this.magika = 0;
-		this.velocityX = 
-				this.velocityY = 0f;
+		this.velocityX = this.velocityY = 0f;
 		this.stats = new EntityStats();
 		this.equipped = new Item[9];
 		this.attacks = new ArrayList<Attack>();
@@ -73,7 +72,7 @@ public class EntityLiving extends Entity{
 	}
 
 	public int getMaxHealth(){
-		return maxHealth;
+		return stats.getMaxHealth(maxHealth);
 	}
 
 	public void setMaxHealth(int maxHealth){
@@ -81,13 +80,13 @@ public class EntityLiving extends Entity{
 	}
 
 	public float getHealthRatio(){
-		return (float)health / (float)maxHealth;
+		return (float)health / (float)getMaxHealth();
 	}
 
 	public void heal(int amount){
 		int nHealth = health + amount;
-		if(nHealth >= maxHealth)
-			health = maxHealth;
+		if(nHealth >= getMaxHealth())
+			health = getMaxHealth();
 		else
 			health = nHealth;
 	}
@@ -164,7 +163,11 @@ public class EntityLiving extends Entity{
 	public EntityStats getStats(){
 		return stats;
 	}
-	
+
+	public Item[] getEquipped(){
+		return equipped;
+	}
+
 	public Item getEquipped(int slot){
 		return equipped[slot];
 	}
