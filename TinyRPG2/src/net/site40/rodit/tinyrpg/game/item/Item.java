@@ -64,6 +64,8 @@ public class Item {
 	protected String resource;
 	protected Rarity rarity;
 	protected long value;
+	protected boolean stackable;
+	protected int stackSize;
 	private int level;
 	
 	private Function jsOnEquip;
@@ -81,6 +83,8 @@ public class Item {
 		this.resource = resource;
 		this.rarity = rarity;
 		this.value = value;
+		this.stackable = true;
+		this.stackSize = 99;
 		this.level = 1;
 	}
 
@@ -154,6 +158,22 @@ public class Item {
 	
 	public boolean isConsumed(){
 		return true;
+	}
+	
+	public boolean isStackable(){
+		return stackable;
+	}
+	
+	public void setStackable(boolean stackable){
+		this.stackable = stackable;
+	}
+	
+	public int getStackSize(){
+		return stackSize;
+	}
+	
+	public void setStackSize(int stackSize){
+		this.stackSize = stackSize;
 	}
 	
 	public void registerCallbacks(Object onEquip, Object onUnEquip){

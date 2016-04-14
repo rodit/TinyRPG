@@ -96,14 +96,14 @@ public class GuiPlayerInventory extends Gui{
 		for(int i = 0; i < 7; i++)
 			addTab("gui/inventory/tab.png", "gui/inventory/tab_selected.png", OFFSET_X + i * TAB_WIDTH, OFFSET_Y - TAB_HEIGHT, TAB_WIDTH, TAB_HEIGHT, i);
 		
-		addEquipmentSlot("gui/inventory/slot.png", "gui/inventory/slot_hover.png", (OFFSET_X - bgWindow.getX()) / 2 + 92 - SLOT_WIDTH / 2, bgWindow.getY() + 64, SLOT_WIDTH, SLOT_HEIGHT, ItemEquippable.SLOT_HELMET);
-		addEquipmentSlot("gui/inventory/slot.png", "gui/inventory/slot_hover.png", (OFFSET_X - bgWindow.getX()) / 2 + 92 - SLOT_WIDTH / 2, bgWindow.getY() + 64 + SLOT_HEIGHT * 3, SLOT_WIDTH, SLOT_HEIGHT, ItemEquippable.SLOT_CHEST);
-		addEquipmentSlot("gui/inventory/slot.png", "gui/inventory/slot_hover.png", (OFFSET_X - bgWindow.getX()) / 2 + 92 - SLOT_WIDTH / 2, bgWindow.getY() + 64 + SLOT_HEIGHT * 2, SLOT_WIDTH, SLOT_HEIGHT, ItemEquippable.SLOT_SHOULDERS);
-		addEquipmentSlot("gui/inventory/slot.png", "gui/inventory/slot_hover.png", (OFFSET_X - bgWindow.getX()) / 2 + 92 - SLOT_WIDTH / 2, bgWindow.getY() + 64 + SLOT_HEIGHT, SLOT_WIDTH, SLOT_HEIGHT, ItemEquippable.SLOT_NECK);
-		addEquipmentSlot("gui/inventory/slot.png", "gui/inventory/slot_hover.png", (OFFSET_X - bgWindow.getX()) / 2 + 92 - SLOT_WIDTH / 2 - SLOT_WIDTH, bgWindow.getY() + 64 + SLOT_HEIGHT * 2, SLOT_WIDTH, SLOT_HEIGHT, ItemEquippable.SLOT_FINGER_0);
-		addEquipmentSlot("gui/inventory/slot.png", "gui/inventory/slot_hover.png", (OFFSET_X - bgWindow.getX()) / 2 + 92 - SLOT_WIDTH / 2 + SLOT_WIDTH, bgWindow.getY() + 64 + SLOT_HEIGHT * 2, SLOT_WIDTH, SLOT_HEIGHT, ItemEquippable.SLOT_FINGER_1);
-		addEquipmentSlot("gui/inventory/slot.png", "gui/inventory/slot_hover.png", (OFFSET_X - bgWindow.getX()) / 2 + 92 - SLOT_WIDTH / 2 - SLOT_WIDTH, bgWindow.getY() + 64 + SLOT_HEIGHT * 3, SLOT_WIDTH, SLOT_HEIGHT, ItemEquippable.SLOT_HAND_0);
-		addEquipmentSlot("gui/inventory/slot.png", "gui/inventory/slot_hover.png", (OFFSET_X - bgWindow.getX()) / 2 + 92 - SLOT_WIDTH / 2 + SLOT_WIDTH, bgWindow.getY() + 64 + SLOT_HEIGHT * 3, SLOT_WIDTH, SLOT_HEIGHT, ItemEquippable.SLOT_HAND_1);
+		addEquipmentSlot("gui/inventory/slot.png", "gui/inventory/slot_hover.png", (OFFSET_X - bgWindow.getX()) / 2 + 92 - SLOT_WIDTH / 2, bgWindow.getY() + 64 + SLOT_HEIGHT / 2, SLOT_WIDTH, SLOT_HEIGHT, ItemEquippable.SLOT_HELMET);
+		addEquipmentSlot("gui/inventory/slot.png", "gui/inventory/slot_hover.png", (OFFSET_X - bgWindow.getX()) / 2 + 92 - SLOT_WIDTH / 2, bgWindow.getY() + 64 + SLOT_HEIGHT + SLOT_HEIGHT / 2, SLOT_WIDTH, SLOT_HEIGHT, ItemEquippable.SLOT_CHEST);
+		addEquipmentSlot("gui/inventory/slot.png", "gui/inventory/slot_hover.png", (OFFSET_X - bgWindow.getX()) / 2 + 92 - SLOT_WIDTH / 2 + SLOT_WIDTH, bgWindow.getY() + 64 + SLOT_HEIGHT, SLOT_WIDTH, SLOT_HEIGHT, ItemEquippable.SLOT_SHOULDERS);
+		addEquipmentSlot("gui/inventory/slot.png", "gui/inventory/slot_hover.png", (OFFSET_X - bgWindow.getX()) / 2 + 92 - SLOT_WIDTH / 2 - SLOT_WIDTH, bgWindow.getY() + 64 + SLOT_HEIGHT, SLOT_WIDTH, SLOT_HEIGHT, ItemEquippable.SLOT_NECK);
+		addEquipmentSlot("gui/inventory/slot.png", "gui/inventory/slot_hover.png", (OFFSET_X - bgWindow.getX()) / 2 + 92 - SLOT_WIDTH / 2 - SLOT_WIDTH / 2, bgWindow.getY() + 64 + SLOT_HEIGHT * 3, SLOT_WIDTH, SLOT_HEIGHT, ItemEquippable.SLOT_FINGER_0);
+		addEquipmentSlot("gui/inventory/slot.png", "gui/inventory/slot_hover.png", (OFFSET_X - bgWindow.getX()) / 2 + 92 - SLOT_WIDTH / 2 + SLOT_WIDTH / 2, bgWindow.getY() + 64 + SLOT_HEIGHT * 3, SLOT_WIDTH, SLOT_HEIGHT, ItemEquippable.SLOT_FINGER_1);
+		addEquipmentSlot("gui/inventory/slot.png", "gui/inventory/slot_hover.png", (OFFSET_X - bgWindow.getX()) / 2 + 92 - SLOT_WIDTH / 2 - SLOT_WIDTH, bgWindow.getY() + 64 + SLOT_HEIGHT * 2, SLOT_WIDTH, SLOT_HEIGHT, ItemEquippable.SLOT_HAND_0);
+		addEquipmentSlot("gui/inventory/slot.png", "gui/inventory/slot_hover.png", (OFFSET_X - bgWindow.getX()) / 2 + 92 - SLOT_WIDTH / 2 + SLOT_WIDTH, bgWindow.getY() + 64 + SLOT_HEIGHT * 2, SLOT_WIDTH, SLOT_HEIGHT, ItemEquippable.SLOT_HAND_1);
 		
 		final Component txtPageNo = new Component("txtPageNo");
 		txtPageNo.setX(1148);
@@ -472,6 +472,7 @@ public class GuiPlayerInventory extends Gui{
 			public void touchUp(Component component, Game game){
 				tab = InventoryProvider.TAB_EQUIPPED;
 				selected = component.tag;
+				onSlotSelected(game);
 			}
 		});
 		add(slotComp);

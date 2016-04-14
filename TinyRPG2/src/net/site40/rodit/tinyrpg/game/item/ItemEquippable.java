@@ -33,6 +33,8 @@ public class ItemEquippable extends Item{
 	public ItemEquippable(String name, String showName, String description, String script, String resource, Rarity rarity, long value, int... equipSlots){
 		super(name, showName, description, script, resource, rarity, value);
 		this.equipSlots = equipSlots == null ? new int[0] : equipSlots;
+		this.stackable = false;
+		this.stackSize = 1;
 	}
 
 	public int[] getEquipSlots(){

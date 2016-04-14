@@ -43,7 +43,7 @@ public class Inventory implements ISavable{
 				return true;
 		return false;
 	}
-	
+
 	public ItemStack getStack(Item item){
 		for(ItemStack stack : items)
 			if(stack.getItem() == item)
@@ -51,6 +51,13 @@ public class Inventory implements ISavable{
 		ItemStack stack = new ItemStack(item, 0);
 		items.add(stack);
 		return stack;
+	}
+	
+	public ItemStack getStackableStack(Item item){
+		for(ItemStack stack : items)
+			if(stack.getItem() == item && stack.getAmount() < item.stackSize)
+				return stack;
+		return null;
 	}
 
 	public int getCount(Item item){
@@ -61,7 +68,20 @@ public class Inventory implements ISavable{
 	}
 
 	public void setCount(Item item, int count){
-		getStack(item).setAmount(count);
+		if(item.isStackable()){
+			ItemStack stack = null;
+			int remain = count;
+			while((stack = getStackableStack(item)) != null && remain > 0){
+				int space = item.getStackSize() - stack.getAmount();
+				stack.setAmount(stack.getAmount() + Math.min(space, remain));
+				remain -= space;
+			}
+			if(remain > 0)
+				items.add(new ItemStack(item, remain));
+		}else{
+			for(int i = 0; i < count; i++)
+				items.add(new ItemStack(item, 1));
+		}
 	}
 
 	public void add(String itemName, int count){
@@ -106,11 +126,11 @@ public class Inventory implements ISavable{
 	public ItemStack getItemStackByIndex(int index){
 		return items.get(index);
 	}
-	
+
 	public InventoryProvider getProvider(){
 		return getProvider(null);
 	}
-	
+
 	public InventoryProvider getProvider(EntityLiving owner){
 		return new InventoryProvider(this, owner);
 	}
@@ -148,7 +168,7 @@ public class Inventory implements ISavable{
 
 		private Inventory inventory;
 		private EntityLiving owner;
-		
+
 		public InventoryProvider(Inventory inventory, EntityLiving owner){
 			this.inventory = inventory;
 			this.owner = owner;
@@ -157,14 +177,25 @@ public class Inventory implements ISavable{
 		public Inventory getInventory(){
 			return inventory;
 		}
-		
+
 		public ItemStack provide(int type, int index){
+			if(type == TAB_EQUIPPED){
+				if(owner == null)
+					return null;
+				if(index >= owner.getEquipped().length)
+					return null;
+				Item item = null;
+				if((item = owner.getEquipped(index)) == null)
+					return null;
+				else
+					return new ItemStack(item, 1);
+			}
 			ArrayList<ItemStack> stacks = provide(type);
 			if(index > -1 && index < stacks.size())
 				return stacks.get(index);
 			return null;
 		}
-		
+
 		public ArrayList<ItemStack> provide(int type){
 			ArrayList<ItemStack> stacks = new ArrayList<ItemStack>();
 			switch(type){
