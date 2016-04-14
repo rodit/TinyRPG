@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" width="16" height="16" tilewidth="16" tileheight="16">
+ <tileset firstgid="1" name="Default" tilewidth="16" tileheight="16">
+  <image source="default_tileset.png" width="1024" height="2016"/>
+ </tileset>
+ <layer name="Tile Layer 1" width="16" height="16">
+  <data encoding="csv">
+513,578,577,578,577,578,577,578,577,578,577,578,577,578,577,514,
+577,642,641,642,641,642,641,642,641,642,641,642,641,642,641,578,
+513,706,705,706,705,706,705,706,705,706,705,706,705,706,705,514,
+577,516,515,516,515,516,515,516,515,516,515,516,515,516,515,578,
+513,516,515,516,515,516,515,516,515,516,515,516,515,516,515,514,
+577,580,579,580,579,580,579,580,579,580,579,580,579,580,579,578,
+513,516,515,516,515,516,515,516,515,516,515,516,515,516,515,514,
+577,580,579,580,579,580,579,580,579,580,579,580,579,580,579,578,
+513,516,515,516,515,516,515,516,515,516,515,516,515,516,515,514,
+577,580,579,580,579,580,579,580,579,580,579,580,579,580,579,578,
+513,516,515,516,515,516,515,516,515,516,515,516,515,516,515,514,
+577,580,579,580,579,580,579,580,579,580,579,580,579,580,579,578,
+513,516,515,516,515,516,515,516,515,516,515,516,515,516,515,514,
+577,580,579,580,579,580,579,580,579,580,579,580,579,580,579,578,
+513,516,515,516,515,516,515,516,515,516,515,516,515,516,515,514,
+577,578,577,578,577,578,577,17,18,578,577,578,577,578,577,578
+</data>
+ </layer>
+ <layer name="Tile Layer 2" width="16" height="16">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,4901,4902,4903,4904,5157,5158,0,0,0,0,0,0,0,0,0,
+0,4965,4966,4967,4968,5221,5222,0,0,5507,5508,0,0,5667,5670,0,
+0,5029,5030,5031,5032,5285,5286,0,0,5571,5572,0,0,5731,5734,0,
+0,5093,5094,5095,5096,5349,5350,0,0,0,0,0,0,5795,5798,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,5859,5862,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <objectgroup name="collisions" width="16" height="16">
+  <object x="0" y="0" width="256" height="48"/>
+  <object x="0" y="48" width="16" height="192"/>
+  <object x="0" y="240" width="112" height="16"/>
+  <object x="144" y="240" width="112" height="16"/>
+  <object x="240" y="48" width="16" height="192"/>
+ </objectgroup>
+ <objectgroup name="entities" width="16" height="16">
+  <object name="test_door_0" x="112" y="240" width="32" height="16">
+   <properties>
+    <property name="map" value="map/testing.tmx"/>
+    <property name="script" value="script/entity/generic_door.js"/>
+    <property name="type" value="0"/>
+   </properties>
+  </object>
+  <object name="spawn" x="128" y="128">
+   <properties>
+    <property name="noclip" value="true"/>
+    <property name="script" value="script/entity/spawn.js"/>
+    <property name="type" value="0"/>
+   </properties>
+  </object>
+  <object name="bookshelf_skill_random_0" x="16" y="48" width="64" height="32">
+   <properties>
+    <property name="script" value="script/entity/bookshelf.js"/>
+    <property name="type" value="0"/>
+   </properties>
+  </object>
+  <object name="container_wardrobe_0" x="80" y="48" width="32" height="32">
+   <properties>
+    <property name="script" value="script/entity/generic_container.js"/>
+    <property name="type" value="0"/>
+   </properties>
+  </object>
+  <object name="bed_0" x="208" y="48" width="32" height="48">
+   <properties>
+    <property name="script" value="script/entity/bed.js"/>
+    <property name="type" value="0"/>
+   </properties>
+  </object>
+  <object name="test_sign_0" x="144" y="32" width="32" height="32">
+   <properties>
+    <property name="msg" value="This is a test sign!\nWorking successfully!"/>
+    <property name="script" value="script/entity/generic_sign.js"/>
+    <property name="type" value="0"/>
+   </properties>
+  </object>
+ </objectgroup>
+</map>

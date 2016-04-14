@@ -1,0 +1,10 @@
+<gui link="net.site40.rodit.tinyrpg.game.gui2.GuiSetName" name="setname">
+	<component name="txtTitle" text="What's your name?" x="360" y="100" color="WHITE" textSize="32"/>
+	<component name="editName" text="Player" x="128" y="300" width="768" height="100" textSize="24" color="BLACK">
+		<event id="TOUCH_UP" method="editNameTouchUp"/>
+		<event id="KEY_UP" method="editNameKeyUp"/>
+	</component>
+	<component name="btnConfirm" text="Confirm" x="916" y="300" width="236" height="100" color="WHITE">
+		<event id="TOUCH_UP" method="btnConfirmUp"/>
+	</component>
+</gui>

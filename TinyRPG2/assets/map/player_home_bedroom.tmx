@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" width="18" height="16" tilewidth="16" tileheight="16">
+ <tileset firstgid="1" name="Default" tilewidth="16" tileheight="16">
+  <image source="default_tileset.png" width="1024" height="2528"/>
+ </tileset>
+ <layer name="Tile Layer 1" width="18" height="16">
+  <data encoding="csv">
+513,578,577,578,577,578,577,578,577,578,577,578,577,578,577,514,577,514,
+577,642,641,642,641,642,641,642,641,642,641,642,641,642,641,641,641,578,
+513,706,705,706,705,706,705,706,705,706,705,706,705,706,705,705,705,514,
+577,516,515,516,515,516,515,516,515,1066,1067,1066,515,516,515,516,515,578,
+513,516,515,516,515,516,515,516,515,1130,1131,1130,515,516,515,516,515,514,
+577,580,579,580,579,580,579,580,579,580,579,580,579,580,579,580,579,578,
+513,516,515,516,515,516,515,516,515,516,515,516,515,516,515,516,515,514,
+577,580,579,580,579,580,579,580,579,580,579,580,579,580,579,580,579,578,
+513,516,515,516,515,516,515,516,515,516,515,516,515,516,515,516,515,514,
+577,580,579,580,579,580,579,580,579,580,579,580,579,580,579,580,579,578,
+513,516,515,516,515,516,515,516,515,516,515,516,515,516,515,516,515,514,
+577,580,579,580,579,580,579,580,579,580,579,580,579,580,579,580,579,578,
+513,516,515,516,515,516,515,516,515,516,515,516,515,516,515,516,515,514,
+577,580,579,580,579,580,579,580,579,580,579,580,579,580,579,580,579,578,
+513,516,515,516,515,516,515,516,515,516,515,516,515,516,515,516,515,514,
+577,578,577,578,577,578,577,578,577,578,577,578,577,578,577,578,577,578
+</data>
+ </layer>
+ <layer name="Tile Layer 2" width="18" height="16">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,
+0,4901,4902,4903,4904,5157,5158,1,1,0,1,1,1,0,0,0,0,0,
+0,4965,4966,4967,4968,5221,5222,1,1,1,1,1,1,9829,9829,4395,4396,0,
+0,5029,5030,5031,5032,5285,5286,1,9829,8857,8858,8859,8860,9829,9829,4459,4460,0,
+0,5093,5094,5095,5096,5349,5350,1,9829,8921,8922,8923,8924,9829,9829,0,0,0,
+0,0,0,0,0,0,0,1,1,1,9829,9829,0,9829,9829,9829,0,0,
+0,0,0,0,0,0,0,1,1,1,1,0,0,1,1,0,0,0,
+0,0,0,0,4881,4882,4882,4883,4882,4883,4882,4884,0,0,0,5667,5670,0,
+0,0,0,0,4945,4947,4946,4947,4946,4947,4946,4948,0,0,0,5731,5734,0,
+0,0,0,0,5009,5011,5010,5011,5010,5011,5010,5012,0,0,0,5795,5798,0,
+0,0,0,0,4945,4947,4946,4947,4946,4947,4946,4948,0,0,0,5859,5862,0,
+0,0,0,0,5009,5011,5010,5011,5010,5011,5010,5012,0,0,0,0,0,0,
+0,0,0,0,5009,4947,4946,4947,4946,4947,4946,5012,0,0,0,0,0,0,
+0,0,0,0,5073,5074,5074,5075,5074,5075,5074,5076,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <objectgroup name="collisions" width="18" height="16">
+  <object x="0" y="0" width="288" height="48"/>
+  <object x="0" y="48" width="16" height="208"/>
+  <object x="16" y="240" width="272" height="16"/>
+  <object x="272" y="48" width="16" height="192"/>
+  <object x="145" y="51" width="3" height="28"/>
+  <object x="145" y="76" width="62" height="3"/>
+  <object x="145" y="48" width="61" height="5"/>
+ </objectgroup>
+ <objectgroup name="entities" width="18" height="16">
+  <object name="book_shelf" x="16" y="48" width="64" height="32">
+   <properties>
+    <property name="script" value="script/entity/bookshelf.js"/>
+    <property name="type" value="0"/>
+   </properties>
+  </object>
+  <object name="wardrobe" x="80" y="48" width="32" height="32">
+   <properties>
+    <property name="script" value="script/entity/generic_container.js"/>
+    <property name="type" value="0"/>
+   </properties>
+  </object>
+  <object name="staircase_downstairs" x="148" y="52" width="40" height="22">
+   <properties>
+    <property name="map" value="map/player_home_living_room.tmx"/>
+    <property name="script" value="script/entity/generic_door.js"/>
+    <property name="type" value="0"/>
+   </properties>
+  </object>
+  <object name="bed" x="240" y="112" width="32" height="64">
+   <properties>
+    <property name="script" value="script/entity/bed.js"/>
+    <property name="type" value="0"/>
+   </properties>
+  </object>
+  <object name="spawn_initial" x="112" y="144" width="16" height="16">
+   <properties>
+    <property name="condition" value="respawn"/>
+    <property name="noclip" value="true"/>
+    <property name="script" value="script/entity/spawn_conditional.js"/>
+    <property name="type" value="0"/>
+   </properties>
+  </object>
+  <object name="spawn_staircase" x="212" y="55" width="16" height="16">
+   <properties>
+    <property name="condition" value="door_staircase_upstairs"/>
+    <property name="noclip" value="true"/>
+    <property name="script" value="script/entity/spawn_conditional.js"/>
+    <property name="type" value="0"/>
+   </properties>
+  </object>
+  <object name="loot_bedfoot_locker" x="240" y="48" width="32" height="16">
+   <properties>
+    <property name="loot_id" value="bedfoot_player_bedroom"/>
+    <property name="loot_items" value="gold:10;necklace_ruby_1:1"/>
+    <property name="script" value="script/entity/generic_loot.js"/>
+    <property name="type" value="0"/>
+   </properties>
+  </object>
+ </objectgroup>
+</map>

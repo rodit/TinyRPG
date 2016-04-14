@@ -1,0 +1,3 @@
+<attacks>
+	<attack type="AttackMagic" name="fireball" showName="Fire ball" resource="attack/fireball.png" script="script/attack/generic_magic.js" damage="10" magikaUsage="20"/>
+</attacks>

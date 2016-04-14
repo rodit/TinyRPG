@@ -1,0 +1,5 @@
+#!/bin/bash
+x=$(echo "$1 * 32" | bc -l)
+y=$(echo "$2 * 32" | bc -l)
+convert -define png:size=32x32 item_sheet.png[32x32+$x+$y] $3
+./resize $3

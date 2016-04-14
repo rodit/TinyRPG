@@ -1,0 +1,34 @@
+<gui link="net.site40.rodit.tinyrpg.game.gui2.GuiIngame" name="ingame">
+	<component name="btnUp" x="92" y="444" width="92" height="92" tag="KEY_UP" alpha="50">
+		<state id="-1" background="controls/up.png"/>
+		<event id="TOUCH_DOWN" method="controlButtonDown"/>
+		<event id="TOUCH_UP" method="controlButtonUp"/>
+		<event id="TOUCH_MOVE" method="controlButtonUp"/>
+	</component>
+	<component name="btnDown" x="92" y="628" width="92" height="92" tag="KEY_DOWN" alpha="50">
+		<state id="-1" background="controls/down.png"/>
+		<event id="TOUCH_DOWN" method="controlButtonDown"/>
+		<event id="TOUCH_UP" method="controlButtonUp"/>
+	</component>
+	<component name="btnLeft" x="0" y="536" width="92" height="92" tag="KEY_LEFT" alpha="50">
+		<state id="-1" background="controls/left.png"/>
+		<event id="TOUCH_DOWN" method="controlButtonDown"/>
+		<event id="TOUCH_UP" method="controlButtonUp"/>
+	</component>
+	<component name="btnRight" x="184" y="536" width="92" height="92" tag="KEY_RIGHT" alpha="50">
+		<state id="-1" background="controls/right.png"/>
+		<event id="TOUCH_DOWN" method="controlButtonDown"/>
+		<event id="TOUCH_UP" method="controlButtonUp"/>
+	</component>
+	<component name="btnMenu" x="912" y="592" width="92" height="92" tag="KEY_MENU" alpha="50">
+		<state id="-1" background="controls/menu.png"/>
+		<event id="TOUCH_DOWN" method="controlButtonDown"/>
+		<event id="TOUCH_UP" method="controlButtonUp"/>
+	</component>
+	<component name="btnAction" x="1096" y="592" width="92" height="92" tag="KEY_ACTION" alpha="50">
+		<state id="-1" background="controls/action.png"/>
+		<event id="TOUCH_DOWN" method="controlButtonDown"/>
+		<event id="TOUCH_UP" method="controlButtonUp"/>
+	</component>
+	<component name="playerPanel" x="0" y="0" width="256" height="128" textSize="14" flag="FLAG_DONT_DRAW"/>
+</gui>

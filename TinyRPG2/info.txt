@@ -1,0 +1,9 @@
+entity stats:
+level - > minlevel of objects; levelfactor = 1 + (level / 100)
+xp - > required to level up
+speed - movespeed + attack first etc.
+strength - hand held attack multi = 1.(strength * 10)
+defense - armour val * 1.(defense * 10)
+luck - crit hit chance multi = 1.(luck * 10); loot rare find chance = 1.(luck * 2.5)
+magika - amount of magic available for spells = 10 * magika * levelFactor
+forge - chance of successfuly forge = 15 * forge

@@ -1,0 +1,3 @@
+<entity class="npc.EntityNPC" name="merek_home" displayName="Blacksmith Merek" health="100000" script="script/entity/npc/merek.js">
+	<stats level="100" strength="100"/>
+</entity>
