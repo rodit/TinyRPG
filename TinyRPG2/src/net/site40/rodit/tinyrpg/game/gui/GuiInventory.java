@@ -8,9 +8,9 @@ import net.site40.rodit.tinyrpg.game.Dialog;
 import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.Input;
 import net.site40.rodit.tinyrpg.game.Values;
-import net.site40.rodit.tinyrpg.game.forge.ItemStack;
 import net.site40.rodit.tinyrpg.game.item.Item;
 import net.site40.rodit.tinyrpg.game.item.ItemEquippable;
+import net.site40.rodit.tinyrpg.game.item.ItemStack;
 import net.site40.rodit.tinyrpg.game.item.Necklace;
 import net.site40.rodit.tinyrpg.game.item.Ring;
 import net.site40.rodit.tinyrpg.game.item.Weapon;
@@ -105,7 +105,7 @@ public class GuiInventory extends Gui{
 						if(selectedItem.canUse()){
 							selectedItem.onEquip(game, game.getPlayer());
 							if(selectedItem.isConsumed())
-								game.getPlayer().getInventory().remove(selectedItem);
+								game.getPlayer().getInventory().getStack(selectedItem).consume();
 						}
 					}
 				}

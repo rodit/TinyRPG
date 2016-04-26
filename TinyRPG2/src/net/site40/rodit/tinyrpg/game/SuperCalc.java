@@ -1,18 +1,26 @@
 package net.site40.rodit.tinyrpg.game;
 
 import net.site40.rodit.tinyrpg.game.entity.EntityLiving;
+import net.site40.rodit.tinyrpg.game.item.Item;
 import net.site40.rodit.tinyrpg.game.item.Weapon;
+import net.site40.rodit.tinyrpg.game.item.armour.Armour;
 
 public class SuperCalc {
 	
 	public static final float BASE_MAGIKA = 10f;
 	public static final float BASE_HEALTH = 25f;
 	
-	public static void attack(EntityLiving user, EntityLiving receiver, Weapon weapon){
-		receiver.removeHealth(getDamage(user, receiver, weapon));
+	public static void attack(Game game, EntityLiving user, EntityLiving receiver, Weapon weapon){
+		weapon.onHit(game, user, receiver);
+		receiver.removeHealth(getDamage(game, user, receiver, weapon));
+		for(int i = 0; i < receiver.getEquipped().length; i++){
+			Item item = receiver.getEquipped(i);
+			if(item instanceof Armour)
+				((Armour)item).onHit(game, user, receiver);
+		}
 	}
-
-	public static float getDamage(EntityLiving user, EntityLiving receiver, Weapon weapon){
+	
+	public static float getDamage(Game game, EntityLiving user, EntityLiving receiver, Weapon weapon){
 		float dmgMulti = weapon.isMagic() ? getMagikaDamageMulti(user, receiver) : getDamageMulti(user, receiver);
 		float def = getDefenceMulti(user, receiver) * receiver.getTotalDefence();
 		float damage = dmgMulti * weapon.getDamage() - def;

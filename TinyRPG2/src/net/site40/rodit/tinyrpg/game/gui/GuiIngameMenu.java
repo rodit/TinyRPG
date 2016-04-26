@@ -5,8 +5,9 @@ import java.io.IOException;
 import net.site40.rodit.tinyrpg.game.Dialog;
 import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.Input;
+import net.site40.rodit.tinyrpg.game.Values;
+import net.site40.rodit.tinyrpg.game.saves.SaveGame;
 import net.site40.rodit.util.RenderUtil;
-import net.site40.rodit.util.TinyOutputStream;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint.Align;
@@ -24,7 +25,7 @@ public class GuiIngameMenu extends Gui{
 	public void onShown(){
 		selected = 0;
 	}
-	
+
 	@Override
 	public void init(){
 		Component bg = new Component(){
@@ -41,13 +42,13 @@ public class GuiIngameMenu extends Gui{
 					break;
 				case 3:
 					boolean success = false;
+					SaveGame newSave = game.getSaves().newSave(game, true);
 					try{
-						TinyOutputStream out = new TinyOutputStream(game.openLocal("save.dat"));
-						game.serialize(out);
-						out.close();
+						newSave.save(game);
 						success = true;
 					}catch(IOException e){
-						game.getHelper().dialog("There was an error while saving the game - " + e.getMessage() + ".");
+						e.printStackTrace();
+						game.getHelper().dialog("There was an error while saving your game. " + e.getMessage() + ".");
 					}
 					game.getGuis().hide(GuiIngameMenu.class);
 					game.getInput().allowMovement(true);
@@ -116,15 +117,15 @@ public class GuiIngameMenu extends Gui{
 			public void draw(Game game, Canvas canvas){
 				RenderUtil.drawBitmapBox(canvas, game, BOUNDS_MENU, getPaint());
 
-				getPaint().setColor(Color.BLACK);
+				getPaint().setColor(Color.WHITE);
 				getPaint().setTextAlign(Align.LEFT);
-				getPaint().setTextSize(26f);
+				getPaint().setTextSize(Values.FONT_SIZE_MEDIUM);
 				float offX = 92f;
-				float offY = 72f;
+				float offY = 104f;
 				for(int i = 0; i < OPTIONS.length; i++){
 					canvas.drawText(OPTIONS[i], offX, offY, getPaint());
 					if(i == selected)
-						canvas.drawText(">", offX - 24, offY, getPaint());
+						canvas.drawText(">", offX - 32, offY, getPaint());
 					offY += getPaint().getTextSize() + 15f;
 				}
 			}

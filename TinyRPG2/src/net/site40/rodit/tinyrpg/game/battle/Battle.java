@@ -3,6 +3,7 @@ package net.site40.rodit.tinyrpg.game.battle;
 import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.GameObject;
 import net.site40.rodit.tinyrpg.game.entity.EntityLiving;
+import net.site40.rodit.tinyrpg.game.event.EventReceiver.EventType;
 import net.site40.rodit.tinyrpg.game.map.Region;
 import net.site40.rodit.tinyrpg.game.map.Region.RegionLocal;
 import net.site40.rodit.tinyrpg.game.render.Animation;
@@ -97,14 +98,22 @@ public class Battle extends GameObject{
 		game.setBattle(null);
 		attack.setDirection(oldAttackDir);
 		defence.setDirection(oldDefenceDir);
+		
+		game.getEvents().onEvent(game, EventType.BATTLE_END, this);
 	}
 	
+	boolean first = true;
 	@Override
 	public void update(Game game){
 		//if(turnCount[current == attack ? COUNT_INDEX_ATTACK : COUNT_INDEX_DEFENCE] == queryCount[current == attack ? COUNT_INDEX_ATTACK : COUNT_INDEX_DEFENCE]){
 		//queryCount[current == attack ? COUNT_INDEX_ATTACK : COUNT_INDEX_DEFENCE]++;
 		//current.getBattleProvider().makeDecision(game, this);
 		//}
+		
+		if(first){
+			game.getEvents().onEvent(game, EventType.BATTLE_START, this);
+			first = false;
+		}
 
 		if(!decisionMade && decisionProvider == null && turnCountTotal == 0){
 			Log.i("Battle", "Making initial decision.");

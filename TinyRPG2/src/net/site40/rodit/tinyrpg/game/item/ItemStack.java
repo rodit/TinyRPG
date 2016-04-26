@@ -1,6 +1,5 @@
-package net.site40.rodit.tinyrpg.game.forge;
+package net.site40.rodit.tinyrpg.game.item;
 
-import net.site40.rodit.tinyrpg.game.item.Item;
 
 public class ItemStack {
 
@@ -30,5 +29,23 @@ public class ItemStack {
 	
 	public void setAmount(int amount){
 		this.amount = amount;
+	}
+	
+	public void consume(){
+		consume(1);
+	}
+	
+	public void consume(int amount){
+		this.amount -= amount;
+		if(this.amount <= 0)
+			item = null;
+	}
+	
+	public void fill(){
+		fill(1);
+	}
+	
+	public void fill(int amount){
+		this.amount += amount;
 	}
 }

@@ -26,7 +26,7 @@ public class AIBattleProvider implements IBattleProvider{
 		this.battle = battle;
 		game.getHelper().dialog("AI battle provider option chosen...", new String[0], callback);
 		Log.i("AIBattleProvider", "AI battle provider option chosen...");
-		SuperCalc.attack(owner, battle.next(), (Weapon)Item.get("dagger_steel"));
+		SuperCalc.attack(game, owner, battle.next(), (Weapon)Item.get("dagger_steel"));
 		battle.next().attachPaintMixer(Battle.hitMixer);
 	}
 	

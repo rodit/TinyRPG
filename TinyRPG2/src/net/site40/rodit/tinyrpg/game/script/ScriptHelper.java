@@ -5,16 +5,20 @@ import java.util.regex.Pattern;
 import net.site40.rodit.tinyrpg.game.Dialog;
 import net.site40.rodit.tinyrpg.game.Dialog.DialogCallback;
 import net.site40.rodit.tinyrpg.game.Game;
+import net.site40.rodit.tinyrpg.game.Scheduler.ScheduledEvent;
 import net.site40.rodit.tinyrpg.game.battle.Battle;
 import net.site40.rodit.tinyrpg.game.entity.Entity;
 import net.site40.rodit.tinyrpg.game.entity.EntityLiving;
 import net.site40.rodit.tinyrpg.game.entity.EntityStats;
+import net.site40.rodit.tinyrpg.game.event.EventReceiver;
+import net.site40.rodit.tinyrpg.game.event.EventReceiver.EventType;
 import net.site40.rodit.tinyrpg.game.gui.Gui;
 import net.site40.rodit.tinyrpg.game.gui.GuiLoading;
 import net.site40.rodit.tinyrpg.game.item.Item;
 import net.site40.rodit.tinyrpg.game.map.MapState;
 import net.site40.rodit.tinyrpg.game.map.RPGMap;
 import net.site40.rodit.tinyrpg.game.map.Region;
+import net.site40.rodit.tinyrpg.game.render.DialogText;
 import net.site40.rodit.tinyrpg.game.render.Sprite;
 import net.site40.rodit.tinyrpg.game.render.SpriteNonScale;
 import net.site40.rodit.tinyrpg.game.render.TextRenderer;
@@ -30,6 +34,7 @@ import android.annotation.SuppressLint;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Paint.Align;
+import android.text.TextUtils;
 import android.util.Log;
 
 
@@ -112,6 +117,14 @@ public class ScriptHelper {
 	public String fixNewLines(String str){
 		return str.replace("\\n", "\n");
 	}
+	
+	public void runTalk(String resource){
+		DialogText dialog = game.getResources().getDialogText(resource);
+		if(dialog != null)
+			dialog.run(game);
+		else
+			dialog("My dialog is broken for some reason. I can't talk right now.~Sorry about that. Contact the developers immediately for a fix.");
+	}
 
 	public Dialog dialog(String body){
 		return dialog(body, new String[0]);
@@ -126,6 +139,8 @@ public class ScriptHelper {
 	}
 
 	public Dialog dialog(String body, String[] options, Object function, Object[] args){
+		if(TextUtils.isEmpty(body) && options.length == 0)
+			return null;
 		Function func = (Function)Context.jsToJava(function, Function.class);
 		Dialog d = new Dialog(body, options, func);
 		d.setArgs(args);
@@ -228,11 +243,11 @@ public class ScriptHelper {
 		game.getPlayer().getInventory().add(Item.get(itemName), count);
 	}
 
-	public void scheduleFunction(Object function, final Object self, long delay){
-		scheduleFunction(function, self, delay, new Object[0]);
+	public ScheduledEvent scheduleFunction(Object function, final Object self, long delay){
+		return scheduleFunction(function, self, delay, new Object[0]);
 	}
-
-	public void scheduleFunction(Object function, final Object self, long delay, final Object[] args){
+	
+	public ScheduledEvent scheduleFunction(Object function, final Object self, long delay, final Object[] args){
 		final Function fnc = (Function)Context.jsToJava(function, Function.class);
 		Runnable runnable = new Runnable(){
 			@Override
@@ -240,7 +255,27 @@ public class ScriptHelper {
 				game.getScripts().executeFunction(game, fnc, self, new String[0], new Object[0], args);
 			}
 		};
-		game.getScheduler().schedule(runnable, game.getTime(), delay);
+		return game.getScheduler().schedule(runnable, game.getTime(), delay);
+	}
+	
+	@SuppressLint("DefaultLocale")
+	public void scheduleEvent(String name, String event, Object function){
+		EventType type = EventType.valueOf(event.toUpperCase());
+		EventReceiver receiver = new EventReceiver(name, "", type, function){
+			@Override
+			public void onEvent(Game game, Object... args){
+				super.onEvent(game, args);
+				game.unregisterEvent(this);
+			}
+		};
+		game.registerEvent(receiver);
+	}
+	
+	public EventReceiver getEvent(String name){
+		for(EventReceiver receiver : game.getEvents().getReceivers())
+			if(receiver.getName().equals(name))
+				return receiver;
+		return null;
 	}
 
 	public void var_dump(Object o){
@@ -276,6 +311,7 @@ public class ScriptHelper {
 		}catch(Exception e){}
 		if(entity != null)
 			entity.linkConfig(document);
+		game.setGlobal(entity.getName() + "_talk_count", 0);
 		return entity;
 	}
 

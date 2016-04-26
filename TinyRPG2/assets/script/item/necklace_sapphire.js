@@ -1,8 +1,8 @@
 function onEquip(user){
-	user.stats.luck += self.level;
+	user.stats.setLuck(user.stats.getLuck() + self.level);
 }
 function onUnEquip(user){
-	user.stats.luck -= self.level;
+	user.stats.setLuck(user.stats.getLuck() - self.level);
 }
 
 self.registerCallbacks(onEquip, onUnEquip);

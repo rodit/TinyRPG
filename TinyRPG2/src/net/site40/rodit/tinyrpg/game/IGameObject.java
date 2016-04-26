@@ -2,6 +2,7 @@ package net.site40.rodit.tinyrpg.game;
 
 import java.util.Comparator;
 
+import net.site40.rodit.tinyrpg.game.entity.EntityPlayer;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 
@@ -9,13 +10,21 @@ import android.graphics.Paint;
 public interface IGameObject {
 	
 	public static enum RenderLayer{
-		TOP_ALL, TOP, MIDDLE, BOTTOM
+		TOP_OVERRIDE_PLAYER, TOP_ALL, TOP, MIDDLE, BOTTOM
 	}
 	
 	public static final Comparator<IGameObject> RENDER_COMPARATOR = new Comparator<IGameObject>(){
 
 		@Override
 		public int compare(IGameObject ig0, IGameObject ig1){
+			if(ig0.getRenderLayer() == RenderLayer.TOP_OVERRIDE_PLAYER)
+				return 1;
+			if(ig1.getRenderLayer() == RenderLayer.TOP_OVERRIDE_PLAYER)
+				return -1;
+			if(ig0 instanceof EntityPlayer)
+				return 1;
+			if(ig1 instanceof EntityPlayer)
+				return -1;
 			RenderLayer p0 = ig0.getRenderLayer();
 			RenderLayer p1 = ig1.getRenderLayer();
 			RenderLayer[] layers = RenderLayer.values();
@@ -39,4 +48,5 @@ public interface IGameObject {
 	public void detachPaintMixer(IPaintMixer mixer);
 	public RenderLayer getRenderLayer();
 	public boolean shouldScale();
+	public void dispose(Game game);
 }

@@ -28,7 +28,7 @@ public abstract class GameObject implements IGameObject{
 	public void setPaint(Paint paint){
 		this.paint = paint;
 	}
-
+	
 	public ArrayList<IPaintMixer> getMixers(){
 		return mixers;
 	}
@@ -66,4 +66,6 @@ public abstract class GameObject implements IGameObject{
 		for(IPaintMixer mixer : mixers)
 			mixer.postRender(game, canvas, this);
 	}
+	
+	public void dispose(Game game){}
 }

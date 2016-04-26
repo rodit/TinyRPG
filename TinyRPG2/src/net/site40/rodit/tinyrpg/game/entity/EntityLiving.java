@@ -8,6 +8,7 @@ import net.site40.rodit.tinyrpg.game.SuperCalc;
 import net.site40.rodit.tinyrpg.game.battle.AIBattleProvider;
 import net.site40.rodit.tinyrpg.game.battle.IBattleProvider;
 import net.site40.rodit.tinyrpg.game.combat.Attack;
+import net.site40.rodit.tinyrpg.game.effect.Effect;
 import net.site40.rodit.tinyrpg.game.item.Item;
 import net.site40.rodit.tinyrpg.game.item.ItemEquippable;
 import net.site40.rodit.tinyrpg.game.item.Weapon;
@@ -39,6 +40,7 @@ public class EntityLiving extends Entity{
 	protected Item[] equipped;
 	protected ArrayList<Attack> attacks;
 	protected IBattleProvider battleProvider;
+	protected ArrayList<Effect> effects;
 
 	protected float lastX;
 	protected float lastY;
@@ -61,6 +63,7 @@ public class EntityLiving extends Entity{
 		this.equipped = new Item[9];
 		this.attacks = new ArrayList<Attack>();
 		this.battleProvider = new AIBattleProvider(this);
+		this.effects = new ArrayList<Effect>();
 	}
 
 	public int getHealth(){
@@ -98,7 +101,7 @@ public class EntityLiving extends Entity{
 			if(it instanceof Armour)
 				defence += ((Armour)it).getArmourValue();
 		}
-		return defence * EntityStats.fPointF(1f, stats.getDefence());
+		return defence * EntityStats.fPointF(1f, stats.getDefence() * 10);
 	}
 
 	public void hurt(int amount){
@@ -108,8 +111,8 @@ public class EntityLiving extends Entity{
 			health = 0;
 	}
 
-	public void hurt(EntityLiving user, Weapon weapon){
-		SuperCalc.attack(user, this, weapon);
+	public void hurt(Game game, EntityLiving user, Weapon weapon){
+		SuperCalc.attack(game, user, this, weapon);
 	}
 
 	public void addHealth(float amount){
@@ -120,7 +123,7 @@ public class EntityLiving extends Entity{
 		health -= amount;
 	}
 
-	public float getMagika(){
+	public int getMagika(){
 		return magika;
 	}
 
@@ -154,7 +157,7 @@ public class EntityLiving extends Entity{
 		velocityX += x;
 		velocityY += y;
 	}
-
+	
 	public void setVelocity(float x, float y){
 		velocityX = x;
 		velocityY = y;
@@ -217,6 +220,45 @@ public class EntityLiving extends Entity{
 	public void setBattleProvider(IBattleProvider battleProvider){
 		this.battleProvider = battleProvider;
 	}
+	
+	public ArrayList<Effect> getEffects(){
+		return effects;
+	}
+	
+	public void clearNegativeEffects(){
+		ArrayList<Effect> remove = new ArrayList<Effect>();
+		for(Effect effect : effects)
+			if(effect.isNegative())
+				remove.add(effect);
+		effects.removeAll(remove);
+		remove.clear();
+	}
+	
+	public void addEffect(String effect){
+		addEffect(Effect.get(effect));
+	}
+	
+	public void addEffect(String effect, int level){
+		addEffect(Effect.get(effect), level);
+	}
+	
+	public void addEffect(Effect effect){
+		addEffect(effect, effect.getLevel());
+	}
+	
+	public void addEffect(Effect effect, int level){
+		Effect nEffect = null;
+		try{
+			nEffect = effect.getClass().newInstance();
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		if(nEffect == null)
+			return;
+		nEffect.copy(effect);
+		nEffect.setLevel(level);
+		effects.add(nEffect);
+	}
 
 	public float getLastX(){
 		return lastX;
@@ -236,7 +278,7 @@ public class EntityLiving extends Entity{
 		this.maxHealth = Util.tryGetInt(root.getAttribute("maxHealth"), 10);
 		this.health = Util.tryGetInt(root.getAttribute("health"), maxHealth);
 		this.magika = Util.tryGetInt(root.getAttribute("magika"), 0);
-
+		
 		Element statsNode = (Element)root.getElementsByTagName("stats").item(0);
 		stats.setSpeed(Util.tryGetFloat(statsNode.getAttribute("speed"), stats.getSpeed()));
 		stats.setStrength(Util.tryGetFloat(statsNode.getAttribute("strength"), stats.getStrength()));
@@ -244,7 +286,7 @@ public class EntityLiving extends Entity{
 		stats.setLuck(Util.tryGetFloat(statsNode.getAttribute("luck"), stats.getLuck()));
 		stats.setMagika(Util.tryGetFloat(statsNode.getAttribute("magika"), stats.getMagika()));
 		stats.setForge(Util.tryGetFloat(statsNode.getAttribute("forge"), stats.getForge()));
-
+		
 		NodeList equipped = root.getElementsByTagName("equip");
 		for(int i = 0; i < equipped.getLength(); i++){
 			Node n = equipped.item(i);
@@ -283,6 +325,18 @@ public class EntityLiving extends Entity{
 	@Override
 	public void update(Game game){
 		super.update(game);
+		
+		ArrayList<Effect> effRemove = new ArrayList<Effect>();
+		for(Effect effect : effects){
+			if(!effect.isStarted())
+				effect.start(game, this);
+			if(effect.isStopped())
+				effRemove.add(effect);
+		}
+		effects.removeAll(effRemove);
+		
+		if(health > getMaxHealth())
+			health = getMaxHealth();
 
 		if(velocityX != 0 || velocityY != 0){
 			moveState = MovementState.WALK;
@@ -299,7 +353,7 @@ public class EntityLiving extends Entity{
 			direction = Direction.D_LEFT;
 			resetCache();
 		}
-
+		
 		if(velocityY > 0){
 			direction = Direction.D_DOWN;
 			resetCache();

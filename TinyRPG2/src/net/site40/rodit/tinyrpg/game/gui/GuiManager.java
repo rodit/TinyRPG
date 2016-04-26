@@ -26,6 +26,7 @@ public class GuiManager {
 		guis.add(new GuiIngameMenu());
 		guis.add(new GuiOptions());
 		guis.add(new GuiIngame());
+		guis.add(new GuiSaves());
 	}
 	
 	public ArrayList<Gui> list(){

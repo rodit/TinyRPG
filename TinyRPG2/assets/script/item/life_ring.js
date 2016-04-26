@@ -1,8 +1,8 @@
 function onEquip(user){
-	user.stats.hpMulti += self.level * 2 / 10;
+	user.stats.addHpMulti(self.level * 2 / 100);
 }
 function onUnEquip(user){
-	user.stats.hpMulti -= self.level * 2 / 10;
+	user.stats.addHpMulti(-(self.level * 2 / 100));
 }
 
 self.registerCallbacks(onEquip, onUnEquip);

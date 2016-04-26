@@ -4,11 +4,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import net.site40.rodit.tinyrpg.game.entity.EntityLiving;
-import net.site40.rodit.tinyrpg.game.forge.ItemStack;
 import net.site40.rodit.tinyrpg.game.item.armour.Armour;
 import net.site40.rodit.util.ISavable;
 import net.site40.rodit.util.TinyInputStream;
 import net.site40.rodit.util.TinyOutputStream;
+import net.site40.rodit.util.Util;
 
 public class Inventory implements ISavable{
 
@@ -52,22 +52,30 @@ public class Inventory implements ISavable{
 		items.add(stack);
 		return stack;
 	}
-	
+
+	public ItemStack getExistingStack(Item item, ItemStack... ignore){
+		for(ItemStack stack : items)
+			if(stack.getItem() == item && (ignore != null && !Util.arrayContains(ignore, stack, ItemStack.class)))
+				return stack;
+		return null;
+	}
+
 	public ItemStack getStackableStack(Item item){
 		for(ItemStack stack : items)
 			if(stack.getItem() == item && stack.getAmount() < item.stackSize)
 				return stack;
 		return null;
 	}
-
+	
 	public int getCount(Item item){
+		int count = 0;
 		for(ItemStack stack : items)
 			if(stack.getItem() == item)
-				return stack.getAmount();
-		return 0;
+				count += stack.getAmount();
+		return count;
 	}
-
-	public void setCount(Item item, int count){
+	
+	public void setCountAdd(Item item, int count){
 		if(item.isStackable()){
 			ItemStack stack = null;
 			int remain = count;
@@ -87,31 +95,19 @@ public class Inventory implements ISavable{
 	public void add(String itemName, int count){
 		add(Item.get(itemName), count);
 	}
-
+	
 	public void add(Item item){
 		add(item, 1);
 	}
 
 	public void add(Item item, int count){
 		int nCount = getCount(item) + count;
-		setCount(item, nCount);
+		setCountAdd(item, nCount);
 	}
 
 	public void add(Inventory inventory){
 		for(ItemStack stack : inventory.items)
 			add(stack.getItem(), stack.getAmount());
-	}
-
-	public void remove(Item item){
-		remove(item, 1);
-	}
-
-	public void remove(Item item, int count){
-		int nCount = getCount(item) - count;
-		if(nCount <= 0)
-			items.remove(item);
-		else
-			setCount(item, nCount);
 	}
 
 	public int getSize(){
@@ -211,37 +207,37 @@ public class Inventory implements ISavable{
 			case TAB_ALL:
 				for(ItemStack stack : inventory.items){
 					if(stack.getAmount() > 0)
-						stacks.add(new ItemStack(stack));
+						stacks.add(stack);
 				}
 				break;
 			case TAB_WEAPONS:
 				for(ItemStack stack : inventory.items){
 					if(stack.getItem() instanceof Weapon && stack.getAmount() > 0)
-						stacks.add(new ItemStack(stack));
+						stacks.add(stack);
 				}
 				break;
 			case TAB_ARMOUR:
 				for(ItemStack stack : inventory.items){
 					if(stack.getItem() instanceof Armour && stack.getAmount() > 0)
-						stacks.add(new ItemStack(stack));
+						stacks.add(stack);
 				}
 				break;
 			case TAB_ACCESSORIES:
 				for(ItemStack stack : inventory.items){
 					if((stack.getItem() instanceof Necklace || stack.getItem() instanceof Ring) && stack.getAmount() > 0)
-						stacks.add(new ItemStack(stack));
+						stacks.add(stack);
 				}
 				break;
 			case TAB_POTIONS:
 				for(ItemStack stack : inventory.items){
 					if(stack.getItem().getName().startsWith("potion") && stack.getAmount() > 0)
-						stacks.add(new ItemStack(stack));
+						stacks.add(stack);
 				}
 				break;
 			case TAB_MISC:
 				for(ItemStack stack : inventory.items){
 					if(!(stack.getItem().getName().startsWith("potion") || stack.getItem() instanceof Weapon || stack.getItem() instanceof Armour || stack.getItem() instanceof Necklace || stack.getItem() instanceof Ring) && stack.getAmount() > 0)
-						stacks.add(new ItemStack(stack));
+						stacks.add(stack);
 				}
 				break;
 			}

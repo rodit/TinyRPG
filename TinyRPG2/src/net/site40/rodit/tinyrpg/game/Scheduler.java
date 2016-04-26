@@ -5,9 +5,15 @@ import java.util.Iterator;
 
 public class Scheduler {
 
+	private ArrayList<ScheduledEvent> addQueue;
+	private ArrayList<ScheduledEvent> removeQueue;
+
 	private ArrayList<ScheduledEvent> events;
 
 	public Scheduler(){
+		this.addQueue = new ArrayList<ScheduledEvent>();
+		this.removeQueue = new ArrayList<ScheduledEvent>();
+
 		this.events = new ArrayList<ScheduledEvent>();
 	}
 
@@ -15,31 +21,40 @@ public class Scheduler {
 		return events;
 	}
 
-	public void schedule(Runnable runnable, long time, long delay){
+	public ScheduledEvent schedule(Runnable runnable, long time, long delay){
 		ScheduledEvent event = new ScheduledEvent(runnable, time, delay);
 		schedule(event);
+		return event;
 	}
 
 	public void schedule(ScheduledEvent event){
-		events.add(event);
+		addQueue.add(event);
 	}
 
 	public void unschedule(ScheduledEvent event){
-		events.remove(event);
+		removeQueue.add(event);
 	}
-
+	
 	public void update(final Game game){
-		ArrayList<ScheduledEvent> remove = new ArrayList<ScheduledEvent>();
-		synchronized(events){
-			Iterator<ScheduledEvent> eventIt = events.iterator();
-			while(eventIt.hasNext()){
-				ScheduledEvent event = eventIt.next();
-				if(event.shouldRun(game.getTime())){
-					remove.add(event);
-					event.getRunnable().run();
-				}
+		synchronized(addQueue){
+			for(ScheduledEvent event : addQueue)
+				if(!events.contains(event))
+					events.add(event);
+			addQueue.clear();
+		}
+		
+		Iterator<ScheduledEvent> eventIt = events.iterator();
+		while(eventIt.hasNext()){
+			ScheduledEvent event = eventIt.next();
+			if(event.shouldRun(game.getTime())){
+				removeQueue.add(event);
+				event.getRunnable().run();
 			}
-			events.removeAll(remove);
+		}
+		
+		synchronized(removeQueue){
+			events.removeAll(removeQueue);
+			removeQueue.clear();
 		}
 	}
 

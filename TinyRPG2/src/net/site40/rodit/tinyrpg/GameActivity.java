@@ -19,7 +19,7 @@ public class GameActivity extends Activity {
 	private Game game;
 
 	private GLSurfaceView glSurfaceView;
-
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -34,7 +34,7 @@ public class GameActivity extends Activity {
 		GameView view = new GameView(getApplicationContext(), this);
 		setContentView(view);
 	}
-
+	
 	@Override
 	protected void onPause() {
 		super.onPause();
@@ -48,6 +48,7 @@ public class GameActivity extends Activity {
 		super.onResume();
 		if(glSurfaceView != null)
 			glSurfaceView.onPause();
+		game.unpause();
 	}
 
 	public class GameView extends View{

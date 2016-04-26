@@ -37,6 +37,9 @@ public class EntityPlayer extends EntityLiving{
 		this.battleProvider = new InputBattleProvider(this);
 		
 		setRuntimeProperty("map_origin", "respawn");
+		
+		//TODO: REMOVE
+		//this.setNoclip(true);
 	}
 	
 	public String getUsername(){
@@ -64,16 +67,17 @@ public class EntityPlayer extends EntityLiving{
 	
 	@Override
 	public void update(Game game){
+		float deltaMulti = (float)game.getDelta() / 16.6f;
 		Input input = game.getInput();
 		if(input.allowMovement()){
 			if(input.isDown(Input.KEY_UP))
-				velocityY -= stats.getMoveSpeed() * SPEED_MULTI;
+				velocityY -= stats.getMoveSpeed() * SPEED_MULTI * deltaMulti;
 			if(input.isDown(Input.KEY_DOWN))
-				velocityY += stats.getMoveSpeed() * SPEED_MULTI;
+				velocityY += stats.getMoveSpeed() * SPEED_MULTI * deltaMulti;
 			if(input.isDown(Input.KEY_LEFT))
-				velocityX -= stats.getMoveSpeed() * SPEED_MULTI;
+				velocityX -= stats.getMoveSpeed() * SPEED_MULTI * deltaMulti;
 			if(input.isDown(Input.KEY_RIGHT))
-				velocityX += stats.getMoveSpeed() * SPEED_MULTI;
+				velocityX += stats.getMoveSpeed() * SPEED_MULTI * deltaMulti;
 			if(input.isUp(Input.KEY_ACTION)){
 				Object o = game.trace(this);
 				if(o != null && o instanceof Entity)

@@ -133,7 +133,7 @@ public class Dialog extends GameObject{
 	private long keyUpDown = 0L;
 	private long keyDownDown = 0L;
 	private boolean justStaged = false;
-
+	
 	@Override
 	public void update(Game game){		
 		if(startTime == 0L || justStaged){
@@ -162,6 +162,7 @@ public class Dialog extends GameObject{
 		}
 
 		if(input.isUp(Input.KEY_ACTION)){
+			input.setKeyUpState(Input.KEY_ACTION, false);
 			if(hasFinishedAllStages() && options.length != 0)
 				confirm(game);
 			else{

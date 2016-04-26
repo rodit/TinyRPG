@@ -13,6 +13,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.RectF;
 import android.text.TextUtils;
+import android.util.Log;
 
 public class Sprite extends GameObject implements ISavable{
 
@@ -130,7 +131,10 @@ public class Sprite extends GameObject implements ISavable{
 
 	@Override
 	public void update(Game game){
-		
+		if(disposed){
+			Log.w("Sprite", "Disposed sprite update.");
+			new Exception().printStackTrace();
+		}
 	}
 	
 	@Override
@@ -199,5 +203,13 @@ public class Sprite extends GameObject implements ISavable{
 		height = in.readFloat();
 		resource = in.readString();
 		name = in.readString();
+	}
+	
+
+	
+	private boolean disposed = false;
+	@Override
+	public void dispose(Game game){
+		this.disposed = true;
 	}
 }

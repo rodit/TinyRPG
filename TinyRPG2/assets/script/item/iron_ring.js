@@ -1,8 +1,8 @@
 function onEquip(user){
-	user.stats.defenceMulti += self.level / 10;
+	user.stats.addDefenceMulti(self.level / 100);
 }
 function onUnEquip(user){
-	user.stats.defenceMulti -= self.level / 10;
+	user.stats.addDefenceMulti(-(self.level / 100));
 }
 
 self.registerCallbacks(onEquip, onUnEquip);

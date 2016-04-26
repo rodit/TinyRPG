@@ -7,10 +7,10 @@ import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.combat.Attack;
 import net.site40.rodit.tinyrpg.game.entity.EntityLiving;
 import net.site40.rodit.tinyrpg.game.entity.EntityPlayer;
-import net.site40.rodit.tinyrpg.game.forge.ItemStack;
 import net.site40.rodit.tinyrpg.game.item.Inventory.InventoryProvider;
 import net.site40.rodit.tinyrpg.game.item.Item;
 import net.site40.rodit.tinyrpg.game.item.ItemEquippable;
+import net.site40.rodit.tinyrpg.game.item.ItemStack;
 import net.site40.rodit.tinyrpg.game.item.Weapon;
 
 public class InputBattleProvider implements IBattleProvider{
@@ -112,7 +112,7 @@ public class InputBattleProvider implements IBattleProvider{
 				Item selectedItem = options.get(option);
 				selectedItem.onEquip(game, player);
 				if(selectedItem.isConsumed())
-					player.getInventory().remove(selectedItem);
+					player.getInventory().getStack(selectedItem).consume();
 				game.getHelper().dialog("You used a " + selectedItem.getShowName() + ".", new String[0], finishCallback);
 			}
 		}

@@ -1,0 +1,18 @@
+#
+global merek_home_talk_count 0
+Most weapons and armour are mighty sturdy indeed.
+If you want them even more powerful, come to a blacksmith or find a forge and do it yourself.
+set merek_home_talk_count 1
+#
+global merek_home_talk_count 1
+There are two types of weapon modification. Upgrades and infusion.
+Upgrading your weapon will enable it to deal more damage to foes. When upgrading loses its charm, try infusion!
+Infusion offers other types of damage such as magic or poison.
+You must have the right amount of materials and some gold to perform both.
+set merek_home_talk_count 2
+#
+global merek_home_talk_count 2
+I don't have much more to say... Come to me if you need forging services.
+Enjoy your future ventures. Hah hah hah!
+set merek_home_give_item true
+set merek_home_talk_count 0

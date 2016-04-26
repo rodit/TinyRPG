@@ -16,13 +16,13 @@ public class EntityStats implements ISavable{
 	private float luck;
 	private float magika;
 	private float forge;
-	private float hpMulti;
-	private float speedMulti;
-	private float strengthMulti;
-	private float defenceMulti;
-	private float luckMulti;
-	private float magikaMulti;
-	private float forgeMulti;
+	protected float hpMulti;
+	protected float speedMulti;
+	protected float strengthMulti;
+	protected float defenceMulti;
+	protected float luckMulti;
+	protected float magikaMulti;
+	protected float forgeMulti;
 	
 	public EntityStats(){
 		this.level = 1;
@@ -111,6 +111,90 @@ public class EntityStats implements ISavable{
 		return (int)((float)maxHealth * hpMulti);
 	}
 	
+	public void addHpMulti(float amount){
+		hpMulti += amount;
+	}
+	
+	public void addSpeedMulti(float amount){
+		speedMulti += amount;
+	}
+	
+	public void addStrengthMulti(float amount){
+		strengthMulti += amount;
+	}
+	
+	public void addDefenceMulti(float amount){
+		defenceMulti += amount;
+	}
+	
+	public void addLuckMulti(float amount){
+		luckMulti += amount;
+	}
+	
+	public void addMagikaMulti(float amount){
+		magikaMulti += amount;
+	}
+	
+	public void addForgeMulti(float amount){
+		forgeMulti += amount;
+	}
+	
+	public float getHpMulti() {
+		return hpMulti;
+	}
+
+	public void setHpMulti(float hpMulti) {
+		this.hpMulti = hpMulti;
+	}
+
+	public float getSpeedMulti() {
+		return speedMulti;
+	}
+
+	public void setSpeedMulti(float speedMulti) {
+		this.speedMulti = speedMulti;
+	}
+
+	public float getStrengthMulti() {
+		return strengthMulti;
+	}
+
+	public void setStrengthMulti(float strengthMulti) {
+		this.strengthMulti = strengthMulti;
+	}
+
+	public float getDefenceMulti() {
+		return defenceMulti;
+	}
+
+	public void setDefenceMulti(float defenceMulti) {
+		this.defenceMulti = defenceMulti;
+	}
+
+	public float getLuckMulti() {
+		return luckMulti;
+	}
+
+	public void setLuckMulti(float luckMulti) {
+		this.luckMulti = luckMulti;
+	}
+
+	public float getMagikaMulti() {
+		return magikaMulti;
+	}
+
+	public void setMagikaMulti(float magikaMulti) {
+		this.magikaMulti = magikaMulti;
+	}
+
+	public float getForgeMulti() {
+		return forgeMulti;
+	}
+
+	public void setForgeMulti(float forgeMulti) {
+		this.forgeMulti = forgeMulti;
+	}
+
 	@Override
 	public void serialize(TinyOutputStream out)throws IOException{
 		out.write(level);

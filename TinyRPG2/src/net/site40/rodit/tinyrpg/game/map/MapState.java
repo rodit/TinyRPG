@@ -9,6 +9,7 @@ import net.site40.rodit.tinyrpg.game.GameObject;
 import net.site40.rodit.tinyrpg.game.entity.Entity;
 import net.site40.rodit.tinyrpg.game.entity.EntityLiving;
 import net.site40.rodit.tinyrpg.game.entity.EntityPlayer;
+import net.site40.rodit.tinyrpg.game.event.EventReceiver.EventType;
 import net.site40.rodit.tinyrpg.game.item.Item;
 import net.site40.rodit.tinyrpg.game.render.BitmapRenderer;
 import net.site40.rodit.tinyrpg.game.render.ResourceManager;
@@ -18,19 +19,26 @@ import net.site40.rodit.util.TinyInputStream;
 import net.site40.rodit.util.TinyOutputStream;
 import android.graphics.Canvas;
 import android.graphics.RectF;
+import android.util.Log;
 
 public class MapState extends GameObject implements ISavable{
-	
+
 	private RPGMap map;
 	private BitmapRenderer rotObj;
 	private ArrayList<Entity> entities;
 
 	private boolean spawnedEntities = false;
-	
+
 	public MapState(RPGMap map){
 		this.map = map;
-		if(map != null)
-			this.rotObj = new BitmapRenderer(map.getRenderOnTop());
+		if(map != null){
+			this.rotObj = new BitmapRenderer(map.getRenderOnTop()){
+				@Override
+				public RenderLayer getRenderLayer(){
+					return RenderLayer.TOP_OVERRIDE_PLAYER;
+				}
+			};
+		}
 		this.entities = new ArrayList<Entity>();
 	}
 
@@ -50,17 +58,31 @@ public class MapState extends GameObject implements ISavable{
 		return entities;
 	}
 	
+	public Entity getEntityByName(String name){
+		for(Entity e : entities)
+			if(e.getName().equals(name))
+				return e;
+		return null;
+	}
+	
 	public void spawn(Game game, Entity e){
+		if(this.getEntityByName(e.getName()) != null)
+			Log.w("EntitySpawn", "Entity with name " + e.getName() + " already spawned.");
+		
 		if(!entities.contains(e))
 			entities.add(e);
 		game.addObject(e);
 		e.onSpawn(game);
+		Log.i("MapState", "Spawned entity " + e.getName() + ".");
+		game.getEvents().onEvent(game, EventType.ENTITY_SPAWNED, e);
 	}
 
 	public void despawn(Game game, Entity e){
 		e.onDespawn(game);
 		entities.remove(e);
 		game.removeObject(e);
+		Log.i("MapState", "Despawned entity " + e.getName() + ".");
+		game.getEvents().onEvent(game, EventType.ENTITY_DESPAWNED, e);
 	}
 
 	public Object getCollisionObject(float x, float y, Object... exclude){
@@ -88,7 +110,7 @@ public class MapState extends GameObject implements ISavable{
 				return obj;
 		return null;
 	}
-	
+
 	public boolean checkMove(Game game, Entity e, float x, float y){
 		if(e.isNoclip())
 			return true;
@@ -107,7 +129,7 @@ public class MapState extends GameObject implements ISavable{
 			return true;
 		return false;
 	}
-
+	
 	@Override
 	public void update(Game game){
 		if(map != null && !map.isLoaded())
@@ -149,7 +171,7 @@ public class MapState extends GameObject implements ISavable{
 						continue;
 					String iName = parts[0];
 					int count = Integer.valueOf(parts[1]);
-					spawn.getInventory().setCount(Item.get(iName), count);
+					spawn.getInventory().getStack(Item.get(iName)).setAmount(count);
 				}
 				spawn.getRuntimeProperties().putAll(obj.getProperties());
 				spawn(game, spawn);
@@ -157,14 +179,14 @@ public class MapState extends GameObject implements ISavable{
 			spawnedEntities = true;
 		}
 	}
-	
+
 	@Override
 	public void draw(Game game, Canvas canvas){
 		if(map == null || map.getBackground() == null || map.getBackground().isRecycled())
 			return;
-		
+
 		super.preRender(game, canvas);
-		
+
 		canvas.drawBitmap(map.getBackground(), 0, 0, null);
 
 		super.postRender(game, canvas);
@@ -187,7 +209,7 @@ public class MapState extends GameObject implements ISavable{
 		for(Entity e : entities)
 			e.serialize(out);
 	}
-	
+
 	@Override
 	public void deserialize(TinyInputStream in)throws IOException{
 		String mapFile = in.readString();
@@ -213,7 +235,7 @@ public class MapState extends GameObject implements ISavable{
 			read++;
 		}
 	}
-	
+
 	public void dispose(ResourceManager resources){
 		if(map != null){
 			map.dispose(resources);

@@ -25,7 +25,7 @@ public class ItemEquippable extends Item{
 	public static final int SLOT_HAND_1 = 7;
 
 	protected int[] equipSlots = new int[0];
-
+	
 	public ItemEquippable(){
 		this("", "", "", "", "", Rarity.UNKNOWN, 0L, -1);
 	}

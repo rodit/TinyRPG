@@ -1,3 +1,11 @@
-<entity class="npc.EntityNPC" name="merek_home" displayName="Blacksmith Merek" health="100000" script="script/entity/npc/merek.js">
-	<stats level="100" strength="100"/>
+<entity class="npc.EntityNPC" name="merek_home" displayName="Blacksmith Merek" health="100000" script="script/entity/npc/merek.js" resource="entity/default.spr" width="32" height="32">
+	<stats level="100" speed="10" strength="10" defence="10" forge="10"/>
+	<equip item="iron_helmet" slot="SLOT_HELMET"/>
+	<equip item="iron_shoulders" slot="SLOT_SHOULDERS"/>
+	<equip item="iron_chestplate" slot="SLOT_CHEST"/>
+	<equip item="iron_ring_3" slot="SLOT_FINGER_0"/>
+	<equip item="gold_ring_3" slot="SLOT_FINGER_1"/>
+	<equip item="necklace_ruby_1" slot="SLOT_NECK"/>
+	<equip item="knuckle_dusters" slot="SLOT_HAND_0"/>
+	<equip item="dagger_steel" slot="SLOT_HAND_1"/>
 </entity>

@@ -7,11 +7,16 @@ import net.site40.rodit.tinyrpg.game.IGameObject;
 import net.site40.rodit.tinyrpg.game.IPaintMixer;
 import net.site40.rodit.tinyrpg.game.Input;
 import net.site40.rodit.tinyrpg.game.Values;
-import net.site40.rodit.tinyrpg.game.forge.ItemStack;
+import net.site40.rodit.tinyrpg.game.event.EventReceiver.EventType;
 import net.site40.rodit.tinyrpg.game.gui.ComponentListener.ComponentListenerImpl;
 import net.site40.rodit.tinyrpg.game.item.Inventory.InventoryProvider;
+import net.site40.rodit.tinyrpg.game.item.Item;
 import net.site40.rodit.tinyrpg.game.item.ItemEquippable;
+import net.site40.rodit.tinyrpg.game.item.ItemStack;
+import net.site40.rodit.tinyrpg.game.item.Weapon;
+import net.site40.rodit.tinyrpg.game.item.armour.Armour;
 import net.site40.rodit.util.RenderUtil;
+import net.site40.rodit.util.Util;
 import android.graphics.Canvas;
 import android.graphics.Paint.Align;
 import android.graphics.RectF;
@@ -51,6 +56,7 @@ public class GuiPlayerInventory extends Gui{
 	private Component txtItemDescription;
 	private Component txtItemRarity;
 	private Component txtItemValue;
+	private Component txtItemStats;
 	private Component imgItemPreview;
 
 	private boolean openedWindow = false;
@@ -83,8 +89,9 @@ public class GuiPlayerInventory extends Gui{
 		add(bgWindow);
 
 		Component title = new Component("txtTitle", "Inventory");
-		title.setX(bgWindow.getX() + 32f);
-		title.setY(bgWindow.getY() + 32f);
+		title.setX(bgWindow.getX() + bgWindow.getWidth() / 2);
+		title.setY(bgWindow.getY() + 48);
+		title.getPaint().setTextSize(Values.FONT_SIZE_MEDIUM);
 		add(title);
 
 		int k = 0;
@@ -168,7 +175,7 @@ public class GuiPlayerInventory extends Gui{
 		if(!active)
 			return;
 
-		if(game.getInput().isDown(Input.KEY_MENU) && itemWindow.flag == Component.INACTIVE){
+		if(game.getInput().isDown(Input.KEY_MENU) && (itemWindow == null || itemWindow.flag == Component.INACTIVE)){
 			game.getGuis().hide(GuiPlayerInventory.class);
 			game.getGuis().show(GuiIngameMenu.class);
 		}
@@ -234,6 +241,7 @@ public class GuiPlayerInventory extends Gui{
 					txtItemDescription.setFlag(Component.INACTIVE);
 					txtItemRarity.setFlag(Component.INACTIVE);
 					txtItemValue.setFlag(Component.INACTIVE);
+					txtItemStats.setFlag(Component.INACTIVE);
 					imgItemPreview.setFlag(Component.INACTIVE);
 
 					for(Component comp : tabComponents)
@@ -261,6 +269,7 @@ public class GuiPlayerInventory extends Gui{
 				public void touchUp(Component component, Game game){
 					if(selectedItem != null){
 						//TODO: Entity pickup for item.
+						//game.getEvents().onEvent(game, EventType.ITEM_DROP, selectedItem.getItem(), game.getPlayer());
 						game.getHelper().dialog("This feature is currently not available.");
 					}
 				}
@@ -287,26 +296,36 @@ public class GuiPlayerInventory extends Gui{
 							if(slot > -1){
 								game.getPlayer().setEquipped(slot, null);
 								ie.onUnEquip(game, game.getPlayer());
+								game.getEvents().onEvent(game, EventType.ITEM_UNEQUIP, ie, game.getPlayer(), slot);
 							}else{
 								boolean wasEquipped = false;
 								for(int i = 0; i < ie.getEquipSlots().length; i++){
 									if(game.getPlayer().getEquippedItem(ie.getEquipSlots()[i]) == null){
 										game.getPlayer().setEquipped(ie.getEquipSlots()[i], ie);
 										ie.onEquip(game, game.getPlayer());
+										game.getEvents().onEvent(game, EventType.ITEM_EQUIP, ie, game.getPlayer(), ie.getEquipSlots()[i]);
 										wasEquipped = true;
 										break;
 									}
 								}
 								if(!wasEquipped){
+									Item item = game.getPlayer().getEquipped(ie.getEquipSlots()[0]);
+									if(item != null){
+										item.onUnEquip(game, game.getPlayer());
+										game.getEvents().onEvent(game, EventType.ITEM_UNEQUIP, item, game.getPlayer(), ie.getEquipSlots()[0]);
+									}
 									game.getPlayer().setEquipped(ie.getEquipSlots()[0], ie);
+									game.getEvents().onEvent(game, EventType.ITEM_EQUIP, ie, game.getPlayer(), ie.getEquipSlots()[0]);
 									ie.onEquip(game, game.getPlayer());
 								}
 							}
 						}else if(selectedItem.getItem().canUse()){
 							selectedItem.getItem().onEquip(game, game.getPlayer());
+							game.getEvents().onEvent(game, EventType.ITEM_EQUIP, selectedItem.getItem(), game.getPlayer(), game.getPlayer().getSlot(selectedItem.getItem()));
 							if(selectedItem.getItem().isConsumed())
-								game.getPlayer().getInventory().remove(selectedItem.getItem());
-						}
+								selectedItem.consume();
+						}else
+							game.getHelper().dialog("This item cannot be used or equipped.");
 					}
 				}
 			});
@@ -324,7 +343,7 @@ public class GuiPlayerInventory extends Gui{
 			txtItemTitle.addListener(new ComponentListenerImpl(){
 				int updateLast = 0;
 				int updateTotal = 0;
-				public void update(Component component, Game game){
+				public void update(Component component, Game game){					
 					updateTotal++;
 					if(updateTotal > updateLast && openedWindow){
 						openedWindow = false;
@@ -354,9 +373,17 @@ public class GuiPlayerInventory extends Gui{
 							btnEquipUse.setFlag(Component.INACTIVE);
 						txtItemRarity.setText("Rarity: " + selectedItem.getItem().getRarity().toString());
 						txtItemValue.setText("Value: " + selectedItem.getItem().getValue() + " Gold");
+						if(selectedItem.getItem() instanceof Weapon){
+							Weapon w = (Weapon)selectedItem.getItem();
+							txtItemStats.setText("Damage: " + Util.format(w.getDamage()));
+						}else if(selectedItem.getItem() instanceof Armour){
+							Armour a = (Armour)selectedItem.getItem();
+							txtItemStats.setText("Armour: " + Util.format(a.getArmourValue()));
+						}else
+							txtItemStats.setText("");
 						imgItemPreview.setBackgroundDefault(selectedItem.getItem().getResource());
 
-						if(game.getInput().isDown(Input.KEY_MENU))
+						if(game.getInput().isDown(Input.KEY_MENU) || selectedItem == null)
 							btnBack.getListeners().get(0).touchUp(btnBack, game);
 					}
 				}
@@ -391,13 +418,13 @@ public class GuiPlayerInventory extends Gui{
 		if(txtItemRarity == null){
 			txtItemRarity = new Component("txtItemRarity");
 			txtItemRarity.setX(txtItemDescription.getX());
-			txtItemRarity.setY(txtItemDescription.getY() + txtItemDescription.getPaint().getTextSize() * 4 + 32f);
+			txtItemRarity.setY(txtItemDescription.getY() + txtItemDescription.getPaint().getTextSize() * 4 + 64f);
 			txtItemRarity.getPaint().setTextAlign(Align.LEFT);
 			txtItemRarity.getPaint().setTextSize(Values.FONT_SIZE_SMALL);
 			add(txtItemRarity);
 		}
 		txtItemRarity.setFlag(0);
-
+		
 		if(txtItemValue == null){
 			txtItemValue = new Component("txtItemValue");
 			txtItemValue.setX(txtItemRarity.getX());
@@ -407,6 +434,16 @@ public class GuiPlayerInventory extends Gui{
 			add(txtItemValue);
 		}
 		txtItemValue.setFlag(0);
+		
+		if(txtItemStats == null){
+			txtItemStats = new Component("txtItemStats");
+			txtItemStats.setX(itemWindow.getX() + itemWindow.getWidth() - 172);
+			txtItemStats.setY(txtItemTitle.getY() + 164);
+			txtItemStats.getPaint().setTextAlign(Align.LEFT);
+			txtItemStats.getPaint().setTextSize(Values.FONT_SIZE_SMALL);
+			add(txtItemStats);
+		}
+		txtItemStats.setFlag(0);
 
 		if(imgItemPreview == null){
 			imgItemPreview = new Component("imgItemPreview");

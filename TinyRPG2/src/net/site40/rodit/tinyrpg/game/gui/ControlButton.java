@@ -1,6 +1,7 @@
 package net.site40.rodit.tinyrpg.game.gui;
 
 import net.site40.rodit.tinyrpg.game.Game;
+import net.site40.rodit.tinyrpg.game.event.EventReceiver.EventType;
 import android.view.MotionEvent;
 
 public class ControlButton extends Component{
@@ -44,10 +45,12 @@ public class ControlButton extends Component{
 		switch(action){
 		case MotionEvent.ACTION_DOWN:
 			game.getInput().setKeyState(key, true);
+			game.getEvents().onEvent(game, EventType.KEY_DOWN, key);
 			break;
 		case MotionEvent.ACTION_UP:
 			game.getInput().setKeyState(key, false);
 			game.getInput().setKeyUpState(key, true, game.getTime());
+			game.getEvents().onEvent(game, EventType.KEY_UP, key);
 			break;
 		case MotionEvent.ACTION_MOVE:
 			boolean contains = getBoundsF().contains(event.getX(), event.getY());

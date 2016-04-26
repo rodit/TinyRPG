@@ -10,6 +10,10 @@ import java.util.LinkedHashMap;
 import net.site40.rodit.tinyrpg.game.battle.Battle;
 import net.site40.rodit.tinyrpg.game.entity.Entity;
 import net.site40.rodit.tinyrpg.game.entity.EntityPlayer;
+import net.site40.rodit.tinyrpg.game.entity.npc.EntityNPC;
+import net.site40.rodit.tinyrpg.game.event.EventHandler;
+import net.site40.rodit.tinyrpg.game.event.EventReceiver;
+import net.site40.rodit.tinyrpg.game.event.EventReceiver.EventType;
 import net.site40.rodit.tinyrpg.game.forge.ForgeRegistry;
 import net.site40.rodit.tinyrpg.game.gui.GuiManager;
 import net.site40.rodit.tinyrpg.game.item.Item;
@@ -18,6 +22,7 @@ import net.site40.rodit.tinyrpg.game.quest.QuestManager;
 import net.site40.rodit.tinyrpg.game.render.ResourceManager;
 import net.site40.rodit.tinyrpg.game.render.Sprite;
 import net.site40.rodit.tinyrpg.game.render.XmlResourceLoader;
+import net.site40.rodit.tinyrpg.game.saves.SaveManager;
 import net.site40.rodit.tinyrpg.game.script.ScriptEngine;
 import net.site40.rodit.tinyrpg.game.script.ScriptHelper;
 import net.site40.rodit.tinyrpg.game.util.EagleTracer;
@@ -33,7 +38,9 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Paint.Style;
 import android.graphics.PointF;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -44,6 +51,8 @@ public class Game implements ISavable{
 	public static Paint getDefaultPaint(){
 		return new Paint(DEFAULT_PAINT);
 	}
+
+	public static boolean DEBUG_DRAW = true;
 
 	public static final float SCALE_FACTOR = 3f;
 	public static final float SCALE_FACTOR_1 = 1f / SCALE_FACTOR;
@@ -67,10 +76,15 @@ public class Game implements ISavable{
 	private EntityPlayer player;
 	private LinkedHashMap<String, Object> globals;
 	private Battle battle;
+	private SaveManager saves;
 	private TinyMPClient mpClient;
+
+	private EventHandler events;
 
 	private long time;
 	private long delta;
+	private long updateTime;
+	private long drawTime;
 
 	private boolean paused;
 
@@ -110,7 +124,7 @@ public class Game implements ISavable{
 		globals.put("gui_quest", null);
 		globals.put("gui_quest_parent", "");
 		//OPTIONS
-		globals.put("render_mode", "software");
+		globals.put("render_mode", "hardware");
 		//GAME VARS
 		globals.put("intro_done", "false");
 		globals.put("start_map", "map/player_home_bedroom.tmx");
@@ -118,10 +132,15 @@ public class Game implements ISavable{
 		globals.put("bookshelf_skill_count", "0");
 		//ENTITY VARS
 		globals.put("merek_speak_count", "0");
+		
+		this.saves = new SaveManager(this);
 
 		XmlResourceLoader.loadItems(resources, "item/items.xml");
 		XmlResourceLoader.loadAttacks(resources, "attack/attacks.xml");
+		XmlResourceLoader.loadEffects(resources, "effect/effects.xml");
 		XmlResourceLoader.loadQuests(quests, resources, "quest/quests.xml");
+
+		this.events = new EventHandler();
 
 		this.time = this.delta = 0L;
 
@@ -156,6 +175,8 @@ public class Game implements ISavable{
 	}
 
 	public Object trace(Entity e){
+		if(isShowingDialog())
+			return null;
 		return tracer.trace(map, e, 16f);
 	}
 
@@ -187,6 +208,10 @@ public class Game implements ISavable{
 	}
 
 	public void addObject(IGameObject object){
+		if(object instanceof EntityNPC){
+			Log.i("NPC", "NPC ADDED");
+			new Exception().printStackTrace();
+		}
 		synchronized(objects){
 			if(!objects.contains(object)){
 				objects.add(object);
@@ -236,17 +261,21 @@ public class Game implements ISavable{
 	public void setBattle(Battle battle){
 		this.battle = battle;
 	}
+	
+	public SaveManager getSaves(){
+		return saves;
+	}
 
 	public void setMap(MapState newMap){
 		MapState current = this.map;
+		events.onEvent(this, EventType.MAP_CHANGE, newMap, current);
 		if(current != null && current != newMap){
 			ArrayList<Entity> forDespawn = new ArrayList<Entity>();
 			forDespawn.addAll(current.getEntities());
 			for(Entity e : forDespawn){
 				if(e == player)
 					continue;
-				e.onDespawn(this);
-				removeObject(e);
+				current.despawn(this, e);
 			}
 			removeObject(current);
 			removeObject(current.getRotObj());
@@ -290,13 +319,14 @@ public class Game implements ISavable{
 	}
 
 	public String getGlobals(String key){
-		return String.valueOf(getGlobal(key));
+		Object globalVal = getGlobal(key);
+		return globalVal == null ? "" : String.valueOf(globalVal);
 	}
 
 	public int getGlobali(String key){
 		return Util.tryGetInt(getGlobals(key));
 	}
-
+	
 	public boolean getGlobalb(String key){
 		return Util.tryGetBool(getGlobals(key));
 	}
@@ -323,6 +353,18 @@ public class Game implements ISavable{
 
 	public ScriptHelper getHelper(){
 		return (ScriptHelper)getGlobal("helper");
+	}
+
+	public EventHandler getEvents(){
+		return events;
+	}
+
+	public void registerEvent(EventReceiver receiver){
+		events.add(receiver);
+	}
+
+	public void unregisterEvent(EventReceiver receiver){
+		events.remove(receiver);
 	}
 
 	public long getTime(){
@@ -354,7 +396,11 @@ public class Game implements ISavable{
 		scheduler.update(this);
 
 		synchronized(objects){
-			objects.removeAll(objRemove);
+			for(IGameObject obj : objRemove){
+				objects.remove(obj);
+				if(obj != null)
+					obj.dispose(this);
+			}
 			synchronized(objRemove){
 				objRemove.clear();
 			}
@@ -371,6 +417,8 @@ public class Game implements ISavable{
 			battle.update(this);
 
 		guis.update(this);
+
+		updateTime = System.currentTimeMillis() - now;
 	}
 
 	public void pushTranslate(Canvas canvas){
@@ -386,6 +434,8 @@ public class Game implements ISavable{
 	private int frameCounter = 0;
 	private Paint fpsPaint;
 	public void draw(Canvas canvas){
+		long drawStart = System.currentTimeMillis();
+
 		canvas.drawColor(Color.BLACK);
 
 		screen.apply(canvas);
@@ -415,6 +465,22 @@ public class Game implements ISavable{
 				obj.draw(this, canvas);
 				if(!obj.shouldScale())
 					canvas.scale(SCALE_FACTOR, SCALE_FACTOR);
+
+				if(DEBUG_DRAW && obj instanceof Sprite){
+					Sprite sprite = (Sprite)obj;
+					Style style = obj.getPaint().getStyle();
+					int color = obj.getPaint().getColor();
+					float size = sprite.getPaint().getTextSize();
+					obj.getPaint().setStyle(Style.STROKE);
+					obj.getPaint().setColor(Color.RED);
+					canvas.drawRect(sprite.getBounds(), obj.getPaint());
+					sprite.getPaint().setColor(Color.BLUE);
+					sprite.getPaint().setTextSize(8f);
+					canvas.drawText(sprite.getName(), sprite.getX(), sprite.getY() - 8f, sprite.getPaint());
+					sprite.getPaint().setTextSize(size);
+					obj.getPaint().setStyle(style);
+					obj.getPaint().setColor(color);
+				}
 			}
 		}
 
@@ -436,6 +502,12 @@ public class Game implements ISavable{
 		canvas.drawText("FPS: " + lastFpsI, 1100f, 32f, fpsPaint);
 		long memUsed = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 		canvas.drawText("Memory: " + (memUsed / 1024l) + "/" + Runtime.getRuntime().maxMemory() + "KB", 700f, 64f, fpsPaint);
+		canvas.drawText("Objects: " + objects.size(), 1000f, 96f, fpsPaint);
+		canvas.drawText("Time: " + updateTime + "ms, " + drawTime + "ms", 1000f, 128f, fpsPaint);
+		int npcCount = 0;
+		for(IGameObject obj : objects)
+			if(obj instanceof EntityNPC)
+				canvas.drawText("NPC: " + obj.hashCode() + "", 800f, 160f + (float)npcCount++ * 32f, fpsPaint);
 
 		if(delta > 17L && delta < 33L){
 			long diff = 33 - delta;
@@ -447,6 +519,8 @@ public class Game implements ISavable{
 		}
 
 		frameCounter++;
+
+		drawTime = System.currentTimeMillis() - drawStart;
 	}
 
 	public void input(MotionEvent event){
@@ -488,11 +562,15 @@ public class Game implements ISavable{
 			read++;
 		}
 	}
+	
+	public FileInputStream openLocalRead(String file)throws IOException{
+		return context.openFileInput(file);
+	}
 
 	public FileOutputStream openLocal(String file)throws IOException{
 		return context.openFileOutput(file, Context.MODE_PRIVATE);
 	}
-
+	
 	public void writeLocal(String file, byte[] data){
 		try{
 			FileOutputStream fout = context.openFileOutput(file, Context.MODE_PRIVATE);

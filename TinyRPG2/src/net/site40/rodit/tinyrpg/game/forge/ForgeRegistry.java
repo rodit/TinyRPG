@@ -2,6 +2,8 @@ package net.site40.rodit.tinyrpg.game.forge;
 
 import java.util.ArrayList;
 
+import net.site40.rodit.tinyrpg.game.item.ItemStack;
+
 public class ForgeRegistry {
 	
 	private ArrayList<ForgeRecipy> recipes;
@@ -14,6 +16,10 @@ public class ForgeRegistry {
 	
 	private void initRecipes(){
 		//TODO ADD ALL RECIPES
+	}
+	
+	public void register(ItemStack[] inputs, ItemStack[] outputs, float minForge){
+		register(new ForgeRecipy(inputs, outputs, minForge));
 	}
 	
 	public void register(ForgeRecipy recipy){

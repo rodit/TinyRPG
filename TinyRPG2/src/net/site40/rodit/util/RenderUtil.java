@@ -24,7 +24,7 @@ public class RenderUtil {
 		canvas.drawBitmap(game.getResources().getBitmap("gui/window/trc.png"), null, new RectF(bounds.right - 128f, bounds.top, bounds.right, bounds.top + 128f), paint);
 		canvas.drawBitmap(game.getResources().getBitmap("gui/window/blc.png"), null, new RectF(bounds.left, bounds.bottom - 128f, bounds.left + 128f, bounds.bottom), paint);
 		canvas.drawBitmap(game.getResources().getBitmap("gui/window/brc.png"), null, new RectF(bounds.right - 128f, bounds.bottom - 128f, bounds.right, bounds.bottom), paint);
-
+		
 		int xMiddles = (int)(Math.ceil(bounds.width() / 128f)) - 1;
 		int yMiddles = (int)(Math.ceil(bounds.height() / 128f)) - 1;
 

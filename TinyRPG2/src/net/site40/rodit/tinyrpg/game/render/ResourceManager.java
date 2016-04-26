@@ -35,6 +35,15 @@ public class ResourceManager {
 			return null;
 		Object value = resources.containsKey(key) ? resources.get(key) : null;
 		if(value == null){
+			if(key.endsWith(".tlk")){
+				try{
+					DialogText dlg = new DialogText(openAsset(key));
+					resources.put(key, dlg);
+					return dlg;
+				}catch(IOException e){
+					e.printStackTrace();
+				}
+			}
 			byte[] data = readAsset(key);
 			if(data == null)
 				return null;
@@ -83,6 +92,10 @@ public class ResourceManager {
 		return (String)getObject(key);
 	}
 	
+	public DialogText getDialogText(String key){
+		return (DialogText)getObject(key);
+	}
+
 	public void putObject(String key, Object object){
 		resources.put(key, object);
 	}

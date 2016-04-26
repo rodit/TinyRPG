@@ -1,14 +1,24 @@
 package net.site40.rodit.tinyrpg.game.gui;
 
+import java.util.ArrayList;
+
 import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.Input;
-import net.site40.rodit.util.RenderUtil;
+import net.site40.rodit.tinyrpg.game.Values;
+import net.site40.rodit.tinyrpg.game.effect.Effect;
+import net.site40.rodit.util.ColorGradient;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint.Align;
+import android.graphics.Paint.Style;
 import android.graphics.RectF;
 
 public class GuiIngame extends Gui{
+	
+	public static final float HEALTH_BAR_OFFSET_X = 132;
+	public static final float HEALTH_BAR_OFFSET_Y = 10;
+	public static final float HEALTH_BAR_WIDTH = 16;
+	public static final float HEALTH_BAR_HEIGHT = 27;
 
 	public GuiIngame(){
 		super("");
@@ -64,6 +74,8 @@ public class GuiIngame extends Gui{
 		btnAction.setHeight(92);
 		add(btnAction);
 		
+		final ColorGradient healthTextGradient = new ColorGradient(255, 255, 255, 255, 0, 0);
+		final ColorGradient magikaTextGradient = healthTextGradient;
 		Component playerPanel = new Component(){
 			@Override
 			public void draw(Game game, Canvas canvas){
@@ -72,57 +84,58 @@ public class GuiIngame extends Gui{
 				for(Gui gui : game.getGuis().list()){
 					if(game.getBattle() != null)
 						break;
-					if(gui.isActive() && (gui instanceof GuiIngameMenu || gui instanceof GuiInventory || gui instanceof GuiOptions || gui instanceof GuiQuest))
+					if(gui.isActive() && (gui instanceof GuiIngameMenu || gui instanceof GuiPlayerInventory || gui instanceof GuiOptions || gui instanceof GuiQuest))
 						return;
 				}
 				
-				RenderUtil.drawBitmapBox(canvas, game, getBoundsF(), getPaint());
-				//PLAYER NAME
-				getPaint().setColor(Color.BLACK);
-				getPaint().setTextAlign(Align.LEFT);
-				canvas.drawText(game.getPlayer().getUsername(), getX() + 24, getY() + 32, getPaint());
-				//PLAYER HEALTH
-				int darkRed = Color.RED;
-				int red = Color.GREEN;
-				getPaint().setColor(darkRed);
-				RectF healthBounds = new RectF(getX() + 24, getY() + 40, getX() + 232, getY() + 60);
-				float hcx = healthBounds.centerX();
-				float hcy = healthBounds.centerY() + 4;
-				canvas.drawRect(healthBounds, getPaint());
-				getPaint().setColor(red);
-				float healthVal = game.getPlayer().getHealthRatio() * healthBounds.width();
-				healthBounds.right = healthBounds.left + healthVal;
-				canvas.drawRect(healthBounds, getPaint());
-				getPaint().setColor(Color.WHITE);
-				getPaint().setTextAlign(Align.CENTER);
-				canvas.drawText(game.getPlayer().getHealth() + "/" + game.getPlayer().getMaxHealth(), hcx, hcy, getPaint());
-				//PLAYER MAGIKA
-				int darkBlue = Color.BLUE;
-				int blue = Color.CYAN;
-				getPaint().setColor(darkBlue);
-				RectF magikaBounds = new RectF(getX() + 24, getY() + 72, getX() + 232, getY() + 92);
-				float mcx = magikaBounds.centerX();
-				float mcy = magikaBounds.centerY() + 4;
-				canvas.drawRect(magikaBounds, getPaint());
-				getPaint().setColor(blue);
-				float magikaVal = game.getPlayer().getMagikaRatio() * magikaBounds.width();
-				magikaBounds.right = magikaBounds.left + magikaVal;
-				canvas.drawRect(magikaBounds, getPaint());
-				getPaint().setColor(Color.WHITE);
-				getPaint().setTextAlign(Align.CENTER);
-				canvas.drawText(game.getPlayer().getMagika() + "/" + game.getPlayer().getMaxMagika(), mcx, mcy, getPaint());
+				paint.setTextAlign(Align.CENTER);
+				paint.setTextSize(Values.FONT_SIZE_SMALL - 4f);
+				paint.setStyle(Style.FILL);
 				
-				getPaint().setTextAlign(Align.LEFT);
-				getPaint().setColor(Color.rgb(255, 215, 0));
-				canvas.drawText(game.getPlayer().getMoney() + " Gold", 24, magikaBounds.bottom + 14, getPaint());
+				canvas.drawBitmap(game.getResources().getBitmap("gui/pp/bg.png"), null, getBoundsF(), paint);
+				
+				float healthRatio = game.getPlayer().getHealthRatio();
+				RectF healthBounds = new RectF(getX() + 32f, getY() + 40f, getX() + 232f, getY() + 68f);
+				paint.setColor(Color.rgb(180, 0, 0));
+				canvas.drawRect(healthBounds, paint);
+				
+				float[] healthCenter = new float[] { healthBounds.centerX(), healthBounds.centerY() + 10 };
+				
+				float healthBarWidth = healthBounds.width() * healthRatio;
+				healthBounds.right = healthBounds.left + healthBarWidth;
+				paint.setColor(Color.rgb(0, 170, 0));
+				canvas.drawRect(healthBounds, paint);
+				paint.setColor(healthTextGradient.getColor(healthRatio));
+				canvas.drawText(game.getPlayer().getHealth() + "/" + game.getPlayer().getMaxHealth(), healthCenter[0], healthCenter[1], paint);
+				
+				float magikaRatio = game.getPlayer().getMagikaRatio();
+				RectF magikaBounds = new RectF(getX() + 32f, getY() + 80f, getX() + 232f, getY() + 108f);
+				paint.setColor(Color.rgb(0, 0, 120));
+				canvas.drawRect(magikaBounds, paint);
+				
+				float[] magikaCenter = new float[] { magikaBounds.centerX(), magikaBounds.centerY() + 10 };
+				
+				RectF magikaBoundsFull = new RectF(magikaBounds.left, magikaBounds.top, magikaBounds.left + magikaBounds.width() * magikaRatio, magikaBounds.bottom);
+				paint.setColor(Color.BLUE);
+				canvas.drawRect(magikaBoundsFull, paint);
+				paint.setColor(magikaTextGradient.getColor(magikaRatio));
+				canvas.drawText(game.getPlayer().getMagika() + "/" + game.getPlayer().getMaxMagika(), magikaCenter[0], magikaCenter[1], paint);
+				
+				ArrayList<String> drawn = new ArrayList<String>();
+				for(Effect e : game.getPlayer().getEffects()){
+					if(drawn.contains(e.getName()))
+						continue;
+					canvas.drawBitmap(game.getResources().getBitmap(e.getResource()), null, new RectF(32f + drawn.size() * 32f, getY() + 120f, 32f + drawn.size() * 32f + 32f, getY() + 120f + 32f), paint);
+					drawn.add(e.getName());
+				}
 			}
 		};
 		playerPanel.setName("playerPanel");
 		playerPanel.getPaint().setTextSize(14f);
 		playerPanel.setX(0f);
 		playerPanel.setY(0f);
-		playerPanel.setWidth(256f);
-		playerPanel.setHeight(128f);
+		playerPanel.setWidth(320f);
+		playerPanel.setHeight(160f);
 		add(playerPanel);
 	}
 	

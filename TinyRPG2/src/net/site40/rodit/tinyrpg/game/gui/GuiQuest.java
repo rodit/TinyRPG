@@ -6,7 +6,7 @@ import net.site40.rodit.tinyrpg.game.Dialog.DialogCallback;
 import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.Input;
 import net.site40.rodit.tinyrpg.game.Values;
-import net.site40.rodit.tinyrpg.game.forge.ItemStack;
+import net.site40.rodit.tinyrpg.game.item.ItemStack;
 import net.site40.rodit.tinyrpg.game.quest.Quest;
 import net.site40.rodit.util.RenderUtil;
 import android.graphics.Canvas;

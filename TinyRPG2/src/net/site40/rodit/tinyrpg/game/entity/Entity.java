@@ -22,18 +22,18 @@ import android.graphics.RectF;
 import android.text.TextUtils;
 
 public class Entity extends Sprite{
-
+	
 	public static final int ENTITY_DEFAULT = 0;
 	public static final int ENTITY_LIVING = 1;
 	public static final int ENTITY_PLAYER = 2;
-	
+
 	protected boolean noclip;
 	protected long money;
 	protected Inventory inventory;
 	protected String script;
 
 	protected HashMap<String, String> runtimeProperties;
-	
+
 	protected Function jsOnSpawn;
 	protected Function jsOnDespawn;
 	protected Function jsOnCollide;
@@ -67,7 +67,7 @@ public class Entity extends Sprite{
 	public void setMoney(long money){
 		this.money = money;
 	}
-	
+
 	public void addMoney(long money){
 		this.money += money;
 	}
@@ -93,7 +93,7 @@ public class Entity extends Sprite{
 	public void setScript(String script){
 		this.script = script;
 	}
-	
+
 	public HashMap<String, String> getRuntimeProperties(){
 		return runtimeProperties;
 	}
@@ -101,7 +101,7 @@ public class Entity extends Sprite{
 	public String getRuntimeProperty(String key){
 		return runtimeProperties.get(key);
 	}
-	
+
 	public void setRuntimeProperty(String key, String value){
 		runtimeProperties.put(key, value);
 	}
@@ -112,18 +112,18 @@ public class Entity extends Sprite{
 		this.jsOnCollide = (Function)Context.jsToJava(onCollide, Function.class);
 		this.jsOnAction = (Function)Context.jsToJava(onAction, Function.class);
 	}
-	
+
 	private void initCallbacks(Game game){
 		if(!TextUtils.isEmpty(script) && jsOnSpawn == null && jsOnDespawn == null && jsOnCollide == null && jsOnAction == null)
 			game.getScripts().execute(game, script, new String[] { "self" }, new Object[] { this });
 	}
-	
+
 	public void onSpawn(Game game){
 		initCallbacks(game);
 		if(jsOnSpawn != null)
 			game.getScripts().executeFunction(game, jsOnSpawn, this, new String[0], new Object[0], new Object[0]);
 	}
-	
+
 	public void onDespawn(Game game){
 		initCallbacks(game);
 		if(jsOnDespawn != null)
@@ -141,49 +141,53 @@ public class Entity extends Sprite{
 		if(jsOnAction != null)
 			game.getScripts().executeFunction(game, jsOnAction, this, new String[0], new Object[0], new Object[] { actor });
 	}
-	
+
 	public RectF getCollisionBounds(){
 		return this.getBounds();
 	}
-	
+		
 	public RectF getCollisionBounds(float x, float y){
 		RectF collision = getCollisionBounds();
 		collision.left = x;
 		collision.top = y;
 		return collision;
 	}
-	
+
 	public void linkConfig(Document document){		
 		Element root = (Element)document.getElementsByTagName("entity").item(0);
 		this.x = Util.tryGetFloat(root.getAttribute("x"), this.x);
 		this.y = Util.tryGetFloat(root.getAttribute("y"), this.y);
 		this.width = Util.tryGetFloat(root.getAttribute("width"), this.width);
 		this.height = Util.tryGetFloat(root.getAttribute("height"), this.height);
+		String nResource = root.getAttribute("resource");
+		this.resource = TextUtils.isEmpty(nResource) ? this.resource : nResource;
 		String nName = root.getAttribute("name");
 		this.name = TextUtils.isEmpty(nName) ? this.name : nName;
 		this.direction = Util.tryGetDirection(root.getAttribute("direction"), this.direction);
 		this.moveState = Util.tryGetMoveState(root.getAttribute("state"), this.moveState);
 		this.noclip = Util.tryGetBool(root.getAttribute("noclip"), this.noclip);
 		this.money = Util.tryGetLong(root.getAttribute("money"), this.money);
-		
+
 		Element inv = (Element)root.getElementsByTagName("inventory").item(0);
-		boolean clearInv = Util.tryGetBool(inv.getAttribute("clear"), false);
-		if(clearInv)
-			this.inventory = new Inventory();
-		NodeList itemNodes = inv.getElementsByTagName("item");
-		for(int i = 0; i < itemNodes.getLength(); i++){
-			Node n = itemNodes.item(i);
-			if(n.getNodeType() != Node.ELEMENT_NODE)
-				continue;
-			Element itemEl = (Element)n;
-			String itemName = itemEl.getAttribute("name");
-			int count = Util.tryGetInt(itemEl.getAttribute("count"), 1);
-			inventory.add(Item.get(itemName), count);
+		if(inv != null){
+			boolean clearInv = Util.tryGetBool(inv.getAttribute("clear"), false);
+			if(clearInv)
+				this.inventory = new Inventory();
+			NodeList itemNodes = inv.getElementsByTagName("item");
+			for(int i = 0; i < itemNodes.getLength(); i++){
+				Node n = itemNodes.item(i);
+				if(n.getNodeType() != Node.ELEMENT_NODE)
+					continue;
+				Element itemEl = (Element)n;
+				String itemName = itemEl.getAttribute("name");
+				int count = Util.tryGetInt(itemEl.getAttribute("count"), 1);
+				inventory.add(Item.get(itemName), count);
+			}
 		}
-		
+
 		this.script = root.getAttribute("script");
 	}
-	
+
 	@Override
 	public void serialize(TinyOutputStream out)throws IOException{
 		super.serialize(out);
@@ -198,7 +202,7 @@ public class Entity extends Sprite{
 		inventory.serialize(out);
 		out.writeString(script);
 	}
-	
+
 	@Override
 	public void deserialize(TinyInputStream in)throws IOException{
 		super.deserialize(in);
