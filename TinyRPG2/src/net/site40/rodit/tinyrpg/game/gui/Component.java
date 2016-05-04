@@ -11,6 +11,7 @@ import android.graphics.Paint;
 import android.graphics.Paint.Align;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.os.SystemClock;
 import android.text.TextUtils;
 import android.view.MotionEvent;
 
@@ -227,6 +228,15 @@ public class Component extends GameObject{
 			return;
 		for(ComponentListener listener : listeners)
 			listener.update(this, game);
+	}
+	
+	public void simulateInput(Game game, int type){
+		long downTime = SystemClock.uptimeMillis();
+		long eventTime = SystemClock.uptimeMillis() + 100;
+		int metaState = 0;
+		MotionEvent motionEvent = MotionEvent.obtain(downTime, eventTime, type, x, y, metaState);
+		input(motionEvent, game);
+		motionEvent.recycle();
 	}
 
 	@Override
