@@ -202,7 +202,7 @@ public class Dialog extends GameObject{
 			//canvas.drawText(lines[i], 32f, (720 - 150) + (float)i * paint.getTextSize() + 8f, paint);
 		
 		canvas.translate(BOUNDS.left + 48f, BOUNDS.top + 32f);
-		RenderUtil.drawWrappedText(justStaged ? "" : getStageText(), (int)(BOUNDS.width() - 64f), paint, canvas);
+		RenderUtil.drawWrappedText(game, justStaged ? "" : getStageText(), (int)(BOUNDS.width() - 64f), paint, canvas);
 		canvas.translate(-(BOUNDS.left + 48f), -(BOUNDS.top + 32f));
 		
 		if(isStageComplete() && !hasFinishedAllStages()){
