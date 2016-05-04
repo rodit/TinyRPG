@@ -28,6 +28,8 @@ public abstract class Gui extends GameObject{
 
 	public Gui(String background){
 		this.background = background;
+		this.addQueue = new ArrayList<Component>();
+		this.removeQueue = new ArrayList<Component>();
 		this.components = new ArrayList<Component>();
 		this.init();
 	}
