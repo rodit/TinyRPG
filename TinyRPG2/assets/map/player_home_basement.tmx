@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" width="16" height="10" tilewidth="16" tileheight="16">
+ <tileset firstgid="1" name="Master" tilewidth="16" tileheight="16">
+  <image source="master.png" width="2000" height="1500"/>
+ </tileset>
+ <layer name="Floor" width="16" height="10">
+  <data encoding="csv">
+4391,4890,4889,4890,4889,4890,4889,4890,4889,4890,4889,4890,4889,4890,4889,4390,
+4641,5031,5030,5031,5030,5031,5030,5031,5030,5031,5030,5031,5030,5031,5030,4638,
+4766,5281,5280,5281,5280,5281,5280,5281,5280,5281,5280,5281,5280,5281,5280,4763,
+4641,5406,5405,5406,5405,5406,5405,5406,5405,5406,5405,5406,5405,5406,5405,4638,
+4766,3783,3784,3783,3784,3783,3784,3783,3784,3783,3784,3783,3784,3783,3784,4763,
+4641,3908,3909,3908,3909,3908,3909,3908,3909,3908,3909,3908,3909,3908,3909,4638,
+4766,3783,3784,3783,3784,3783,3784,3783,3784,3783,3784,3783,3784,3783,3784,4763,
+4641,3908,3909,3908,3909,3908,3909,3908,3909,3908,3909,3908,3909,3908,3909,4638,
+4766,3783,3784,3783,3784,3783,3784,3783,3784,3783,3784,3783,3784,3783,3784,4763,
+4266,4514,4515,4514,4515,4514,4515,4514,4515,4514,4515,4514,4515,4514,4515,4265
+</data>
+ </layer>
+ <layer name="Ladder" width="16" height="10">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,10547,10548,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,10672,10673,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,10797,10798,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,10922,10923,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <layer name="Objects_1" width="16" height="10">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,7039,7040,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,7164,7165,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,7043,7044,7541,7542,0,
+0,0,0,0,0,0,0,0,0,0,0,7168,7169,7666,7667,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <layer name="Objects_0" width="16" height="10">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,7547,7548,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,7672,7673,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,7047,7048,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,7172,7173,7296,7291,7292,7041,7042,7787,7788,0,0,0,0,0,0,
+0,0,7420,7421,7416,7417,7166,7167,7912,7913,7297,7298,0,7542,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <layer name="Objects" width="16" height="10">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,10569,10570,10571,10572,10573,10574,10575,10576,10829,10830,0,0,0,0,0,
+0,10694,10695,10696,10697,10698,10699,10700,10701,10954,10955,0,0,0,0,0,
+0,10819,10820,10821,10822,10823,10824,10825,10826,10579,10580,0,0,0,0,0,
+0,10944,10945,10946,10947,10948,10949,10950,10951,10704,10705,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,7295,7296,0,0,0,0,0,0,0,0,0,0,0,0,
+0,7295,7296,7295,7296,7291,7292,7041,7042,0,0,0,7541,7543,7544,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <layer name="Objects_2" width="16" height="10">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <objectgroup name="entities" width="16" height="10">
+  <object name="shelf_potions" x="144" y="64" width="32" height="16">
+   <properties>
+    <property name="msg" value="A shelf of out-of-date potions.~Better not drink any of those..."/>
+    <property name="script" value="script/entity/generic_sign.js"/>
+    <property name="type" value="0"/>
+   </properties>
+  </object>
+  <object name="draw_stuck" x="80" y="64" width="64" height="16">
+   <properties>
+    <property name="msg" value="The draw is jammed and cannot be opened."/>
+    <property name="script" value="script/entity/generic_sign.js"/>
+    <property name="type" value="0"/>
+   </properties>
+  </object>
+  <object name="loot_bottle_water" x="48" y="64" width="32" height="16">
+   <properties>
+    <property name="loot_id" value="bottle_water_player_basement"/>
+    <property name="loot_items" value="water_bottle:1"/>
+    <property name="script" value="script/entity/generic_loot.js"/>
+    <property name="type" value="0"/>
+   </properties>
+  </object>
+  <object name="barrel_0" x="16" y="80" width="32" height="32">
+   <properties>
+    <property name="loot_id" value="player_basement_barrel_0"/>
+    <property name="rarity" value="food"/>
+    <property name="script" value="script/entity/loot_barrel.js"/>
+    <property name="type" value="0"/>
+   </properties>
+  </object>
+  <object name="barrel_1" x="64" y="112" width="32" height="16">
+   <properties>
+    <property name="loot_id" value="player_basement_barrel_1"/>
+    <property name="rarity" value="gold_small"/>
+    <property name="script" value="script/entity/loot_barrel.js"/>
+    <property name="type" value="0"/>
+   </properties>
+  </object>
+  <object name="barrel_2" x="96" y="112" width="32" height="16">
+   <properties>
+    <property name="loot_id" value="player_basement_barrel_2"/>
+    <property name="rarity" value="food"/>
+    <property name="script" value="script/entity/loot_barrel.js"/>
+    <property name="type" value="0"/>
+   </properties>
+  </object>
+  <object name="barrel_3" x="128" y="112" width="32" height="16">
+   <properties>
+    <property name="loot_id" value="player_basement_barrel_3"/>
+    <property name="rarity" value="potion"/>
+    <property name="script" value="script/entity/loot_barrel.js"/>
+    <property name="type" value="0"/>
+   </properties>
+  </object>
+  <object name="barrel_4" x="176" y="112" width="16" height="16">
+   <properties>
+    <property name="loot_id" value="player_basement_barrel_4"/>
+    <property name="rarity" value="gold_small"/>
+    <property name="script" value="script/entity/loot_barrel.js"/>
+    <property name="type" value="0"/>
+   </properties>
+  </object>
+  <object name="barrel_5" x="208" y="112" width="32" height="16">
+   <properties>
+    <property name="loot_id" value="player_basement_barrel_5"/>
+    <property name="rarity" value="gold"/>
+    <property name="script" value="script/entity/loot_barrel.js"/>
+    <property name="type" value="0"/>
+   </properties>
+  </object>
+  <object name="barrel_6" x="48" y="112" width="16" height="16">
+   <properties>
+    <property name="loot_id" value="player_basement_barrel_6"/>
+    <property name="rarity" value="empty"/>
+    <property name="script" value="script/entity/loot_barrel.js"/>
+    <property name="type" value="0"/>
+   </properties>
+  </object>
+  <object name="spawn_living_room" x="216" y="72" width="16" height="16">
+   <properties>
+    <property name="condition" value="door_enter_basement"/>
+    <property name="noclip" value="true"/>
+    <property name="script" value="script/entity/spawn_conditional.js"/>
+    <property name="type" value="0"/>
+   </properties>
+  </object>
+  <object name="exit_basement" x="208" y="0" width="32" height="64">
+   <properties>
+    <property name="map" value="map/player_home_living_room.tmx"/>
+    <property name="script" value="script/entity/generic_door.js"/>
+    <property name="type" value="0"/>
+   </properties>
+  </object>
+  <object name="urn_ashes" x="184" y="64" width="14" height="13">
+   <properties>
+    <property name="msg" value="An urn full of ancient ashes.~Probably from a deceased relatives..."/>
+    <property name="script" value="script/entity/generic_sign.js"/>
+    <property name="type" value="0"/>
+   </properties>
+  </object>
+ </objectgroup>
+ <objectgroup name="collisions" width="16" height="10">
+  <object x="0" y="0" width="208" height="64"/>
+  <object x="240" y="0" width="16" height="160"/>
+  <object x="16" y="144" width="224" height="16"/>
+  <object x="0" y="64" width="16" height="96"/>
+ </objectgroup>
+</map>

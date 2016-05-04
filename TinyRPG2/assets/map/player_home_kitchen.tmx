@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" width="18" height="11" tilewidth="16" tileheight="16">
+ <tileset firstgid="1" name="Master" tilewidth="16" tileheight="16">
+  <image source="master.png" width="2000" height="1500"/>
+ </tileset>
+ <layer name="Floor" width="18" height="11">
+  <data encoding="csv">
+4391,4889,4890,4889,4890,4889,4890,4889,4890,4889,4890,4889,4890,4889,4890,4889,4890,4390,
+4641,5127,5128,5127,5128,5127,5128,5127,5128,5127,5128,5127,5128,5127,5128,5127,5128,4638,
+4766,5252,5253,5252,5253,5252,5253,5252,5253,5252,5253,5252,5253,5252,5253,5252,5253,4763,
+4641,5377,5378,5377,5378,5377,5378,5377,5378,5377,5378,5377,5378,5377,5378,5377,5378,4638,
+4766,864,863,864,863,864,863,864,863,864,863,864,863,864,863,864,863,4763,
+4641,989,988,989,988,989,988,989,988,989,988,989,988,989,988,989,988,4638,
+4766,989,988,989,988,989,988,989,988,989,988,989,988,989,988,989,988,4638,
+4641,864,863,864,863,864,863,864,863,864,863,864,863,864,863,864,863,4763,
+4766,989,988,989,988,989,988,989,988,989,988,989,988,989,988,989,988,4638,
+4641,864,863,864,863,864,863,864,863,864,863,864,863,864,863,864,863,4763,
+4266,4514,4515,4514,4515,4514,4515,4514,4515,4514,4515,4514,3197,3198,4515,4514,4515,4265
+</data>
+ </layer>
+ <layer name="Objects" width="18" height="11">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,10579,10580,10829,10830,0,0,0,0,0,0,0,1597,1598,0,9067,9068,0,
+0,10704,10705,10954,10955,0,0,0,0,0,0,0,1722,1723,0,9192,9193,0,
+0,9577,9578,9579,9580,10577,10578,9327,9328,9329,9330,0,1847,1848,0,9317,9318,0,
+0,9702,9703,9704,9705,10702,10703,9452,9453,9454,9455,0,0,0,0,9442,9443,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,1811,1812,1813,1814,7321,7322,0,0,0,0,0,0,0,0,0,0,
+0,0,2186,2187,2188,2189,7446,7447,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <layer name="RenderOnTop" width="18" height="11">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,7197,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <objectgroup name="entities" width="18" height="11">
+  <object name="sink_0" x="59" y="64" width="16" height="16">
+   <properties>
+    <property name="script" value="script/entity/sink.js"/>
+    <property name="type" value="0"/>
+   </properties>
+  </object>
+  <object name="sink_1" x="134" y="64" width="16" height="16">
+   <properties>
+    <property name="script" value="script/entity/sink.js"/>
+    <property name="type" value="0"/>
+   </properties>
+  </object>
+  <object name="wardrobe" x="240" y="64" width="32" height="16">
+   <properties>
+    <property name="script" value="script/entity/generic_container.js"/>
+    <property name="type" value="0"/>
+   </properties>
+  </object>
+  <object name="spawn_living_room" x="199" y="134" width="16" height="16">
+   <properties>
+    <property name="condition" value="door_enter_kitchen"/>
+    <property name="noclip" value="true"/>
+    <property name="script" value="script/entity/spawn_conditional.js"/>
+    <property name="type" value="0"/>
+   </properties>
+  </object>
+  <object name="exit_kitchen" x="192" y="160" width="32" height="16">
+   <properties>
+    <property name="map" value="map/player_home_living_room.tmx"/>
+    <property name="script" value="script/entity/generic_door.js"/>
+    <property name="type" value="0"/>
+   </properties>
+  </object>
+  <object name="cooker" x="80" y="64" width="32" height="16">
+   <properties>
+    <property name="script" value="script/entity/cooker.js"/>
+    <property name="type" value="0"/>
+   </properties>
+  </object>
+  <object name="door_locked" x="192" y="48" width="32" height="16">
+   <properties>
+    <property name="msg" value="The door is locked."/>
+    <property name="script" value="script/entity/generic_sign.js"/>
+    <property name="type" value="0"/>
+   </properties>
+  </object>
+ </objectgroup>
+ <objectgroup name="collisions" width="18" height="11">
+  <object x="0" y="0" width="288" height="64"/>
+  <object x="0" y="64" width="16" height="112"/>
+  <object x="16" y="160" width="176" height="16"/>
+  <object x="272" y="64" width="16" height="112"/>
+  <object x="32" y="112" width="64" height="32"/>
+  <object x="104" y="115" width="16" height="24"/>
+  <object x="160" y="64" width="16" height="16"/>
+  <object x="112" y="64" width="16" height="16"/>
+  <object x="16" y="64" width="32" height="16"/>
+  <object x="224" y="160" width="48" height="16"/>
+ </objectgroup>
+</map>
