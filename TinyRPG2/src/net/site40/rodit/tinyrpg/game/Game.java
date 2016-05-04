@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 
+import net.site40.rodit.tinyrpg.game.audio.AudioManager;
 import net.site40.rodit.tinyrpg.game.battle.Battle;
 import net.site40.rodit.tinyrpg.game.entity.Entity;
 import net.site40.rodit.tinyrpg.game.entity.EntityPlayer;
@@ -15,7 +16,10 @@ import net.site40.rodit.tinyrpg.game.event.EventHandler;
 import net.site40.rodit.tinyrpg.game.event.EventReceiver;
 import net.site40.rodit.tinyrpg.game.event.EventReceiver.EventType;
 import net.site40.rodit.tinyrpg.game.forge.ForgeRegistry;
+import net.site40.rodit.tinyrpg.game.gui.Gui;
 import net.site40.rodit.tinyrpg.game.gui.GuiManager;
+import net.site40.rodit.tinyrpg.game.gui.GuiMessage;
+import net.site40.rodit.tinyrpg.game.gui.GuiPlayerInventory;
 import net.site40.rodit.tinyrpg.game.item.Item;
 import net.site40.rodit.tinyrpg.game.map.MapState;
 import net.site40.rodit.tinyrpg.game.quest.QuestManager;
@@ -52,7 +56,7 @@ public class Game implements ISavable{
 		return new Paint(DEFAULT_PAINT);
 	}
 
-	public static boolean DEBUG_DRAW = true;
+	public static boolean DEBUG_DRAW = false;
 
 	public static final float SCALE_FACTOR = 3f;
 	public static final float SCALE_FACTOR_1 = 1f / SCALE_FACTOR;
@@ -77,6 +81,7 @@ public class Game implements ISavable{
 	private LinkedHashMap<String, Object> globals;
 	private Battle battle;
 	private SaveManager saves;
+	private AudioManager audio;
 	private TinyMPClient mpClient;
 
 	private EventHandler events;
@@ -134,6 +139,7 @@ public class Game implements ISavable{
 		globals.put("merek_speak_count", "0");
 		
 		this.saves = new SaveManager(this);
+		this.audio = new AudioManager(context);
 
 		XmlResourceLoader.loadItems(resources, "item/items.xml");
 		XmlResourceLoader.loadAttacks(resources, "attack/attacks.xml");
@@ -208,6 +214,10 @@ public class Game implements ISavable{
 	}
 
 	public void addObject(IGameObject object){
+		if(object == null){
+			new Exception().printStackTrace();
+			return;
+		}
 		if(object instanceof EntityNPC){
 			Log.i("NPC", "NPC ADDED");
 			new Exception().printStackTrace();
@@ -265,8 +275,14 @@ public class Game implements ISavable{
 	public SaveManager getSaves(){
 		return saves;
 	}
+	
+	public AudioManager getAudio(){
+		return audio;
+	}
 
 	public void setMap(MapState newMap){
+		if(player == null)
+			player = new EntityPlayer();
 		MapState current = this.map;
 		events.onEvent(this, EventType.MAP_CHANGE, newMap, current);
 		if(current != null && current != newMap){
@@ -366,6 +382,14 @@ public class Game implements ISavable{
 	public void unregisterEvent(EventReceiver receiver){
 		events.remove(receiver);
 	}
+	
+	public void showMessage(String message, Gui returnGui){
+		GuiMessage msgGui = (GuiMessage)guis.get(GuiMessage.class);
+		msgGui.get("txtMessage").setText(message);
+		setGlobal("gui_message_return", returnGui);
+		guis.hide(returnGui);
+		guis.show(GuiMessage.class);
+	}
 
 	public long getTime(){
 		return time;
@@ -377,10 +401,12 @@ public class Game implements ISavable{
 
 	public void pause(){
 		paused = true;
+		audio.pauseAll();
 	}
 
 	public void unpause(){
 		paused = false;
+		audio.unpauseAll();
 	}
 
 	public boolean isPaused(){
@@ -550,7 +576,7 @@ public class Game implements ISavable{
 		}
 		map.serialize(out);
 	}
-
+	
 	@Override
 	public void deserialize(TinyInputStream in)throws IOException{
 		int globLen = in.readInt();
@@ -561,6 +587,16 @@ public class Game implements ISavable{
 			globals.put(key, value);
 			read++;
 		}
+		MapState.MAP_LOAD_STATE = MapState.LOAD_STATE_SAVE;
+		map = new MapState(null);
+		map.deserialize(in);
+		removeObject(this.player);
+		this.player = (EntityPlayer)map.getEntityByName("player");
+		((GuiPlayerInventory)guis.get(GuiPlayerInventory.class)).provider = null;
+		addObject(map);
+		addObject(player);
+		input.allowMovement(true);
+		MapState.MAP_LOAD_STATE = 0;
 	}
 	
 	public FileInputStream openLocalRead(String file)throws IOException{
