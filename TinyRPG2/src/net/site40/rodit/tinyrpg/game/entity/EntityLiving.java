@@ -172,7 +172,7 @@ public class EntityLiving extends Entity{
 	}
 
 	public Item getEquipped(int slot){
-		return equipped[slot];
+		return slot < 0 || slot >= equipped.length ? null : equipped[slot];
 	}
 
 	public void setEquipped(int slot, Item item){
@@ -189,7 +189,7 @@ public class EntityLiving extends Entity{
 	}
 
 	public Item getEquippedItem(int slot){
-		return equipped[slot];
+		return getEquipped(slot);
 	}
 
 	public boolean isEquipped(Item item){
@@ -418,7 +418,7 @@ public class EntityLiving extends Entity{
 		stats.serialize(out);
 		for(int i = 0; i < equipped.length; i++){
 			if(equipped[i] == null){
-				out.write(0);
+				out.writeString("null");
 				continue;
 			}
 			String name = equipped[i].getName();
@@ -437,7 +437,7 @@ public class EntityLiving extends Entity{
 		stats.deserialize(in);
 		for(int i = 0; i < equipped.length; i++){
 			String iName = in.readString();
-			if(!TextUtils.isEmpty(iName))
+			if(!TextUtils.isEmpty(iName) && !iName.equals("null"))
 				equipped[i] = Item.get(iName);
 		}
 	}

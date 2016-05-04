@@ -4,9 +4,11 @@ import java.io.IOException;
 import java.util.HashMap;
 
 import net.site40.rodit.tinyrpg.game.Game;
+import net.site40.rodit.tinyrpg.game.entity.npc.EntityNPC;
 import net.site40.rodit.tinyrpg.game.item.Inventory;
 import net.site40.rodit.tinyrpg.game.item.Item;
 import net.site40.rodit.tinyrpg.game.render.Sprite;
+import net.site40.rodit.tinyrpg.game.shop.Shop;
 import net.site40.rodit.util.TinyInputStream;
 import net.site40.rodit.util.TinyOutputStream;
 import net.site40.rodit.util.Util;
@@ -26,6 +28,7 @@ public class Entity extends Sprite{
 	public static final int ENTITY_DEFAULT = 0;
 	public static final int ENTITY_LIVING = 1;
 	public static final int ENTITY_PLAYER = 2;
+	public static final int ENTITY_NPC = 3;
 
 	protected boolean noclip;
 	protected long money;
@@ -167,7 +170,7 @@ public class Entity extends Sprite{
 		this.moveState = Util.tryGetMoveState(root.getAttribute("state"), this.moveState);
 		this.noclip = Util.tryGetBool(root.getAttribute("noclip"), this.noclip);
 		this.money = Util.tryGetLong(root.getAttribute("money"), this.money);
-
+		
 		Element inv = (Element)root.getElementsByTagName("inventory").item(0);
 		if(inv != null){
 			boolean clearInv = Util.tryGetBool(inv.getAttribute("clear"), false);
@@ -184,19 +187,36 @@ public class Entity extends Sprite{
 				inventory.add(Item.get(itemName), count);
 			}
 		}
+		
+		Element shopEl = (Element)root.getElementsByTagName("shop").item(0);
+		if(shopEl != null){
+			Shop shop = new Shop(this);
+			shop.setPurchaseMultiplier(Util.tryGetFloat(shopEl.getAttribute("buyMulti"), shop.getPurchaseMultiplier()));
+			shop.setSellMultiplier(Util.tryGetFloat(shopEl.getAttribute("sellMulti"), shop.getSellMultiplier()));
+			Shop.register(shop);
+		}
 
 		this.script = root.getAttribute("script");
+	}
+	
+	@Override
+	public void update(Game game){
+		super.update(game);
+		if(inventory.isEmpty())
+			inventory.add(Item.get("dagger_bone"), 5);
 	}
 
 	@Override
 	public void serialize(TinyOutputStream out)throws IOException{
-		super.serialize(out);
 		if(this instanceof EntityPlayer)
 			out.write(ENTITY_PLAYER);
 		else if(this instanceof EntityLiving)
 			out.write(ENTITY_LIVING);
+		else if(this instanceof EntityNPC)
+			out.write(ENTITY_NPC);
 		else
 			out.write(ENTITY_DEFAULT);
+		super.serialize(out);
 		out.write(noclip);
 		out.write(money);
 		inventory.serialize(out);
