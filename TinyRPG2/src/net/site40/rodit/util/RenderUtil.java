@@ -4,15 +4,24 @@ import net.site40.rodit.tinyrpg.game.Game;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import android.text.Html;
 import android.text.Layout;
 import android.text.StaticLayout;
 import android.text.TextPaint;
 
 public class RenderUtil {
 
-	public static int drawWrappedText(String text, int width, Paint paint, Canvas canvas){
+	public static int drawWrappedText(Game game, String text, int width, Paint paint, Canvas canvas){
 		TextPaint tp = new TextPaint(paint);
-		StaticLayout layout = new StaticLayout(text, tp, width, Layout.Alignment.ALIGN_NORMAL, 1, 0, false);
+		StaticLayout layout = new StaticLayout(Html.fromHtml(text), tp, width, Layout.Alignment.ALIGN_NORMAL, 1, 0, false);
+		
+//		LinearLayout layout = new LinearLayout(game.getContext());
+//		TextView tv = new TextView(game.getContext());
+//		tv.setVisibility(View.VISIBLE);
+//		tv.setText(Html.fromHtml(text));
+//		layout.addView(tv);
+//		layout.draw(canvas);
+		
 		layout.draw(canvas);
 		return layout.getHeight();
 	}
