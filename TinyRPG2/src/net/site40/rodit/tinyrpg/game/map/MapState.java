@@ -9,6 +9,7 @@ import net.site40.rodit.tinyrpg.game.GameObject;
 import net.site40.rodit.tinyrpg.game.entity.Entity;
 import net.site40.rodit.tinyrpg.game.entity.EntityLiving;
 import net.site40.rodit.tinyrpg.game.entity.EntityPlayer;
+import net.site40.rodit.tinyrpg.game.entity.npc.EntityNPC;
 import net.site40.rodit.tinyrpg.game.event.EventReceiver.EventType;
 import net.site40.rodit.tinyrpg.game.item.Item;
 import net.site40.rodit.tinyrpg.game.render.BitmapRenderer;
@@ -22,6 +23,10 @@ import android.graphics.RectF;
 import android.util.Log;
 
 public class MapState extends GameObject implements ISavable{
+	
+	public static final int LOAD_STATE_SAVE = 1;
+	
+	public static int MAP_LOAD_STATE = 0;
 
 	private RPGMap map;
 	private BitmapRenderer rotObj;
@@ -57,24 +62,30 @@ public class MapState extends GameObject implements ISavable{
 	public ArrayList<Entity> getEntities(){
 		return entities;
 	}
-	
+
 	public Entity getEntityByName(String name){
 		for(Entity e : entities)
 			if(e.getName().equals(name))
 				return e;
 		return null;
 	}
-	
+
 	public void spawn(Game game, Entity e){
+		spawn(game, e, true);
+	}
+
+	public void spawn(Game game, Entity e, boolean triggerEvent){
 		if(this.getEntityByName(e.getName()) != null)
 			Log.w("EntitySpawn", "Entity with name " + e.getName() + " already spawned.");
-		
+
 		if(!entities.contains(e))
 			entities.add(e);
 		game.addObject(e);
-		e.onSpawn(game);
+		if(triggerEvent){
+			e.onSpawn(game);
+			game.getEvents().onEvent(game, EventType.ENTITY_SPAWNED, e);
+		}
 		Log.i("MapState", "Spawned entity " + e.getName() + ".");
-		game.getEvents().onEvent(game, EventType.ENTITY_SPAWNED, e);
 	}
 
 	public void despawn(Game game, Entity e){
@@ -86,6 +97,8 @@ public class MapState extends GameObject implements ISavable{
 	}
 
 	public Object getCollisionObject(float x, float y, Object... exclude){
+		if(map == null)
+			return null;
 		ArrayList<Object> excList = new ArrayList<Object>();
 		for(int i = 0; i < exclude.length; i++)
 			excList.add(exclude[i]);
@@ -97,8 +110,10 @@ public class MapState extends GameObject implements ISavable{
 				return obj;
 		return null;
 	}
-
+	
 	public Object getCollisionObject(RectF r, Object... exclude){
+		if(map == null)
+			return null;
 		ArrayList<Object> excList = new ArrayList<Object>();
 		for(int i = 0; i < exclude.length; i++)
 			excList.add(exclude[i]);
@@ -129,7 +144,7 @@ public class MapState extends GameObject implements ISavable{
 			return true;
 		return false;
 	}
-	
+
 	@Override
 	public void update(Game game){
 		if(map != null && !map.isLoaded())
@@ -137,6 +152,12 @@ public class MapState extends GameObject implements ISavable{
 		if(map == null)
 			return;
 		if(!spawnedEntities){
+			if(MAP_LOAD_STATE == LOAD_STATE_SAVE){
+				for(Entity e : entities)
+					spawn(game, e, false);
+				spawnedEntities = true;
+				return;
+			}
 			for(MapObject obj : map.getObjects("entities")){
 				int type = obj.getInt("type");
 				String name = obj.getString("name");
@@ -155,6 +176,9 @@ public class MapState extends GameObject implements ISavable{
 					break;
 				case Entity.ENTITY_PLAYER:
 					spawn = new EntityPlayer();
+					break;
+				case Entity.ENTITY_NPC:
+					spawn = new EntityNPC();
 					break;
 				}
 				spawn.setX(obj.getX());
@@ -184,6 +208,16 @@ public class MapState extends GameObject implements ISavable{
 	public void draw(Game game, Canvas canvas){
 		if(map == null || map.getBackground() == null || map.getBackground().isRecycled())
 			return;
+
+		if(rotObj == null){
+			this.rotObj = new BitmapRenderer(map.getRenderOnTop()){
+				@Override
+				public RenderLayer getRenderLayer(){
+					return RenderLayer.TOP_OVERRIDE_PLAYER;
+				}
+			};
+			game.addObject(rotObj);
+		}
 
 		super.preRender(game, canvas);
 
@@ -228,6 +262,12 @@ public class MapState extends GameObject implements ISavable{
 				break;
 			case Entity.ENTITY_PLAYER:
 				add = new EntityPlayer();
+				break;
+			case Entity.ENTITY_NPC:
+				add = new EntityNPC();
+				break;
+			default:
+				add = new Entity();
 				break;
 			}
 			add.deserialize(in);
