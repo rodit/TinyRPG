@@ -282,7 +282,7 @@ public class GuiInventory extends Gui{
 					canvas.save();
 					canvas.translate(BOUNDS_ITEM_INFO.left + 24f, BOUNDS_ITEM_INFO.top + 24f);
 					getPaint().setTextSize(Values.FONT_SIZE_SMALL);
-					RenderUtil.drawWrappedText(selectedItem.getShowName(), (int)(BOUNDS_ITEM_INFO.width() - 40f), getPaint(), canvas);
+					RenderUtil.drawWrappedText(game, selectedItem.getShowName(), (int)(BOUNDS_ITEM_INFO.width() - 40f), getPaint(), canvas);
 					getPaint().setTextSize(Values.FONT_SIZE_TINY);
 					String fullTxt = "\n\n\n\n\n\n\n\n\n\n\n" + selectedItem.getDescription().replace("\\n", "\n") + "\n\n" + selectedItem.getRarity().toString() + "\n\nValue: " + selectedItem.getValue() + "G";
 					if(selectedItem.canUse() && !(selectedItem instanceof ItemEquippable))
@@ -297,7 +297,7 @@ public class GuiInventory extends Gui{
 						else
 							fullTxt += "\n\nPress [A] to equip.";
 					}
-					RenderUtil.drawWrappedText(fullTxt, (int)(BOUNDS_ITEM_INFO.width() - 40f), getPaint(), canvas);
+					RenderUtil.drawWrappedText(game, fullTxt, (int)(BOUNDS_ITEM_INFO.width() - 40f), getPaint(), canvas);
 					canvas.restore();
 					Bitmap icon = null;
 					Object res = game.getResources().getObject(selectedItem.getResource());
