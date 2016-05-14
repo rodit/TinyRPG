@@ -27,6 +27,9 @@ public class GuiManager {
 		guis.add(new GuiOptions());
 		guis.add(new GuiIngame());
 		guis.add(new GuiSaves());
+		guis.add(new GuiMessage());
+		guis.add(new GuiContainer());
+		guis.add(new GuiShop());
 	}
 	
 	public ArrayList<Gui> list(){
@@ -59,13 +62,17 @@ public class GuiManager {
 			g.onShown();
 		}
 	}
-
-	public void hide(Class<?> type){
-		Gui g = get(type);
+	
+	public void hide(Gui g){
 		if(g != null){
 			g.setActive(false);
 			g.onHidden();
 		}
+	}
+
+	public void hide(Class<?> type){
+		Gui g = get(type);
+		hide(g);
 	}
 	
 	public void hideAll(){
