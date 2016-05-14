@@ -79,4 +79,13 @@ public class SuperCalc {
 	public static int log(float x, float base){
 		return (int)(Math.log(x) / Math.log(base));
 	}
+	
+	public static int getItemValue(Item item, EntityLiving seller){
+		float luckVal = seller == null ? 0f : seller.getStats().getLuck();
+		float value = (float)item.getValue();
+		if(seller != null)
+			value /= 8 * (1 + luckVal);
+		value = Math.min(value, item.getValue());
+		return (int)value;
+	}
 }
