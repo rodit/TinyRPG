@@ -3,11 +3,12 @@ package net.site40.rodit.tinyrpg.game.gui;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import net.site40.rodit.tinyrpg.game.Dialog.DialogCallback;
 import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.Values;
 import net.site40.rodit.tinyrpg.game.gui.ComponentListener.ComponentListenerImpl;
 import net.site40.rodit.tinyrpg.game.saves.SaveGame;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.graphics.Canvas;
 import android.graphics.Paint.Align;
 import android.graphics.Paint.Style;
@@ -22,7 +23,7 @@ public class GuiSaves extends Gui{
 	public GuiSaves(){
 		super("");
 	}
-	
+
 	@Override
 	public void onShown(){
 		selectedIndex = 0;
@@ -36,12 +37,12 @@ public class GuiSaves extends Gui{
 		txtTitle.setY(72f);
 		txtTitle.getPaint().setTextSize(Values.FONT_SIZE_LARGE);
 		add(txtTitle);
-		
+
 		Component savesRender = new Component("savesRender"){			
 			@Override
 			public void draw(Game game, Canvas canvas){
 				canvas.drawRect(getBoundsF(), paint);
-				
+
 				ArrayList<SaveGame> all = game.getSaves().all();
 				for(int i = selectedIndex; i < all.size() && i < selectedIndex + SAVES_PER_PAGE; i++){
 					SaveGame save = all.get(i);
@@ -119,25 +120,31 @@ public class GuiSaves extends Gui{
 		btnDelete.setX(1280f - btnDelete.getWidth() - 16f);
 		btnDelete.setY(btnLoad.getY() - btnLoad.getHeight() - 16f);
 		btnDelete.addListener(new ComponentListenerImpl(){
-			private Game game;
-			public void touchUp(Component component, Game game){
-				this.game = game;
-				game.getHelper().dialog("Are you sure you would like to delete this save? This operation is not reversable.", new String[] { "Yes", "No" }, deleteCallback);
-			}
-			
-			public DialogCallback deleteCallback = new DialogCallback(){
-				@Override
-				public void onSelected(int option){
-					if(option == 0){
-						SaveGame save = game.getSaves().all().get(selectedIndex);
-						if(!save.getFile().delete())
-							game.getHelper().dialog("There was an error while deleting this save file.");
+			public void touchUp(Component component, final Game game){
+				DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						switch (which){
+						case DialogInterface.BUTTON_POSITIVE:
+							SaveGame save = game.getSaves().all().get(selectedIndex);
+							if(!save.getFile().delete())
+								game.getHelper().dialog("There was an error while deleting this save file.");
+							else
+								game.getSaves().refresh(game);
+							break;
+						default:
+						case DialogInterface.BUTTON_NEGATIVE:
+							break;
+						}
 					}
-				}
-			};
+				};
+
+				AlertDialog.Builder builder = new AlertDialog.Builder(game.getContext());
+				builder.setMessage("Are you sure you would like to delete this save? This operation cannot be undone.").setPositiveButton("Yes", dialogClickListener).setNegativeButton("No", dialogClickListener).show();
+			}
 		});
 		add(btnDelete);
-		
+
 		Component btnUp = new Component("btnUp");
 		btnUp.setBackground("gui/scroll_up.png");
 		btnUp.setBackgroundSelected("gui/scroll_up_selected.png");
@@ -154,7 +161,7 @@ public class GuiSaves extends Gui{
 			}
 		});
 		add(btnUp);
-		
+
 		Component btnDown = new Component("btnDown");
 		btnDown.setBackground("gui/scroll_down.png");
 		btnDown.setBackgroundSelected("gui/scroll_down_selected.png");

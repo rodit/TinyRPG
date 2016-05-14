@@ -1,49 +1,94 @@
 package net.site40.rodit.tinyrpg.game.gui;
 
+import java.io.IOException;
+import java.util.ArrayList;
+
+import net.site40.rodit.tinyrpg.R;
 import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.Values;
 import net.site40.rodit.tinyrpg.game.gui.ComponentListener.ComponentListenerImpl;
+import net.site40.rodit.tinyrpg.game.render.TransitionalRenderer;
+import net.site40.rodit.tinyrpg.game.saves.SaveGame;
 import android.graphics.Color;
+import android.media.MediaPlayer;
 
 public class GuiMenu extends Gui{
 
 	public GuiMenu(){
 		super("");
 	}
-	
+
 	@Override
 	public void init(){
+		ArrayList<String> transitionRes = new ArrayList<String>();
+		transitionRes.add("menu/0.png");
+		transitionRes.add("menu/1.png");
+		transitionRes.add("menu/2.png");
+		transitionRes.add("menu/3.png");
+		transitionRes.add("menu/4.png");
+		transitionRes.add("menu/5.png");
+		final TransitionalRenderer r = new TransitionalRenderer(transitionRes, 10000L);
+		
 		Component txtTinyRpg = new Component("txtTinyRpg", "TinyRPG");
 		txtTinyRpg.getPaint().setTextSize(Values.FONT_SIZE_HUGE);
 		txtTinyRpg.getPaint().setColor(Color.WHITE);
 		txtTinyRpg.setX(640);
 		txtTinyRpg.setY(92);
 		add(txtTinyRpg);
-		
-		Component btnPlay = new Component("btnPlay", "Play");
-		btnPlay.getPaint().setColor(Color.WHITE);
-		btnPlay.getPaint().setTextSize(Values.FONT_SIZE_BIG);
-		btnPlay.setBackground("gui/button.png");
-		btnPlay.setBackgroundSelected("gui/button_selected.png");
-		btnPlay.setX(540);
-		btnPlay.setY(335);
-		btnPlay.setWidth(256);
-		btnPlay.setHeight(128);
+
+		Component btnPlay = new Component("btnPlay", "New Game");
+		btnPlay.getPaint().setTextSize(Values.FONT_SIZE_MEDIUM);
+		btnPlay.setWidth(320);
+		btnPlay.setHeight(92);
+		btnPlay.setX(48f);
+		btnPlay.setY(720f - btnPlay.getHeight() - 48f);
 		btnPlay.addListener(new ComponentListenerImpl(){
 			public void touchUp(Component component, Game game){
 				game.getScripts().execute(game, "script/play.js", new String[0], new Object[0]);
+				game.removeObject(r);
 			}
 		});
 		add(btnPlay);
-		
+
+		Component btnContinue = new Component("btnContinue", "Continue");
+		btnContinue.getPaint().setTextSize(Values.FONT_SIZE_MEDIUM);
+		btnContinue.setWidth(256);
+		btnContinue.setHeight(92);
+		btnContinue.setX(btnPlay.getX() + btnPlay.getWidth() + 48f);
+		btnContinue.setY(btnPlay.getY());
+		btnContinue.addListener(new ComponentListenerImpl(){
+			public void touchUp(Component component, Game game){
+				ArrayList<SaveGame> saves = game.getSaves().all();
+				if(saves.size() == 0)
+					return;
+				else{
+					SaveGame save = saves.get(saves.size() - 1);
+					if(save != null){
+						try{
+							save.load(game);
+							game.removeObject(r);
+						}catch(IOException e){
+							game.showMessage("There was an error while loading your save.\n" + e.getClass().getName() + ": " + e.getMessage() + "\n" + e.getLocalizedMessage(), GuiMenu.this);
+						}
+					}
+				}
+			}
+
+			public void update(Component component, Game game){
+				if(game.getSaves().all().size() == 0)
+					component.getPaint().setColor(Color.GRAY);
+				else
+					component.getPaint().setColor(Color.WHITE);
+			}
+		});
+		add(btnContinue);
+
 		Component btnSaves = new Component("btnSaves", "Saves");
-		btnSaves.getPaint().setTextSize(Values.FONT_SIZE_BIG);
-		btnSaves.setBackground("gui/button.png");
-		btnSaves.setBackgroundSelected("gui/button_selected.png");
-		btnSaves.setX(540);
-		btnSaves.setY(600);
-		btnSaves.setWidth(256f);
-		btnSaves.setHeight(92f);
+		btnSaves.getPaint().setTextSize(Values.FONT_SIZE_MEDIUM);
+		btnSaves.setX(btnContinue.getX() + btnContinue.getWidth() + 48f);
+		btnSaves.setY(btnContinue.getY());
+		btnSaves.setWidth(256);
+		btnSaves.setHeight(92);
 		btnSaves.addListener(new ComponentListenerImpl(){
 			public void touchUp(Component component, Game game){
 				game.getGuis().hide(GuiMenu.class);
@@ -51,5 +96,33 @@ public class GuiMenu extends Gui{
 			}
 		});
 		add(btnSaves);
+
+		Component btnExit = new Component("btnExit", "Exit");
+		btnExit.getPaint().setTextSize(Values.FONT_SIZE_MEDIUM);
+		btnExit.setX(btnSaves.getX() + btnSaves.getWidth() + 32f);
+		btnExit.setY(btnSaves.getY());
+		btnExit.setWidth(256);
+		btnExit.setHeight(92);
+		btnExit.addListener(new ComponentListenerImpl(){
+			public void touchUp(Component component, Game game){
+				System.exit(0);
+			}
+		});
+		add(btnExit);
+		
+		RendererComponent bg = new RendererComponent(r){
+			boolean f0 = true;
+			@Override
+			public void update(Game game){
+				super.update(game);
+				if(f0){
+					MediaPlayer bgMusic = game.getAudio().get(R.raw.menu_music);
+					bgMusic.setLooping(true);
+					bgMusic.start();
+					f0 = false;
+				}
+			}
+		};
+		add(bg);
 	}
 }
