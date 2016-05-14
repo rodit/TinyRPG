@@ -1,4 +1,16 @@
-<entity class="npc.EntityNPC" name="merek_home" displayName="Blacksmith Merek" health="100000" script="script/entity/npc/merek.js" resource="entity/default.spr" width="32" height="32">
+<entity class="npc.EntityNPC" name="merek_home" displayName="Blacksmith Merek" health="100000" script="script/entity/npc/merek.js" resource="entity/default.spr" width="32" height="32" money="5000">
+
+	<inventory>
+		<item name="iron_ring_1" count="1"/>
+		<item name="luck_ring_1" count="1"/>
+		<item name="dagger_bone" count="1"/>
+		<item name="dagger_iron" count="1"/>
+		<item name="iron_helmet" count="1"/>
+		<item name="iron_chestplate" count="1"/>
+		<item name="iron_shoulders" count="1"/>
+	</inventory>
+	<shop/>
+
 	<stats level="100" speed="10" strength="10" defence="10" forge="10"/>
 	<equip item="iron_helmet" slot="SLOT_HELMET"/>
 	<equip item="iron_shoulders" slot="SLOT_SHOULDERS"/>

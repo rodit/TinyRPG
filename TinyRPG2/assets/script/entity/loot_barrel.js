@@ -7,7 +7,7 @@ function onAction(actor){
 		if(rarity.equals("food")){
 			
 		}else if(rarity.equals("potion")){
-
+			
 		}else if(rarity.equals("bone")){
 
 		}else if(rarity.equals("bronze")){
@@ -18,6 +18,8 @@ function onAction(actor){
 			actor.addMoney(game.getRandom().nextInt(1, 20));
 		}else if(rarity.equals("gold_large")){
 			actor.addMoney(game.getRandom().nextInt(200, 1000));
+		}else if(rarity.equals("empty")){
+			helper.dialog("You found nothing in this container.");
 		}
 	}else
 		helper.dialog("You found nothing in this container.");

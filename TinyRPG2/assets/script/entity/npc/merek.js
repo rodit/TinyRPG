@@ -8,10 +8,8 @@ function dialog_callback(option){
 	else if(option == 1)
 		helper.dialog("I do not have the required resources to infuse items right now.");
 	else if(option == 2)
-		helper.dialog("I have no items to sell you at the moment. Please come back later when I have restocked.");
-	else if(option == 3)
-		helper.dialog("I have too little money to purchase any items from you.");
-	else if(option == 4){
+		helper.openShop("merek_home");
+	else if(option == 3){
 		if(!game.getGlobalb("merek_home_given_item") && game.getGlobalb("merek_home_give_item")){
 			helper.dialog("Here, have this Steel Dagger. It's forged from some of the finest steel around. Wield it with care.~You received a Steel Dagger.~This will help you greatly in the beginning of your travels. Good luck friend.");
 			game.getPlayer().getInventory().add("dagger_steel", 1);
@@ -36,7 +34,7 @@ function onAction(actor){
 			greeting = "Well, hello again. Glad to see your still alive.~Need a hand with some forge work?";
 		else if(helper.should(35))
 			greeting = "Well, hello again. Your survival capabilities are impressive.~Got a forging job for me?";
-		helper.dialog(greeting, helper.array("Upgrade Item", "Infuse Item", "Purchase Items", "Sell Items", "Talk", "Cancel"), dialog_callback);
+		helper.dialog(greeting, helper.array("Upgrade Item", "Infuse Item", "Shop", "Talk", "Cancel"), dialog_callback);
 	}
 	game.incGlobal("merek_speak_count", 1);
 }
