@@ -7,8 +7,12 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 
 import net.site40.rodit.tinyrpg.game.Game;
+import net.site40.rodit.tinyrpg.game.gui.GuiIngame;
+import net.site40.rodit.tinyrpg.game.gui.GuiMenu;
+import net.site40.rodit.tinyrpg.game.gui.GuiSaves;
 import net.site40.rodit.util.TinyInputStream;
 import net.site40.rodit.util.TinyOutputStream;
+import android.annotation.SuppressLint;
 import android.content.Context;
 
 public class SaveGame {
@@ -37,6 +41,9 @@ public class SaveGame {
 	
 	public void load(Game game)throws IOException{
 		game.deserialize(new TinyInputStream(new FileInputStream(getFile().getAbsolutePath())));
+		game.getGuis().hide(GuiSaves.class);
+		game.getGuis().hide(GuiMenu.class);
+		game.getGuis().show(GuiIngame.class);
 	}
 	
 	public void save(Game game)throws IOException{
@@ -52,6 +59,7 @@ public class SaveGame {
 	}
 	
 	private String humanReadableTime;
+	@SuppressLint("SimpleDateFormat")
 	public String getHumanReadableTime(){
 		return humanReadableTime == null ? humanReadableTime = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(getTime()) : humanReadableTime;
 	}

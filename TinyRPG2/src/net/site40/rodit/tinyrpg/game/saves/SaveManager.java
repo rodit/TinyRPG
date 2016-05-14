@@ -11,12 +11,16 @@ public class SaveManager {
 	
 	public SaveManager(Game game){
 		this.saves = new ArrayList<SaveGame>();
+		refresh(game);
+	}
+	
+	public void refresh(Game game){
 		File saveDir = new File(game.getContext().getFilesDir(), SaveGame.SAVE_DIR);
 		if(!saveDir.exists())
 			saveDir.mkdir();
 		for(File file : saveDir.listFiles()){
 			if(file.getName().endsWith(SaveGame.SAVE_EXT)){
-				SaveGame save = new SaveGame(file.getName().substring(0, file.getName().length() - SaveGame.SAVE_EXT.length() + 1));
+				SaveGame save = new SaveGame(file.getName().substring(0, file.getName().length() - SaveGame.SAVE_EXT.length()));
 				save.initialize(game.getContext());
 				saves.add(save);
 			}
