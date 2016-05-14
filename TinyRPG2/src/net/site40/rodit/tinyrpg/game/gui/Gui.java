@@ -102,6 +102,10 @@ public abstract class Gui extends GameObject{
 				((TextboxComponent)c).keyEvent(event, game);
 		}
 	}
+	
+	public synchronized ArrayList<Component> getQueue(){
+		return addQueue;
+	}
 
 	public void update(Game game){
 		if(!active)
