@@ -3,6 +3,7 @@ package net.site40.rodit.tinyrpg.game.item;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import net.site40.rodit.tinyrpg.game.entity.Entity;
 import net.site40.rodit.tinyrpg.game.entity.EntityLiving;
 import net.site40.rodit.tinyrpg.game.item.armour.Armour;
 import net.site40.rodit.util.ISavable;
@@ -16,6 +17,12 @@ public class Inventory implements ISavable{
 
 	public Inventory(){
 		this.items = new ArrayList<ItemStack>();
+	}
+	
+	public Inventory(Inventory inv){
+		this();
+		for(ItemStack stack : inv.getItems())
+			items.add(new ItemStack(stack));
 	}
 
 	public ArrayList<ItemStack> getItems(){
@@ -52,7 +59,7 @@ public class Inventory implements ISavable{
 		items.add(stack);
 		return stack;
 	}
-
+	
 	public ItemStack getExistingStack(Item item, ItemStack... ignore){
 		for(ItemStack stack : items)
 			if(stack.getItem() == item && (ignore != null && !Util.arrayContains(ignore, stack, ItemStack.class)))
@@ -76,6 +83,7 @@ public class Inventory implements ISavable{
 	}
 	
 	public void setCountAdd(Item item, int count){
+		count -= getCount(item);
 		if(item.isStackable()){
 			ItemStack stack = null;
 			int remain = count;
@@ -104,6 +112,10 @@ public class Inventory implements ISavable{
 		int nCount = getCount(item) + count;
 		setCountAdd(item, nCount);
 	}
+	
+	public void add(ItemStack stack){
+		add(stack.getItem(), stack.getAmount());
+	}
 
 	public void add(Inventory inventory){
 		for(ItemStack stack : inventory.items)
@@ -127,7 +139,7 @@ public class Inventory implements ISavable{
 		return getProvider(null);
 	}
 
-	public InventoryProvider getProvider(EntityLiving owner){
+	public InventoryProvider getProvider(Entity owner){
 		return new InventoryProvider(this, owner);
 	}
 
@@ -149,6 +161,7 @@ public class Inventory implements ISavable{
 			Item i = Item.get(name);
 			int count = in.readInt();
 			items.add(new ItemStack(i, count));
+			read++;
 		}
 	}
 
@@ -163,9 +176,9 @@ public class Inventory implements ISavable{
 		public static final int TAB_MISC = 6;
 
 		private Inventory inventory;
-		private EntityLiving owner;
+		private Entity owner;
 
-		public InventoryProvider(Inventory inventory, EntityLiving owner){
+		public InventoryProvider(Inventory inventory, Entity owner){
 			this.inventory = inventory;
 			this.owner = owner;
 		}
@@ -173,15 +186,21 @@ public class Inventory implements ISavable{
 		public Inventory getInventory(){
 			return inventory;
 		}
-
+		
+		public Entity getOwner(){
+			return owner;
+		}
+		
+		public EntityLiving getOwnerLiving(){
+			return (EntityLiving)getOwner();
+		}
+		
 		public ItemStack provide(int type, int index){
 			if(type == TAB_EQUIPPED){
 				if(owner == null)
 					return null;
-				if(index >= owner.getEquipped().length)
-					return null;
 				Item item = null;
-				if((item = owner.getEquipped(index)) == null)
+				if((item = getOwnerLiving().getEquipped(index)) == null)
 					return null;
 				else
 					return new ItemStack(item, 1);
@@ -199,7 +218,7 @@ public class Inventory implements ISavable{
 				if(owner == null)
 					break;
 				for(int i = 0; i < 9; i++){
-					Item item = owner.getEquipped(i);
+					Item item = getOwnerLiving().getEquipped(i);
 					if(item != null)
 						stacks.add(new ItemStack(item, 1));
 				}
