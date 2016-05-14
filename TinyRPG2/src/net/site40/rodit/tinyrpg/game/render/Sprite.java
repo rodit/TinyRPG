@@ -174,6 +174,15 @@ public class Sprite extends GameObject implements ISavable{
 		if(ignoreScroll)
 			game.popTranslate(canvas);
 	}
+	
+	public void copy(Sprite sprite){
+		this.x = sprite.x;
+		this.y = sprite.y;
+		this.width = sprite.width;
+		this.height = sprite.height;
+		this.resource = sprite.resource;
+		this.name = sprite.name;
+	}
 
 	@Override
 	public RenderLayer getRenderLayer(){
@@ -193,6 +202,8 @@ public class Sprite extends GameObject implements ISavable{
 		out.write(height);
 		out.writeString(resource);
 		out.writeString(name);
+		out.writeString(direction.toString());
+		out.writeString(moveState.toString());
 	}
 
 	@Override
@@ -203,6 +214,8 @@ public class Sprite extends GameObject implements ISavable{
 		height = in.readFloat();
 		resource = in.readString();
 		name = in.readString();
+		direction = Direction.valueOf(in.readString());
+		moveState = MovementState.valueOf(in.readString());
 	}
 	
 
