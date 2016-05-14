@@ -22,6 +22,7 @@ import net.site40.rodit.tinyrpg.game.render.DialogText;
 import net.site40.rodit.tinyrpg.game.render.Sprite;
 import net.site40.rodit.tinyrpg.game.render.SpriteNonScale;
 import net.site40.rodit.tinyrpg.game.render.TextRenderer;
+import net.site40.rodit.tinyrpg.game.shop.Shop;
 import net.site40.rodit.util.GenericCallback;
 import net.site40.rodit.util.Util;
 
@@ -276,6 +277,14 @@ public class ScriptHelper {
 			if(receiver.getName().equals(name))
 				return receiver;
 		return null;
+	}
+	
+	public void openShop(String name){
+		openShop(Shop.get(name));
+	}
+	
+	public void openShop(Shop shop){
+		shop.open(game);
 	}
 
 	public void var_dump(Object o){
