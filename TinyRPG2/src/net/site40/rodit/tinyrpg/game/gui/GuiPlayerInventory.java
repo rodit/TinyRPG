@@ -20,6 +20,7 @@ import net.site40.rodit.util.Util;
 import android.graphics.Canvas;
 import android.graphics.Paint.Align;
 import android.graphics.RectF;
+import android.view.MotionEvent;
 
 
 
@@ -28,40 +29,40 @@ public class GuiPlayerInventory extends Gui{
 	private static final int COUNT_ROWS = 3;
 	private static final int COUNT_COLUMNS = 4;
 	private static final int ITEMS_PER_PAGE = COUNT_ROWS * COUNT_COLUMNS;
-	private static final int OFFSET_X = 592;
-	private static final int OFFSET_Y = 224;
-	private static final int SLOT_WIDTH = 128;
-	private static final int SLOT_HEIGHT = 128;
+	protected static final int OFFSET_X = 592;
+	protected static final int OFFSET_Y = 224;
+	protected static final int SLOT_WIDTH = 128;
+	protected static final int SLOT_HEIGHT = 128;
 	private static final int TAB_WIDTH = 72;
 	private static final int TAB_HEIGHT = 72;
 
 	private int tabHover;
-	private int tab;
+	protected int tab;
 	private int selectedHover;
-	private int selected;
-	private int page;
+	protected int selected;
+	protected int page;
 
-	private ItemStack selectedItem;
+	protected ItemStack selectedItem;
 
-	private ArrayList<Component> tabComponents;
-	private ArrayList<Component> slotComponents;
+	protected ArrayList<Component> tabComponents;
+	protected ArrayList<Component> slotComponents;
 	private Component scrollUp;
 	private Component scrollDown;
 
-	private WindowComponent itemWindow;
-	private Component btnBack;
-	private Component btnDispose;
-	private Component btnEquipUse;
-	private Component txtItemTitle;
-	private Component txtItemDescription;
-	private Component txtItemRarity;
-	private Component txtItemValue;
-	private Component txtItemStats;
-	private Component imgItemPreview;
+	protected WindowComponent itemWindow;
+	protected Component btnBack;
+	protected Component btnDispose;
+	protected Component btnEquipUse;
+	protected Component txtItemTitle;
+	protected Component txtItemDescription;
+	protected Component txtItemRarity;
+	protected Component txtItemValue;
+	protected Component txtItemStats;
+	protected Component imgItemPreview;
 
-	private boolean openedWindow = false;
+	protected boolean openedWindow = false;
 
-	private InventoryProvider provider;
+	public InventoryProvider provider;
 
 	public GuiPlayerInventory(){
 		super("");
@@ -77,7 +78,7 @@ public class GuiPlayerInventory extends Gui{
 	}
 
 	@Override
-	public void init(){		
+	public void init(){
 		this.tabComponents = new ArrayList<Component>();
 		this.slotComponents = new ArrayList<Component>();
 
@@ -102,7 +103,7 @@ public class GuiPlayerInventory extends Gui{
 		}
 		for(int i = 0; i < 7; i++)
 			addTab("gui/inventory/tab.png", "gui/inventory/tab_selected.png", OFFSET_X + i * TAB_WIDTH, OFFSET_Y - TAB_HEIGHT, TAB_WIDTH, TAB_HEIGHT, i);
-		
+
 		addEquipmentSlot("gui/inventory/slot.png", "gui/inventory/slot_hover.png", (OFFSET_X - bgWindow.getX()) / 2 + 92 - SLOT_WIDTH / 2, bgWindow.getY() + 64 + SLOT_HEIGHT / 2, SLOT_WIDTH, SLOT_HEIGHT, ItemEquippable.SLOT_HELMET);
 		addEquipmentSlot("gui/inventory/slot.png", "gui/inventory/slot_hover.png", (OFFSET_X - bgWindow.getX()) / 2 + 92 - SLOT_WIDTH / 2, bgWindow.getY() + 64 + SLOT_HEIGHT + SLOT_HEIGHT / 2, SLOT_WIDTH, SLOT_HEIGHT, ItemEquippable.SLOT_CHEST);
 		addEquipmentSlot("gui/inventory/slot.png", "gui/inventory/slot_hover.png", (OFFSET_X - bgWindow.getX()) / 2 + 92 - SLOT_WIDTH / 2 + SLOT_WIDTH, bgWindow.getY() + 64 + SLOT_HEIGHT, SLOT_WIDTH, SLOT_HEIGHT, ItemEquippable.SLOT_SHOULDERS);
@@ -111,7 +112,7 @@ public class GuiPlayerInventory extends Gui{
 		addEquipmentSlot("gui/inventory/slot.png", "gui/inventory/slot_hover.png", (OFFSET_X - bgWindow.getX()) / 2 + 92 - SLOT_WIDTH / 2 + SLOT_WIDTH / 2, bgWindow.getY() + 64 + SLOT_HEIGHT * 3, SLOT_WIDTH, SLOT_HEIGHT, ItemEquippable.SLOT_FINGER_1);
 		addEquipmentSlot("gui/inventory/slot.png", "gui/inventory/slot_hover.png", (OFFSET_X - bgWindow.getX()) / 2 + 92 - SLOT_WIDTH / 2 - SLOT_WIDTH, bgWindow.getY() + 64 + SLOT_HEIGHT * 2, SLOT_WIDTH, SLOT_HEIGHT, ItemEquippable.SLOT_HAND_0);
 		addEquipmentSlot("gui/inventory/slot.png", "gui/inventory/slot_hover.png", (OFFSET_X - bgWindow.getX()) / 2 + 92 - SLOT_WIDTH / 2 + SLOT_WIDTH, bgWindow.getY() + 64 + SLOT_HEIGHT * 2, SLOT_WIDTH, SLOT_HEIGHT, ItemEquippable.SLOT_HAND_1);
-		
+
 		final Component txtPageNo = new Component("txtPageNo");
 		txtPageNo.setX(1148);
 		txtPageNo.setY(412);
@@ -180,7 +181,7 @@ public class GuiPlayerInventory extends Gui{
 			game.getGuis().show(GuiIngameMenu.class);
 		}
 	}
-	
+
 	public int getMaxPages(Game game){
 		return Math.max((int)Math.ceil((float)provider.provide(tab).size() / (float)ITEMS_PER_PAGE), 1);
 	}
@@ -189,25 +190,29 @@ public class GuiPlayerInventory extends Gui{
 		selectedHover = 0;
 		selected = -1;
 		page = 0;
-		
+
 		get("txtPageNo").setText("1/" + getMaxPages(game));
-		
+
 		Component sTab = get("tab" + tab);
 		if(sTab != null)
 			sTab.attachPaintMixer(new SelectedMixer(this));
 	}
-
+	
 	public void onSlotSelected(Game game){
-		selectedItem = provider.provide(tab, ITEMS_PER_PAGE * page + selected);
+		onSlotSelected(game, ITEMS_PER_PAGE);
+	}
+
+	public void onSlotSelected(Game game, final int itemsPerPage){
+		selectedItem = provider.provide(tab, itemsPerPage * page + selected);
 		if(selectedItem != null){
 			Component sSlot = get("slot" + selected);
 			if(sSlot != null)
 				sSlot.attachPaintMixer(new SelectedMixer(this));
 		}else{
-			selected = -1;
+			this.selected = -1;
 			return;
 		}
-		
+
 		if(itemWindow == null){
 			itemWindow = new WindowComponent();
 			itemWindow.setX(OFFSET_X - 16);
@@ -248,8 +253,11 @@ public class GuiPlayerInventory extends Gui{
 						comp.setFlag(0);
 					for(Component comp : slotComponents)
 						comp.setFlag(0);
-					scrollUp.setFlag(0);
-					scrollDown.setFlag(0);
+					
+					if(scrollUp != null){
+						scrollUp.setFlag(0);
+						scrollDown.setFlag(0);
+					}
 				}
 			});
 			add(btnBack);
@@ -354,7 +362,7 @@ public class GuiPlayerInventory extends Gui{
 					}
 					if(openedWindow)
 						updateLast = updateTotal;
-					selectedItem = provider.provide(tab, ITEMS_PER_PAGE * page + selected);
+					selectedItem = provider.provide(tab, itemsPerPage * page + selected);
 					if(selectedItem != null){
 						txtItemTitle.setText(selectedItem.getItem().getShowName() + "  (" + selectedItem.getAmount() + ")");
 						if(selectedItem.getItem() instanceof ItemEquippable){
@@ -365,7 +373,7 @@ public class GuiPlayerInventory extends Gui{
 							}else{
 								btnEquipUse.setText("Equip");
 								if(tab == InventoryProvider.TAB_EQUIPPED)
-									btnBack.getListeners().get(0).touchUp(btnBack, game);
+									btnBack.simulateInput(game, MotionEvent.ACTION_UP);
 							}
 						}else if(selectedItem.getItem().canUse())
 							btnEquipUse.setText("Use");
@@ -384,7 +392,7 @@ public class GuiPlayerInventory extends Gui{
 						imgItemPreview.setBackgroundDefault(selectedItem.getItem().getResource());
 
 						if(game.getInput().isDown(Input.KEY_MENU) || selectedItem == null)
-							btnBack.getListeners().get(0).touchUp(btnBack, game);
+							btnBack.simulateInput(game, MotionEvent.ACTION_UP);
 					}
 				}
 			});
@@ -401,7 +409,7 @@ public class GuiPlayerInventory extends Gui{
 					if(selectedItem != null){
 						int s = canvas.save();
 						canvas.translate(getX(), getY());
-						setHeight(RenderUtil.drawWrappedText(selectedItem.getItem().getDescription().replace("\\n", "\n"), (int)(itemWindow.getWidth() / 16f * 11f), paint, canvas));
+						setHeight(RenderUtil.drawWrappedText(game, selectedItem.getItem().getDescription().replace("\\n", "\n"), (int)(itemWindow.getWidth() / 16f * 11f), paint, canvas));
 						canvas.restoreToCount(s);
 					}
 				}
@@ -424,7 +432,7 @@ public class GuiPlayerInventory extends Gui{
 			add(txtItemRarity);
 		}
 		txtItemRarity.setFlag(0);
-		
+
 		if(txtItemValue == null){
 			txtItemValue = new Component("txtItemValue");
 			txtItemValue.setX(txtItemRarity.getX());
@@ -434,7 +442,7 @@ public class GuiPlayerInventory extends Gui{
 			add(txtItemValue);
 		}
 		txtItemValue.setFlag(0);
-		
+
 		if(txtItemStats == null){
 			txtItemStats = new Component("txtItemStats");
 			txtItemStats.setX(itemWindow.getX() + itemWindow.getWidth() - 172);
@@ -455,7 +463,7 @@ public class GuiPlayerInventory extends Gui{
 		}
 		imgItemPreview.setFlag(0);
 	}
-	
+
 	public void addTab(String resource, String selectedResource, float x, float y, float width, float height, int index){
 		Component tabComp = new Component("tab" + index);
 		tabComp.tag = index;
@@ -476,7 +484,7 @@ public class GuiPlayerInventory extends Gui{
 		add(tabComp);
 	}
 
-	public void addSlot(String resource, String selectedResource, float x, float y, float width, float height, int index){
+	public Component addSlot(String resource, String selectedResource, float x, float y, float width, float height, int index){
 		Component slotComp = new Component("slot" + index);
 		slotComp.tag = index;
 		slotComp.setBackground(resource);
@@ -496,9 +504,10 @@ public class GuiPlayerInventory extends Gui{
 		});
 		slotComponents.add(slotComp);
 		add(slotComp);
+		return slotComp;
 	}
-	
-	public void addEquipmentSlot(String resource, String selectedResource, float x, float y, float width, float height, int equipIndex){
+
+	public Component addEquipmentSlot(String resource, String selectedResource, float x, float y, float width, float height, int equipIndex){
 		Component slotComp = new Component("equip_slot" + equipIndex);
 		slotComp.tag = equipIndex;
 		slotComp.setBackground(resource);
@@ -513,14 +522,15 @@ public class GuiPlayerInventory extends Gui{
 			}
 		});
 		add(slotComp);
+		return slotComp;
 	}
-	
+
 	public static class TabOverlayMixer implements IPaintMixer{
-		
+
 		public TabOverlayMixer(){}
-		
+
 		public void preRender(Game game, Canvas canvas, IGameObject object){}
-		
+
 		public void postRender(Game game, Canvas canvas, IGameObject object){
 			Component c = (Component)object;
 			String overlayResource = "gui/inventory/tab/" + c.tag + ".png";
@@ -535,27 +545,27 @@ public class GuiPlayerInventory extends Gui{
 		public SelectedMixer(GuiPlayerInventory gui){
 			this.gui = gui;
 		}
-		
+
 		public void preRender(Game game, Canvas canvas, IGameObject object){
 			Component comp = (Component)object;
 			if(comp.tag != gui.selected || gui.tab == -1)
 				comp.detachPaintMixer(this);
 		}
-		
+
 		public void postRender(Game game, Canvas canvas, IGameObject object){
 			canvas.drawBitmap(game.getResources().getBitmap("gui/inventory/slot_overlay.png"), null, ((Component)object).getBoundsF(), object.getPaint());
 		}
 	}
-	
+
 	public static class ItemOverlayMixer implements IPaintMixer{
-		
+
 		private GuiPlayerInventory gui;
 		private ItemStack item;
 
 		public ItemOverlayMixer(GuiPlayerInventory gui){
 			this.gui = gui;
 		}
-		
+
 		public void preRender(Game game, Canvas canvas, IGameObject object){
 			Component component = (Component)object;
 			ItemStack stack = null;
