@@ -98,7 +98,7 @@ public class GuiQuest extends Gui{
 			@Override
 			public void draw(Game game, Canvas canvas){
 				canvas.translate(BOUNDS.left + 32f, BOUNDS.top + 72f);
-				RenderUtil.drawWrappedText(getQuest(game).getDescription(), (int)(BOUNDS.width() - 64f), getPaint(), canvas);
+				RenderUtil.drawWrappedText(game, getQuest(game).getDescription(), (int)(BOUNDS.width() - 64f), getPaint(), canvas);
 				canvas.translate(-(BOUNDS.left + 32f), -(BOUNDS.top + 72f));
 			}
 		};
