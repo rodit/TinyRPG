@@ -267,7 +267,7 @@ public class EntityLiving extends Entity{
 	public float getlastY(){
 		return lastY;
 	}
-
+	
 	public static final String BATTLE_PACKAGE = "net.site40.rodit.tinyrpg.game.battle";
 	@SuppressWarnings("unchecked")
 	@Override
