@@ -20,4 +20,8 @@ public class ResourceWrapper {
 		Bitmap bitmap = resource instanceof Bitmap ? (Bitmap)resource : ((Animation)resource).getFrame(game.getTime());
 		canvas.drawBitmap(bitmap, null, new RectF(x, y, x + width, y + height), paint);
 	}
+	
+	public void dispose(){
+		this.resource = null;
+	}
 }
