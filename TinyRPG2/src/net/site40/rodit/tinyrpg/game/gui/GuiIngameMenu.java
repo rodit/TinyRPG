@@ -6,6 +6,7 @@ import net.site40.rodit.tinyrpg.game.Dialog;
 import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.Input;
 import net.site40.rodit.tinyrpg.game.Values;
+import net.site40.rodit.tinyrpg.game.gui.windows.WindowInventory;
 import net.site40.rodit.tinyrpg.game.saves.SaveGame;
 import net.site40.rodit.util.RenderUtil;
 import android.graphics.Canvas;
@@ -38,7 +39,8 @@ public class GuiIngameMenu extends Gui{
 				switch(selected){
 				case 0:
 					game.getGuis().hide(GuiIngameMenu.class);
-					game.getGuis().show(GuiPlayerInventory.class);
+					game.getWindows().get(WindowInventory.class).show();
+					//game.getGuis().show(GuiPlayerInventory.class);
 					break;
 				case 3:
 					boolean success = false;

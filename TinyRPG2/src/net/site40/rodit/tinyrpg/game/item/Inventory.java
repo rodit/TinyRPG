@@ -130,6 +130,10 @@ public class Inventory implements ISavable{
 		}
 		return size;
 	}
+	
+	public int getIndexByItemStack(ItemStack stack){
+		return items.indexOf(stack);
+	}
 
 	public ItemStack getItemStackByIndex(int index){
 		return items.get(index);

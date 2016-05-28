@@ -1,16 +1,12 @@
 package net.site40.rodit.tinyrpg.game.gui;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 
 import net.site40.rodit.tinyrpg.game.Game;
-import net.site40.rodit.tinyrpg.game.IGameObject;
 import net.site40.rodit.tinyrpg.game.Input;
 import net.site40.rodit.tinyrpg.game.Values;
 import net.site40.rodit.tinyrpg.game.effect.Effect;
-import net.site40.rodit.tinyrpg.game.gui.ComponentListener.ComponentListenerImpl;
-import net.site40.rodit.tinyrpg.game.render.Sprite;
+import net.site40.rodit.tinyrpg.game.gui.windows.WindowInventory;
 import net.site40.rodit.util.ColorGradient;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -85,6 +81,8 @@ public class GuiIngame extends Gui{
 			@Override
 			public void draw(Game game, Canvas canvas){
 				if(game.getBattle() == null && game.isShowingDialog())
+					return;
+				if(game.getWindows().anyVisibleInstancesOf(WindowInventory.class))
 					return;
 				for(Gui gui : game.getGuis().list()){
 					if(game.getBattle() != null)
