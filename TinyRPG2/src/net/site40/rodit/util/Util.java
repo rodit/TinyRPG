@@ -2,7 +2,14 @@ package net.site40.rodit.util;
 
 import java.lang.reflect.Field;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import net.site40.rodit.tinyrpg.game.Values;
 import net.site40.rodit.tinyrpg.game.item.ItemEquippable;
@@ -14,7 +21,21 @@ import android.graphics.Paint.Align;
 import android.text.TextUtils;
 
 public class Util {
-	
+
+	public static <K, V> void sortValuesInMap(LinkedHashMap<K, V> map, final Comparator<? super V> comparator){
+		List<Map.Entry<K, V>> entries = new ArrayList<Entry<K, V>>(map.entrySet());
+		Collections.sort(entries, new Comparator<Map.Entry<K, V>>(){
+			@Override
+			public int compare(Map.Entry<K, V> lhs, Map.Entry<K, V> rhs){
+				return comparator.compare(lhs.getValue(), rhs.getValue());
+			}
+		});
+
+		map.clear();
+		for(Map.Entry<K, V> e : entries)
+			map.put(e.getKey(), e.getValue());
+	}
+
 	@SuppressLint("DefaultLocale")
 	public static String format(double d){
 		if(d == (long)d)

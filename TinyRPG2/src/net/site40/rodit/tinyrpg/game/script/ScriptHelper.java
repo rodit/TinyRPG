@@ -14,6 +14,7 @@ import net.site40.rodit.tinyrpg.game.event.EventReceiver;
 import net.site40.rodit.tinyrpg.game.event.EventReceiver.EventType;
 import net.site40.rodit.tinyrpg.game.gui.Gui;
 import net.site40.rodit.tinyrpg.game.gui.GuiLoading;
+import net.site40.rodit.tinyrpg.game.gui.windows.Window;
 import net.site40.rodit.tinyrpg.game.item.Item;
 import net.site40.rodit.tinyrpg.game.map.MapState;
 import net.site40.rodit.tinyrpg.game.map.RPGMap;
@@ -287,6 +288,35 @@ public class ScriptHelper {
 		shop.open(game);
 	}
 
+	public static final String WINDOW_PACKAGE = "net.site40.rodit.tinyrpg.game.gui.windows";
+	@SuppressWarnings("unchecked")
+	public void showWindow(String windowName, Object... args){
+		if(!windowName.startsWith(WINDOW_PACKAGE))
+			windowName = WINDOW_PACKAGE + "." + windowName;
+		Class<? extends Window> windowCls = null;
+		Window windowObj = null;
+		try{
+			windowCls = (Class<? extends Window>)Class.forName(windowName);
+			Class<?>[] constructTypes = new Class<?>[args.length + 1];
+			constructTypes[0] = Game.class;
+			for(int i = 0; i < args.length; i++)
+				constructTypes[i + 1] = args[i].getClass();
+			Object[] nargs = new Object[args.length + 1];
+			nargs[0] = game;
+			for(int i = 1; i < nargs.length; i++)
+				nargs[i] = args[i - 1];
+			windowObj = windowCls.getConstructor(constructTypes).newInstance(nargs);
+		}catch(Exception e){
+			Log.e("ScriptHelper", "Error while showing window " + windowName + " - " + e.getMessage());
+			e.printStackTrace();
+			return;
+		}
+		if(windowObj == null)
+			return;
+		game.getWindows().register(windowObj);
+		windowObj.show();
+	}
+	
 	public void var_dump(Object o){
 		String dump = "[VAR DUMP]\nHash Code: " + o.toString() + "\nClass: " + o.getClass().getName();
 		if(o instanceof Entity){
