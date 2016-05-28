@@ -20,6 +20,7 @@ import net.site40.rodit.tinyrpg.game.gui.Gui;
 import net.site40.rodit.tinyrpg.game.gui.GuiManager;
 import net.site40.rodit.tinyrpg.game.gui.GuiMessage;
 import net.site40.rodit.tinyrpg.game.gui.GuiPlayerInventory;
+import net.site40.rodit.tinyrpg.game.gui.windows.WindowManager;
 import net.site40.rodit.tinyrpg.game.item.Item;
 import net.site40.rodit.tinyrpg.game.map.MapState;
 import net.site40.rodit.tinyrpg.game.quest.QuestManager;
@@ -76,6 +77,7 @@ public class Game implements ISavable{
 	private Input input;
 	private ScriptEngine scripts;
 	private GuiManager guis;
+	private WindowManager windows;
 	private MapState map;
 	private EntityPlayer player;
 	private LinkedHashMap<String, Object> globals;
@@ -120,6 +122,7 @@ public class Game implements ISavable{
 		this.input = new Input();
 		this.scripts = new ScriptEngine();
 		this.guis = new GuiManager();
+		this.windows = new WindowManager();
 		this.map = new MapState(null);
 		this.player = new EntityPlayer();
 		this.globals = new LinkedHashMap<String, Object>();
@@ -145,6 +148,8 @@ public class Game implements ISavable{
 		XmlResourceLoader.loadAttacks(resources, "attack/attacks.xml");
 		XmlResourceLoader.loadEffects(resources, "effect/effects.xml");
 		XmlResourceLoader.loadQuests(quests, resources, "quest/quests.xml");
+		
+		windows.initialize(this);
 
 		this.events = new EventHandler();
 
@@ -258,6 +263,10 @@ public class Game implements ISavable{
 
 	public GuiManager getGuis(){
 		return guis;
+	}
+	
+	public WindowManager getWindows(){
+		return windows;
 	}
 
 	public MapState getMap(){
@@ -442,6 +451,7 @@ public class Game implements ISavable{
 		if(battle != null)
 			battle.update(this);
 
+		windows.update(this);
 		guis.update(this);
 
 		updateTime = System.currentTimeMillis() - now;
@@ -513,6 +523,7 @@ public class Game implements ISavable{
 		canvas.scale(SCALE_FACTOR_1, SCALE_FACTOR_1);
 
 		pushTranslate(canvas);
+		windows.draw(this, canvas);
 		guis.draw(canvas, this);
 
 		if(fpsPaint == null){
@@ -552,11 +563,13 @@ public class Game implements ISavable{
 	public void input(MotionEvent event){
 		PointF scaled = screen.scaleInput(event.getX(), event.getY());
 		event.setLocation(scaled.x, scaled.y);
-
+		
+		windows.touchInput(this, event);
 		guis.input(event, this);
 	}
 
 	public void keyInput(KeyEvent event){
+		windows.keyInput(this, event);
 		guis.keyInput(event, this);
 	}
 
