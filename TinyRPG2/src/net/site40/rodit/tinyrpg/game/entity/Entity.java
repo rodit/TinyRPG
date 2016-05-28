@@ -202,8 +202,6 @@ public class Entity extends Sprite{
 	@Override
 	public void update(Game game){
 		super.update(game);
-		if(inventory.isEmpty())
-			inventory.add(Item.get("dagger_bone"), 5);
 	}
 
 	@Override
