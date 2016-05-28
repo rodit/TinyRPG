@@ -1,7 +1,7 @@
 function dialogCallback0(option){
 	game.setGlobal("current_container", self);
 	if(option == 0)
-		helper.showGui("GuiContainer");
+		helper.showWindow("WindowContainer", self);
 }
 
 function onAction(actor){
