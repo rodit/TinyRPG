@@ -1,81 +1,64 @@
 package net.site40.rodit.tinyrpg.game;
 
-
+import net.site40.rodit.tinyrpg.game.event.EventReceiver.EventType;
+import android.util.SparseArray;
 
 public class Input {
-	
+
 	public static final int KEY_UP = 0;
 	public static final int KEY_DOWN = 1;
 	public static final int KEY_LEFT = 2;
 	public static final int KEY_RIGHT = 3;
 	public static final int KEY_ACTION = 4;
 	public static final int KEY_MENU = 5;
-	
-	private boolean[] keyStates;
-	private boolean[] keyUpStates;
-	private long[] keyUpTimes;
-	private long[] keys;
-	
+
+	private SparseArray<KeyState> keys;
 	private boolean allowMovement;
-	private boolean disabled = false;
-	
+
 	public Input(){
-		this.keyStates = new boolean[8];
-		this.keyUpStates = new boolean[8];
-		this.keyUpTimes = new long[8];
-		this.keys = new long[8];
+		this.keys = new SparseArray<KeyState>();
+		keys.put(KEY_UP, new KeyState());
+		keys.put(KEY_DOWN, new KeyState());
+		keys.put(KEY_LEFT, new KeyState());
+		keys.put(KEY_RIGHT, new KeyState());
+		keys.put(KEY_ACTION, new KeyState());
+		keys.put(KEY_MENU, new KeyState());
 	}
 	
-	public void enable(){
-		disabled = false;
+	public void setDown(Game game, int key){
+		KeyState state = new KeyState(KeyState.STATE_DOWN);
+		state.stateChangeTime = game.getTime();
+		keys.put(key, state);
+		game.getEvents().onEvent(game, EventType.KEY_DOWN, key);
 	}
 	
-	public void disable(){
-		disabled = true;		
+	public void setUp(Game game, int key){
+		KeyState state = new KeyState(KeyState.STATE_UP);
+		state.stateChangeTime = game.getTime();
+		keys.put(key, state);
+		game.getEvents().onEvent(game, EventType.KEY_UP, key);
 	}
 	
-	public boolean isUp(int key){
-		return keyUpStates[key];
+	public void setIdle(Game game, int key){
+		KeyState state = new KeyState(KeyState.STATE_IDLE);
+		state.stateChangeTime = game.getTime();
+		keys.put(key, state);
 	}
 	
 	public boolean isDown(int key){
-		return keyStates[key];
+		return keys.get(key).state == KeyState.STATE_DOWN;
 	}
 	
-	public long getDownTime(int key){
-		return keys[key];
-	}
-	
-	public long getUpTime(int key){
-		return keyUpTimes[key];
-	}
-	
-	public void setKeyState(int key, boolean state){
-		keys[key] = state ? keys[key] : 0L;
-		keyStates[key] = state;
-	}
-	
-	public void setKeyUpState(int key, boolean state){
-		setKeyUpState(key, state, 0L);
-	}
-	
-	public void setKeyUpState(int key, boolean state, long time){
-		keyUpStates[key] = state;
-		if(true)
-			keyUpTimes[key] = time;
+	public boolean isUp(int key){
+		return keys.get(key).state == KeyState.STATE_UP;
 	}
 	
 	public void update(Game game){
-		for(int i = 0; i < keys.length; i++){
-			if(keyStates[i])
-				keys[i] += game.getDelta();
-		}
-		if(disabled){
-			for(int i = 0; i < keys.length; i++){
-				keyStates[i] = false;
-				keys[i] = 0L;
-				keyUpStates[i] = false;
-				keyUpTimes[i] = 0L;
+		for(int i = 0; i < keys.size(); i++){
+			KeyState state = keys.get(i);
+			if(state.state == KeyState.STATE_UP && state.stateChangeTime != game.getTime()){
+				state.state = KeyState.STATE_IDLE;
+				state.stateChangeTime = game.getTime();
 			}
 		}
 	}
@@ -86,5 +69,23 @@ public class Input {
 	
 	public void allowMovement(boolean allowMovement){
 		this.allowMovement = allowMovement;
+	}
+
+	public static class KeyState{
+
+		public static final int STATE_IDLE = 0;
+		public static final int STATE_DOWN = 1;
+		public static final int STATE_UP = 2;
+
+		protected int state;
+		protected long stateChangeTime;
+
+		public KeyState(){
+			this(STATE_IDLE);
+		}
+
+		public KeyState(int state){
+			this.state = state;
+		}
 	}
 }
