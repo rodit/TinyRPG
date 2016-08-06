@@ -1,5 +1,7 @@
 package net.site40.rodit.tinyrpg.game.battle;
 
+import java.util.ArrayList;
+
 import net.site40.rodit.tinyrpg.game.Dialog.DialogCallback;
 import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.SuperCalc;
@@ -26,8 +28,11 @@ public class AIBattleProvider implements IBattleProvider{
 		this.battle = battle;
 		game.getHelper().dialog("AI battle provider option chosen...", new String[0], callback);
 		Log.i("AIBattleProvider", "AI battle provider option chosen...");
-		SuperCalc.attack(game, owner, battle.next(), (Weapon)Item.get("dagger_steel"));
-		battle.next().attachPaintMixer(Battle.hitMixer);
+		ArrayList<EntityLiving> opposition = battle.getOpposition(owner).getMembers();
+		int targetIndex = opposition.size() == 1 ? 0 : game.getRandom().nextInt(1, opposition.size()) - 1;
+		EntityLiving target = opposition.get(targetIndex);
+		SuperCalc.attack(game, owner, target, (Weapon)Item.get("dagger_steel_1"));
+		target.attachPaintMixer(Battle.newHitMixer());
 	}
 	
 	@Override
