@@ -82,18 +82,20 @@ public class Dialog extends GameObject{
 		this.options = options;
 	}
 
-	public void moveUp(){
+	public void moveUp(Game game){
 		if(selected == 0)
 			selected = options.length - 1;
 		else
 			selected--;
+		game.getAudio().playEffect("sound/menu/menu_select.ogg");
 	}
 
-	public void moveDown(){
+	public void moveDown(Game game){
 		if(selected == options.length - 1)
 			selected = 0;
 		else
 			selected++;
+		game.getAudio().playEffect("sound/menu/menu_select.ogg");
 	}
 
 	public boolean isFinished(){
@@ -121,6 +123,7 @@ public class Dialog extends GameObject{
 	}
 	
 	public void confirm(Game game){
+		game.getAudio().playEffect("sound/menu/menu_confirm.ogg");
 		confirmedOption = selected;
 		if(jsCallback != null)
 			game.getScripts().executeFunction(game, jsCallback, this, new String[] { "dialog" }, new Object[] { this }, ArrayUtil.concat(Object.class, new Object[] { confirmedOption }, args));
@@ -152,17 +155,17 @@ public class Dialog extends GameObject{
 			keyDownDown += game.getDelta();
 		else
 			keyDownDown = 0L;
-		if(keyUpDown >= INPUT_DELAY_CURSOR || input.isUp(Input.KEY_UP)){
-			moveUp();
+		if(keyUpDown >= INPUT_DELAY_CURSOR || (input.isUp(Input.KEY_UP) && keyUpDown == 0)){
+			moveUp(game);
 			keyUpDown = 0L;
 		}
-		if(keyDownDown >= INPUT_DELAY_CURSOR || input.isUp(Input.KEY_DOWN)){
-			moveDown();
+		if(keyDownDown >= INPUT_DELAY_CURSOR || (input.isUp(Input.KEY_DOWN) && keyDownDown == 0)){
+			moveDown(game);
 			keyDownDown = 0L;
 		}
 
 		if(input.isUp(Input.KEY_ACTION)){
-			input.setKeyUpState(Input.KEY_ACTION, false);
+			input.setIdle(game, Input.KEY_ACTION);
 			if(hasFinishedAllStages() && options.length != 0)
 				confirm(game);
 			else{
@@ -179,7 +182,7 @@ public class Dialog extends GameObject{
 			}
 		}
 	}
-
+	
 	private float arrowOffset = 0f;
 	private long lastArrowChange = 0L;
 	private long dialogFrames = 0L;
@@ -224,6 +227,7 @@ public class Dialog extends GameObject{
 					float w = paint.measureText(op);
 					if(w > width)width = w;
 				}
+				float longestTextWidth = width;
 				width += 80;
 				while(width % 16 != 0){
 					float fact = width / 16;
@@ -242,9 +246,16 @@ public class Dialog extends GameObject{
 				paint.setColor(Color.WHITE);
 				for(int i = 0; i < options.length; i++){
 					int x = 1080 + (int)xoff;
-					int y = 320 + i * 40 + (int)yoff;
-					if(i == selected)
-						canvas.drawText(">", x - 16, y, paint);
+					int y = 340 + i * 40 + (int)yoff;
+					if(i == selected){
+						int alpha = paint.getAlpha();
+						int color = paint.getColor();
+						paint.setAlpha(120);
+						paint.setColor(Color.GRAY);
+						canvas.drawRect(new RectF(x - 8, y - 34f, x + longestTextWidth + 8, y + 2f), paint);
+						paint.setAlpha(alpha);
+						paint.setColor(color);
+					}
 					canvas.drawText(options[i], x, y, paint);
 				}
 			}
