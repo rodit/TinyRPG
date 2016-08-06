@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.HashMap;
 
 import net.site40.rodit.tinyrpg.game.Game;
+import net.site40.rodit.tinyrpg.game.Ticker;
+import net.site40.rodit.tinyrpg.game.chat.IChatSender;
 import net.site40.rodit.tinyrpg.game.entity.npc.EntityNPC;
 import net.site40.rodit.tinyrpg.game.item.Inventory;
 import net.site40.rodit.tinyrpg.game.item.Item;
@@ -22,8 +24,9 @@ import org.w3c.dom.NodeList;
 
 import android.graphics.RectF;
 import android.text.TextUtils;
+import android.util.Log;
 
-public class Entity extends Sprite{
+public class Entity extends Sprite implements IChatSender{
 	
 	public static final int ENTITY_DEFAULT = 0;
 	public static final int ENTITY_LIVING = 1;
@@ -41,6 +44,7 @@ public class Entity extends Sprite{
 	protected Function jsOnDespawn;
 	protected Function jsOnCollide;
 	protected Function jsOnAction;
+	protected Ticker ticker;
 
 	public Entity(){
 		super();
@@ -53,6 +57,15 @@ public class Entity extends Sprite{
 		this.inventory = new Inventory();
 		this.script = "";
 		this.runtimeProperties = new HashMap<String, String>();
+		this.ticker = new Ticker(Long.MAX_VALUE);
+	}
+	
+	public boolean showName(){
+		return false;
+	}
+	
+	public String getDisplayName(){
+		return name;
 	}
 
 	public boolean isNoclip(){
@@ -123,6 +136,7 @@ public class Entity extends Sprite{
 
 	public void onSpawn(Game game){
 		initCallbacks(game);
+		Log.i("SCRIPTENTITY", "script:" + script);
 		if(jsOnSpawn != null)
 			game.getScripts().executeFunction(game, jsOnSpawn, this, new String[0], new Object[0], new Object[0]);
 	}
@@ -202,7 +216,12 @@ public class Entity extends Sprite{
 	@Override
 	public void update(Game game){
 		super.update(game);
+		
+		if(ticker.shouldRun(game))
+			tick(game);
 	}
+	
+	public void tick(Game game){}
 
 	@Override
 	public void serialize(TinyOutputStream out)throws IOException{
