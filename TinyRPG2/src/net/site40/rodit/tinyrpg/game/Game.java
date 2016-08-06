@@ -9,6 +9,7 @@ import java.util.LinkedHashMap;
 
 import net.site40.rodit.tinyrpg.game.audio.AudioManager;
 import net.site40.rodit.tinyrpg.game.battle.Battle;
+import net.site40.rodit.tinyrpg.game.chat.Chat;
 import net.site40.rodit.tinyrpg.game.entity.Entity;
 import net.site40.rodit.tinyrpg.game.entity.EntityPlayer;
 import net.site40.rodit.tinyrpg.game.entity.npc.EntityNPC;
@@ -27,12 +28,15 @@ import net.site40.rodit.tinyrpg.game.quest.QuestManager;
 import net.site40.rodit.tinyrpg.game.render.ResourceManager;
 import net.site40.rodit.tinyrpg.game.render.Sprite;
 import net.site40.rodit.tinyrpg.game.render.XmlResourceLoader;
+import net.site40.rodit.tinyrpg.game.render.effects.DayNightCycle;
+import net.site40.rodit.tinyrpg.game.render.effects.Lighting;
+import net.site40.rodit.tinyrpg.game.render.effects.PostProcessor;
+import net.site40.rodit.tinyrpg.game.render.effects.Weather;
 import net.site40.rodit.tinyrpg.game.saves.SaveManager;
 import net.site40.rodit.tinyrpg.game.script.ScriptEngine;
 import net.site40.rodit.tinyrpg.game.script.ScriptHelper;
 import net.site40.rodit.tinyrpg.game.util.EagleTracer;
 import net.site40.rodit.tinyrpg.game.util.ScreenUtil;
-import net.site40.rodit.tinyrpg.mp.TinyMPClient;
 import net.site40.rodit.util.ExtendedRandom;
 import net.site40.rodit.util.GenericCallback;
 import net.site40.rodit.util.ISavable;
@@ -84,12 +88,16 @@ public class Game implements ISavable{
 	private Battle battle;
 	private SaveManager saves;
 	private AudioManager audio;
-	private TinyMPClient mpClient;
+	private Chat chat;
+	private PostProcessor pp;
+	private Lighting lighting;
+	private Weather weather;
+	private DayNightCycle dayNight;
 
 	private EventHandler events;
 
-	private long time;
-	private long delta;
+	private volatile long time;
+	private volatile long delta;
 	private long updateTime;
 	private long drawTime;
 
@@ -129,25 +137,41 @@ public class Game implements ISavable{
 		globals.put("game", this);
 		globals.put("helper", new ScriptHelper(this));
 		globals.put("quests", quests);
+		globals.put("util", new Util());
 		globals.put("gui_quest", null);
 		globals.put("gui_quest_parent", "");
 		//OPTIONS
 		globals.put("render_mode", "hardware");
+		globals.put("controls_alpha", "50");
+		globals.put("chat_bg_alpha", "35");
+		globals.put("chat_text_alpha", "75");
 		//GAME VARS
 		globals.put("intro_done", "false");
-		globals.put("start_map", "map/player_home_bedroom.tmx");
+		globals.put("start_map", "map/debug.tmx");
 		globals.put("last_bookshelf_skill", "0");
 		globals.put("bookshelf_skill_count", "0");
 		//ENTITY VARS
 		globals.put("merek_speak_count", "0");
 		
 		this.saves = new SaveManager(this);
+		this.chat = new Chat();
+		this.pp = new PostProcessor();
+		this.lighting = new Lighting();
+		this.weather = new Weather();
+		pp.add(lighting);
+		pp.add(weather);
+		this.dayNight = new DayNightCycle(this);
+		addObject(dayNight);
 		this.audio = new AudioManager(context);
-
-		XmlResourceLoader.loadItems(resources, "item/items.xml");
-		XmlResourceLoader.loadAttacks(resources, "attack/attacks.xml");
-		XmlResourceLoader.loadEffects(resources, "effect/effects.xml");
-		XmlResourceLoader.loadQuests(quests, resources, "quest/quests.xml");
+		
+		XmlResourceLoader.loadItems(resources, "config/items.xml");
+		XmlResourceLoader.loadAttacks(resources, "config/attacks.xml");
+		XmlResourceLoader.loadEffects(resources, "config/effects.xml");
+		XmlResourceLoader.loadQuests(quests, resources, "config/quests.xml");
+		XmlResourceLoader.loadForge(forge, resources, "config/forge.xml");
+		XmlResourceLoader.loadStartClasses(resources, "config/classes.xml");
+		
+		Log.i("XmlResourceLoader", "Total load count = " + XmlResourceLoader.loadCount + ".");
 		
 		windows.initialize(this);
 
@@ -155,14 +179,10 @@ public class Game implements ISavable{
 
 		this.time = this.delta = 0L;
 
-		scripts.execute(this, "script/start.js", new String[0], new Object[0]);
+		scripts.execute(this, "script/init/start.js", new String[0], new Object[0]);
 
 		for(Item key : Item.getItems())
 			player.getInventory().add(key, key.getStackSize());
-
-		//MP
-		//this.mpClient = new TinyMPClient(this);
-		//mpClient.init();
 	}
 
 	public Context getContext(){
@@ -225,7 +245,6 @@ public class Game implements ISavable{
 		}
 		if(object instanceof EntityNPC){
 			Log.i("NPC", "NPC ADDED");
-			new Exception().printStackTrace();
 		}
 		synchronized(objects){
 			if(!objects.contains(object)){
@@ -285,10 +304,26 @@ public class Game implements ISavable{
 		return saves;
 	}
 	
+	public Chat getChat(){
+		return chat;
+	}
+	
+	public PostProcessor getPostProcessor(){
+		return pp;
+	}
+	
+	public Lighting getLighting(){
+		return lighting;
+	}
+	
+	public Weather getWeather(){
+		return weather;
+	}
+	
 	public AudioManager getAudio(){
 		return audio;
 	}
-
+	
 	public void setMap(MapState newMap){
 		if(player == null)
 			player = new EntityPlayer();
@@ -427,8 +462,8 @@ public class Game implements ISavable{
 		delta = now - time;
 		time = now;
 
-		input.update(this);
 		scheduler.update(this);
+		pp.update(this);
 
 		synchronized(objects){
 			for(IGameObject obj : objRemove){
@@ -454,6 +489,7 @@ public class Game implements ISavable{
 		windows.update(this);
 		guis.update(this);
 
+		input.update(this);
 		updateTime = System.currentTimeMillis() - now;
 	}
 
@@ -464,15 +500,21 @@ public class Game implements ISavable{
 	public void popTranslate(Canvas canvas){
 		canvas.translate(-scrollX, -scrollY);
 	}
-
+	
 	long lastFps = 0;
 	private int lastFpsI = 0;
 	private int frameCounter = 0;
 	private Paint fpsPaint;
 	public void draw(Canvas canvas){
 		long drawStart = System.currentTimeMillis();
-
+		
 		canvas.drawColor(Color.BLACK);
+		if(skipFrames > 0){
+			skipFrames--;
+			return;
+		}
+		
+		pp.preDraw(this, canvas);
 
 		screen.apply(canvas);
 		scrollX = player.getX() * SCALE_FACTOR - 1280f / 2f;
@@ -519,12 +561,14 @@ public class Game implements ISavable{
 				}
 			}
 		}
+		pp.draw(this, canvas);
 
 		canvas.scale(SCALE_FACTOR_1, SCALE_FACTOR_1);
 
 		pushTranslate(canvas);
 		windows.draw(this, canvas);
 		guis.draw(canvas, this);
+		pp.postDraw(this, canvas);
 
 		if(fpsPaint == null){
 			fpsPaint = new Paint(DEFAULT_PAINT);
@@ -567,7 +611,7 @@ public class Game implements ISavable{
 		windows.touchInput(this, event);
 		guis.input(event, this);
 	}
-
+	
 	public void keyInput(KeyEvent event){
 		windows.keyInput(this, event);
 		guis.keyInput(event, this);
@@ -642,5 +686,10 @@ public class Game implements ISavable{
 			e.printStackTrace();
 		}
 		return null;
+	}
+	
+	private volatile int skipFrames;
+	public void skipFrames(int frames){
+		skipFrames += frames;
 	}
 }
