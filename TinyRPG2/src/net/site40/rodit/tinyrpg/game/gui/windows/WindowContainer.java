@@ -70,7 +70,7 @@ public class WindowContainer extends WindowSlotted{
 				ProviderInfo info = getProviderInfo(PLAYER_KEY);
 				if(info == null)
 					return;
-				String page = String.valueOf(info.page + 1);
+				String page = String.valueOf(info.page[info.selectedTab] + 1);
 				component.setText(page + "/" + getMaxPages(PLAYER_KEY, ITEMS_PER_PAGE));
 			}
 		});
@@ -88,10 +88,10 @@ public class WindowContainer extends WindowSlotted{
 			public void touchUp(Game game, WindowComponent component){
 				int maxPages = getMaxPages(PLAYER_KEY, ITEMS_PER_PAGE);
 				ProviderInfo info = getProviderInfo(PLAYER_KEY);
-				info.page--;
-				if(info.page == -1)
-					info.page = (maxPages > 0 ? maxPages : 1) - 1;
-				txtPageNoPlayer.setText((info.page + 1) + "/" + maxPages);
+				info.page[info.selectedTab]--;
+				if(info.page[info.selectedTab] == -1)
+					info.page[info.selectedTab] = (maxPages > 0 ? maxPages : 1) - 1;
+				txtPageNoPlayer.setText((info.page[info.selectedTab] + 1) + "/" + maxPages);
 			}
 		});
 		add(btnPageUpPlayer);
@@ -106,10 +106,10 @@ public class WindowContainer extends WindowSlotted{
 			public void touchUp(Game game, WindowComponent component){
 				int maxPages = getMaxPages(PLAYER_KEY, ITEMS_PER_PAGE);
 				ProviderInfo info = getProviderInfo(PLAYER_KEY);
-				info.page++;
-				if(info.page >= maxPages)
-					info.page = 0;
-				txtPageNoPlayer.setText((info.page + 1) + "/" + maxPages);
+				info.page[info.selectedTab]++;
+				if(info.page[info.selectedTab] >= maxPages)
+					info.page[info.selectedTab] = 0;
+				txtPageNoPlayer.setText((info.page[info.selectedTab] + 1) + "/" + maxPages);
 			}
 		});
 		add(btnPageDownPlayer);
@@ -129,7 +129,7 @@ public class WindowContainer extends WindowSlotted{
 				ProviderInfo info = getProviderInfo(CONTAINER_KEY);
 				if(info == null)
 					return;
-				String page = String.valueOf(info.page + 1);
+				String page = String.valueOf(info.page[info.selectedTab] + 1);
 				component.setText(page + "/" + getMaxPages(CONTAINER_KEY, ITEMS_PER_PAGE));
 			}
 		});
@@ -147,10 +147,10 @@ public class WindowContainer extends WindowSlotted{
 			public void touchUp(Game game, WindowComponent component){
 				int maxPages = getMaxPages(CONTAINER_KEY, ITEMS_PER_PAGE);
 				ProviderInfo info = getProviderInfo(CONTAINER_KEY);
-				info.page--;
-				if(info.page == -1)
-					info.page = (maxPages > 0 ? maxPages : 1) - 1;
-				txtPageNoContainer.setText((info.page + 1) + "/" + maxPages);
+				info.page[info.selectedTab]--;
+				if(info.page[info.selectedTab] == -1)
+					info.page[info.selectedTab] = (maxPages > 0 ? maxPages : 1) - 1;
+				txtPageNoContainer.setText((info.page[info.selectedTab] + 1) + "/" + maxPages);
 			}
 		});
 		add(btnPageUpContainer);
@@ -165,10 +165,10 @@ public class WindowContainer extends WindowSlotted{
 			public void touchUp(Game game, WindowComponent component){
 				int maxPages = getMaxPages(CONTAINER_KEY, ITEMS_PER_PAGE);
 				ProviderInfo info = getProviderInfo(CONTAINER_KEY);
-				info.page++;
-				if(info.page >= maxPages)
-					info.page = 0;
-				txtPageNoContainer.setText((info.page + 1) + "/" + maxPages);
+				info.page[info.selectedTab]++;
+				if(info.page[info.selectedTab] >= maxPages)
+					info.page[info.selectedTab] = 0;
+				txtPageNoContainer.setText((info.page[info.selectedTab] + 1) + "/" + maxPages);
 			}
 		});
 		add(btnPageDownContainer);
@@ -184,7 +184,7 @@ public class WindowContainer extends WindowSlotted{
 		ProviderInfo info = getProviderInfo(slot.getProviderKey());
 		if(info == null)
 			return;
-		ItemStack stack = info.provider.provide(InventoryProvider.TAB_ALL, info.page * getItemsPerPage(slot.getProviderKey()) + slot.getIndex());
+		ItemStack stack = info.provider.provide(InventoryProvider.TAB_ALL, info.page[info.selectedTab] * getItemsPerPage(slot.getProviderKey()) + slot.getIndex());
 		if(stack == null)
 			return;
 		WindowContainerItemInfo itemWindow = new WindowContainerItemInfo(game, stack, info);

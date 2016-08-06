@@ -60,13 +60,28 @@ public class WindowTextBoxComponent extends WindowComponent{
 	public int getMaxLength(){
 		return maxLength;
 	}
+	
+	public void openKeyboard(Game game){
+		initIM(game);
+		im.showSoftInput(game.getView(), InputMethodManager.SHOW_FORCED);
+	}
+	
+	public void closeKeyboard(Game game){
+		initIM(game);
+		im.hideSoftInputFromWindow(game.getView().getWindowToken(), 0);
+	}
+	
+	protected void initIM(Game game){
+		if(im == null)
+			im = (InputMethodManager)game.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+	}
 
 	@Override
 	public void onTouchUp(Game game){
 		super.onTouchUp(game);
 
-		if(im == null)
-			im = (InputMethodManager)game.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+		initIM(game);
+		
 		if(!showingInput){
 			showingInput = false;
 			im.showSoftInput(game.getView(), InputMethodManager.SHOW_FORCED);

@@ -39,7 +39,7 @@ public class WindowInventory extends WindowSlotted{
 		txtTitle.setText("Inventory");
 		txtTitle.getPaint().setTextSize(Values.FONT_SIZE_MEDIUM);
 		txtTitle.setX(this.getWidth() / 2f);
-		txtTitle.setY(128f);
+		txtTitle.setY(78f);
 		add(txtTitle);
 
 		int k = 0;
@@ -58,7 +58,7 @@ public class WindowInventory extends WindowSlotted{
 		addEquipmentSlot((OFFSET_X - getX()) / 2f + 92f - SLOT_WIDTH / 2f + SLOT_WIDTH / 2f - getX(), 64f + SLOT_HEIGHT * 3f, PLAYER_KEY, ItemEquippable.SLOT_FINGER_1);
 		addEquipmentSlot((OFFSET_X - getX()) / 2f + 92f - SLOT_WIDTH / 2f - SLOT_WIDTH - getX(), 64f + SLOT_HEIGHT * 2f, PLAYER_KEY, ItemEquippable.SLOT_HAND_0);
 		addEquipmentSlot((OFFSET_X - getX()) / 2f + 92f - SLOT_WIDTH / 2f + SLOT_WIDTH - getX(), 64f + SLOT_HEIGHT * 2f, PLAYER_KEY, ItemEquippable.SLOT_HAND_1);
-
+		
 		txtPageNo = new WindowComponent("txtPageNo");
 		txtPageNo.setX(1148 - getX());
 		txtPageNo.setY(412 - getY());
@@ -69,7 +69,7 @@ public class WindowInventory extends WindowSlotted{
 				ProviderInfo info = getProviderInfo(PLAYER_KEY);
 				if(info == null)
 					return;
-				String page = String.valueOf(info.page + 1);
+				String page = String.valueOf(info.page[info.selectedTab] + 1);
 				component.setText(page + "/" + getMaxPages(PLAYER_KEY, ITEMS_PER_PAGE));
 			}
 		});
@@ -87,10 +87,10 @@ public class WindowInventory extends WindowSlotted{
 			public void touchUp(Game game, WindowComponent component){
 				int maxPages = getMaxPages(PLAYER_KEY, ITEMS_PER_PAGE);
 				ProviderInfo info = getProviderInfo(PLAYER_KEY);
-				info.page--;
-				if(info.page == -1)
-					info.page = (maxPages > 0 ? maxPages : 1) - 1;
-				txtPageNo.setText((info.page + 1) + "/" + maxPages);
+				info.page[info.selectedTab]--;
+				if(info.page[info.selectedTab] == -1)
+					info.page[info.selectedTab] = (maxPages > 0 ? maxPages : 1) - 1;
+				txtPageNo.setText((info.page[info.selectedTab] + 1) + "/" + maxPages);
 			}
 		});
 		add(btnPageUp);
@@ -105,10 +105,10 @@ public class WindowInventory extends WindowSlotted{
 			public void touchUp(Game game, WindowComponent component){
 				int maxPages = getMaxPages(PLAYER_KEY, ITEMS_PER_PAGE);
 				ProviderInfo info = getProviderInfo(PLAYER_KEY);
-				info.page++;
-				if(info.page >= maxPages)
-					info.page = 0;
-				txtPageNo.setText((info.page + 1) + "/" + maxPages);
+				info.page[info.selectedTab]++;
+				if(info.page[info.selectedTab] >= maxPages)
+					info.page[info.selectedTab] = 0;
+				txtPageNo.setText((info.page[info.selectedTab] + 1) + "/" + maxPages);
 			}
 		});
 		add(btnPageDown);
@@ -118,7 +118,7 @@ public class WindowInventory extends WindowSlotted{
 	public int getItemsPerPage(Object providerKey){
 		return ITEMS_PER_PAGE;
 	}
-
+	
 	@Override
 	public void onSlotSelected(Game game, WindowSlot slot){
 		ProviderInfo info = getProviderInfo(slot.getProviderKey());
@@ -127,7 +127,10 @@ public class WindowInventory extends WindowSlotted{
 		int tab = info.selectedTab;
 		if(slot instanceof WindowEquipmentSlot)
 			tab = InventoryProvider.TAB_EQUIPPED;
-		ItemStack stack = info.provider.provide(tab, info.page * getItemsPerPage(slot.getProviderKey()) + slot.getIndex());
+		int page = info.page[tab];
+		if(slot instanceof WindowEquipmentSlot)
+			page = 0;
+		ItemStack stack = info.provider.provide(tab, page * getItemsPerPage(slot.getProviderKey()) + slot.getIndex());
 		if(stack == null)
 			return;
 		WindowItemInfo itemWindow = new WindowItemInfo(game, stack, info);

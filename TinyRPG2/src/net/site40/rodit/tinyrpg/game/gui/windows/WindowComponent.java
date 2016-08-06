@@ -230,7 +230,7 @@ public class WindowComponent extends GameObject{
 		for(WindowListener listener : listeners)
 			listener.update(game, this);
 	}
-
+	
 	public WindowEventStatus touchInput(Game game, MotionEvent event){
 		if(state == STATE_DISABLED || getFlag(FLAG_INVISIBLE))
 			return WindowEventStatus.UNHANDLED;
@@ -246,7 +246,7 @@ public class WindowComponent extends GameObject{
 			parent.unfocusAll(game);
 			state = STATE_DOWN;
 			focus = true;
-
+			
 			onTouchDown(game);
 			break;
 		case MotionEvent.ACTION_UP:

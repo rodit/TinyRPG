@@ -3,10 +3,14 @@ package net.site40.rodit.tinyrpg.game.gui;
 import java.io.IOException;
 
 import net.site40.rodit.tinyrpg.game.Dialog;
+import net.site40.rodit.tinyrpg.game.Dialog.DialogCallback;
 import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.Input;
 import net.site40.rodit.tinyrpg.game.Values;
 import net.site40.rodit.tinyrpg.game.gui.windows.WindowInventory;
+import net.site40.rodit.tinyrpg.game.render.effects.FadeOutEffect;
+import net.site40.rodit.tinyrpg.game.render.effects.Weather.Lightning;
+import net.site40.rodit.tinyrpg.game.render.effects.Weather.Rain;
 import net.site40.rodit.tinyrpg.game.saves.SaveGame;
 import net.site40.rodit.util.RenderUtil;
 import android.graphics.Canvas;
@@ -31,11 +35,11 @@ public class GuiIngameMenu extends Gui{
 	public void init(){
 		Component bg = new Component(){
 			private final RectF BOUNDS_MENU = new RectF(32, 32, 32 + 384, 32 + 512);
-			private final String[] OPTIONS = new String[] { "Inventory", "Map", "Combat", "Save", "Options", "Menu", "Back" };
+			private final String[] OPTIONS = new String[] { "Inventory", "Map", "Combat", "Save", "Options", "Menu", "Back", "Debug" };
 			private long keyUpDown = 0L;
 			private long keyDownDown = 0L;
 
-			private void select(Game game){
+			private void select(final Game game){
 				switch(selected){
 				case 0:
 					game.getGuis().hide(GuiIngameMenu.class);
@@ -72,6 +76,34 @@ public class GuiIngameMenu extends Gui{
 				case 6:
 					game.getGuis().hide(GuiIngameMenu.class);
 					game.getInput().allowMovement(true);
+					break;
+				case 7:
+					game.getGuis().hide(GuiIngameMenu.class);
+					game.getInput().allowMovement(true);
+					game.getHelper().dialog("Choose a debug operation.", new String[] { "Fade Out", "Start Lightning", "Stop Lightning", "Start Rain", "Cancel" }, new DialogCallback(){
+						public void onSelected(int option){
+							switch(option){
+							case 0:
+								game.getPostProcessor().add(new FadeOutEffect());
+								break;
+							case 1:
+								Object globalLightning = game.getGlobal("debug_lightning");
+								if(globalLightning == null){
+									game.setGlobal("debug_lightning", globalLightning = new Lightning());
+									game.getWeather().add((Lightning)globalLightning);
+								}
+								break;
+							case 2:
+								Object globalLightning0 = game.getGlobal("debug_lightning");
+								if(globalLightning0 != null)
+									game.getWeather().remove((Lightning)globalLightning0);
+								break;
+							case 3:
+								game.getWeather().add(new Rain());
+								break;
+							}
+						}
+					});
 					break;
 				}
 			}

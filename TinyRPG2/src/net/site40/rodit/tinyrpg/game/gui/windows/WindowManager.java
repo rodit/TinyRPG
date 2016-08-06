@@ -35,6 +35,7 @@ public class WindowManager {
 
 	public void initialize(Game game){
 		register(new WindowInventory(game));
+		register(new WindowIngame(game));
 	}
 
 	public Window get(Class<? extends Window> cls){
@@ -49,9 +50,6 @@ public class WindowManager {
 	}
 
 	public void touchInput(Game game, MotionEvent event){
-		if(game.isShowingDialog())
-			return;
-
 		ArrayList<Window> windowList = new ArrayList<Window>(windows.values());
 		Collections.reverse(windowList);
 		for(Window window : windowList)
@@ -60,9 +58,6 @@ public class WindowManager {
 	}
 
 	public void keyInput(Game game, KeyEvent event){
-		if(game.isShowingDialog())
-			return;
-
 		ArrayList<Window> windowList = new ArrayList<Window>(windows.values());
 		Collections.reverse(windowList);
 		for(Window window : windowList)
@@ -77,7 +72,7 @@ public class WindowManager {
 
 		boolean allowInput = true;
 		for(Window window : windows.values()){
-			if(window.isVisible() && window.swallowsInput())
+			if(window.isVisible() && window.swallowsInput() && !(window instanceof WindowIngame))
 				allowInput = false;
 		}
 		game.getInput().allowMovement(allowInput);
@@ -85,6 +80,7 @@ public class WindowManager {
 		if(game.getInput().isUp(Input.KEY_MENU)){
 			ArrayList<Window> reversed = new ArrayList<Window>(windows.values());
 			Collections.reverse(reversed);
+			reversed.remove(get(WindowIngame.class));
 			for(Window window : reversed){
 				if(window.isVisible()){
 					window.setVisible(false);
@@ -98,9 +94,6 @@ public class WindowManager {
 	}
 
 	public void draw(Game game, Canvas canvas){
-		if(game.isShowingDialog())
-			return;
-
 		for(Window window : windows.values())
 			window.draw(game, canvas);
 	}

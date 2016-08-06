@@ -19,7 +19,7 @@ public abstract class Window extends GameObject{
 	private float width;
 	private float height;
 
-	private boolean drawBackground;
+	protected boolean drawBackground;
 	private boolean visible;
 	private boolean hasFocus;
 	private boolean swallowInput = true;
@@ -28,11 +28,10 @@ public abstract class Window extends GameObject{
 	private ArrayList<WindowComponent> removeQueue;
 
 	public Window(Game game){
-		this(true);
-		initialize(game);
+		this(game, true);
 	}
 
-	public Window(boolean drawBackground){
+	public Window(Game game, boolean drawBackground){
 		this.x = y = width = height = 0;
 
 		this.drawBackground = drawBackground;
@@ -41,6 +40,8 @@ public abstract class Window extends GameObject{
 		this.components = new ArrayList<WindowComponent>();
 		this.addQueue = new ArrayList<WindowComponent>();
 		this.removeQueue = new ArrayList<WindowComponent>();
+		
+		initialize(game);
 	}
 
 	public abstract void initialize(Game game);
@@ -103,15 +104,21 @@ public abstract class Window extends GameObject{
 	public boolean hasFocus(){
 		return hasFocus;
 	}
+	
+	public void setFocus(boolean hasFocus){
+		this.hasFocus = hasFocus;
+	}
 
 	public void show(){
 		setVisible(true);
+		setFocus(true);
 	}
 
 	public void hide(){
 		setVisible(false);
+		setFocus(false);
 	}
-
+	
 	public boolean isVisible(){
 		return visible;
 	}
@@ -184,7 +191,7 @@ public abstract class Window extends GameObject{
 			}
 			synchronized(removeQueue){
 				for(WindowComponent remove : removeQueue)
-					components.add(remove);
+					components.remove(remove);
 				removeQueue.clear();
 			}
 		}

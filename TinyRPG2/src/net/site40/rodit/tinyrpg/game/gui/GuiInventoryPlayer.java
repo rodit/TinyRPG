@@ -1,7 +1,6 @@
 package net.site40.rodit.tinyrpg.game.gui;
 
 import net.site40.rodit.tinyrpg.game.Game;
-import net.site40.rodit.tinyrpg.game.entity.EntityPlayer;
 
 
 public class GuiInventoryPlayer extends Gui{

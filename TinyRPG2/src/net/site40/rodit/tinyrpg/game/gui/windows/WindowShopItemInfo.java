@@ -1,26 +1,26 @@
 package net.site40.rodit.tinyrpg.game.gui.windows;
 
 import net.site40.rodit.tinyrpg.game.Game;
-import net.site40.rodit.tinyrpg.game.entity.Entity;
+import net.site40.rodit.tinyrpg.game.SuperCalc;
+import net.site40.rodit.tinyrpg.game.entity.EntityLiving;
 import net.site40.rodit.tinyrpg.game.gui.windows.WindowSlotted.ProviderInfo;
 import net.site40.rodit.tinyrpg.game.gui.windows.WindowUserInput.InputCallback;
 import net.site40.rodit.tinyrpg.game.gui.windows.WindowUserInput.InputResult;
 import net.site40.rodit.tinyrpg.game.item.ItemStack;
 import net.site40.rodit.util.Util;
 
-public class WindowContainerItemInfo extends WindowItemInfo{
+public class WindowShopItemInfo extends WindowItemInfo{
 
-	public WindowContainerItemInfo(Game game, ItemStack stack, ProviderInfo info){
+	public WindowShopItemInfo(Game game, ItemStack stack, ProviderInfo info){
 		super(game, stack, info);
-		initialize(game);
 	}
 	
-	public boolean isContainer(){
+	public boolean isShop(){
 		return !info.provider.getOwner().isPlayer();
 	}
 	
-	public Entity getCurrentContainer(Game game){
-		return (Entity)game.getGlobal("current_container");
+	public EntityLiving getCurrentShopOwner(Game game){
+		return (EntityLiving)game.getGlobal("current_shop");
 	}
 	
 	@Override
@@ -29,15 +29,17 @@ public class WindowContainerItemInfo extends WindowItemInfo{
 			return;
 		
 		super.initialize(game);
+		
+		remove(btnDispose);
 
-		final boolean container = isContainer();
-		if(!container){
+		final boolean isShop = isShop();
+		if(!isShop){
 			this.setX(64f);
 			this.setY(152f);
 
-			btnEquipUse.setText("Store");
+			btnEquipUse.setText("Sell");
 		}else
-			btnEquipUse.setText("Take");
+			btnEquipUse.setText("Buy");
 
 		btnEquipUse.getListeners().clear();
 		btnEquipUse.addListener(new WindowListener(){
@@ -53,12 +55,12 @@ public class WindowContainerItemInfo extends WindowItemInfo{
 							else if(count < 1)
 								window.get("input").setText("1");
 							else{
-								if(container){
-									stack.setAmount(stack.getAmount() - count);
-									game.getPlayer().getInventory().add(stack.getItem(), count);
-								}else{
-									stack.setAmount(stack.getAmount() - count);
-									getCurrentContainer(game).getInventory().add(stack.getItem(), count);
+								stack.setAmount(stack.getAmount() - count);
+								if(tradeItem(game, stack, isShop)){
+									if(isShop)
+										game.getHelper().dialog("The shop does not have enough money to purchase this item.");
+									else
+										game.getHelper().dialog("You do not have enough money to purchase this item.");
 								}
 								hide();
 								return true;
@@ -70,16 +72,29 @@ public class WindowContainerItemInfo extends WindowItemInfo{
 					input.zIndex = 0;
 					input.show();
 				}else{
-					if(container){
-						getCurrentContainer(game).getInventory().getItems().remove(stack);
-						game.getPlayer().getInventory().add(stack);
-					}else{
-						game.getPlayer().getInventory().getItems().remove(stack);
-						getCurrentContainer(game).getInventory().add(stack);
-					}
+					tradeItem(game, stack, isShop);
 					hide();
 				}
 			}
 		});
+	}
+	
+	public boolean isVanillaWindow(){
+		return false;
+	}
+	
+	public boolean tradeItem(Game game, ItemStack stack, boolean buying){
+		long itemValue = buying ? SuperCalc.getStackValueFromShop(stack, game.getPlayer()) : SuperCalc.getStackValue(stack, game.getPlayer());
+		boolean canAfford = buying ? game.getPlayer().getMoney() >= itemValue : getCurrentShopOwner(game).getMoney() >= itemValue;
+		if(!canAfford)
+			return false;
+		if(buying){
+			getCurrentShopOwner(game).getInventory().getItems().remove(stack);
+			game.getPlayer().getInventory().add(stack);
+		}else{
+			game.getPlayer().getInventory().getItems().remove(stack);
+			getCurrentShopOwner(game).getInventory().add(stack);
+		}
+		return true;
 	}
 }

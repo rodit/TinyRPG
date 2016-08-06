@@ -122,14 +122,14 @@ public class WindowSlotted extends Window{
 		protected ArrayList<WindowSlot> slots;
 		protected ArrayList<WindowTab> tabs;
 		protected int selectedTab;
-		protected int page;
+		protected int[] page;
 
 		public ProviderInfo(InventoryProvider provider){
 			this.provider = provider;
 			this.slots = new ArrayList<WindowSlot>();
 			this.tabs = new ArrayList<WindowTab>();
 			this.selectedTab = 0;
-			this.page = 0;
+			this.page = new int[7];
 		}
 	}
 }

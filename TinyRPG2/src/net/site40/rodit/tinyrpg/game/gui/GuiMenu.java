@@ -8,6 +8,9 @@ import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.Values;
 import net.site40.rodit.tinyrpg.game.gui.ComponentListener.ComponentListenerImpl;
 import net.site40.rodit.tinyrpg.game.render.TransitionalRenderer;
+import net.site40.rodit.tinyrpg.game.render.effects.EffectCompletionHolder;
+import net.site40.rodit.tinyrpg.game.render.effects.FadeInEffect;
+import net.site40.rodit.tinyrpg.game.render.effects.FadeOutEffect;
 import net.site40.rodit.tinyrpg.game.saves.SaveGame;
 import android.graphics.Color;
 import android.media.MediaPlayer;
@@ -35,7 +38,7 @@ public class GuiMenu extends Gui{
 		txtTinyRpg.setX(640);
 		txtTinyRpg.setY(92);
 		add(txtTinyRpg);
-
+		
 		Component btnPlay = new Component("btnPlay", "New Game");
 		btnPlay.getPaint().setTextSize(Values.FONT_SIZE_MEDIUM);
 		btnPlay.setWidth(320);
@@ -43,9 +46,18 @@ public class GuiMenu extends Gui{
 		btnPlay.setX(48f);
 		btnPlay.setY(720f - btnPlay.getHeight() - 48f);
 		btnPlay.addListener(new ComponentListenerImpl(){
-			public void touchUp(Component component, Game game){
-				game.getScripts().execute(game, "script/play.js", new String[0], new Object[0]);
-				game.removeObject(r);
+			public void touchUp(Component component, final Game game){
+				FadeOutEffect effect = new FadeOutEffect(500L);
+				EffectCompletionHolder holder = new EffectCompletionHolder(effect, new Runnable(){
+					public void run(){
+						game.getPostProcessor().add(new FadeInEffect(500L));
+						game.skipFrames(1);
+						game.getScripts().execute(game, "script/init/play.js", new String[0], new Object[0]);
+						game.removeObject(r);
+					}
+				});
+				game.getPostProcessor().add(effect);
+				game.getPostProcessor().add(holder);
 			}
 		});
 		add(btnPlay);
