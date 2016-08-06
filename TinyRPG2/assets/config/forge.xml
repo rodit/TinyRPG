@@ -1,0 +1,77 @@
+<recipes>
+	<!-- CRAFTING RECIPES -->
+	<!-- CRAFTING JEWELRY -->
+	<recipe id="ingot_ring_gold" cost="0" minForge="2.5" type="CRAFT">
+		<input name="ingot_gold" amount="2"/>
+		<output name="gold_ring_1" amount="1"/>
+	</recipe>
+	<recipe id="ingot_ring_silver" cost="0" minForge="2.2" type="CRAFT">
+		<input name="ingot_silver" amount="2"/>
+		<output name="silver_ring" amount="1"/>
+	</recipe>
+	<recipe id="coin_ingot_gold" cost="1000" minForge="1.0" type="CRAFT">
+		<output name="ingot_gold" amount="1"/>
+	</recipe>
+	
+	<!-- CRAFTING WEAPONS -->
+	<recipe id="craft_iron_dagger" cost="50" minForge="2.0" type="CRAFT">
+		<input name="ingot_iron" amount="1"/>
+		<input name="leather_strips" amount="1"/>
+		<input name="wood_stick" amount="1"/>
+		<output name="dagger_iron_1" amount="1"/>
+	</recipe>
+	<recipe id="craft_steel_katana" cost="500" minForge="5.0" type="CRAFT">
+		<input name="ingot_steel" amount="6"/>
+		<input name="leather_strips" amount="3"/>
+		<input name="wood_stick" amount="2"/>
+		<output name="steel_katana_1" amount="1"/>
+	</recipe>
+	
+	<!-- UPGRADE RECIPES -->
+	<!-- Dagger (Bone) -->
+	<recipe id="upgrade_dagger_bone_1_2" cost="50" minForge="1.0" type="UPGRADE">
+		<input name="dagger_bone_1" amount="1"/>
+		<input name="shard_bone" amount="1"/>
+		<output name="dagger_bone_2" amount="1"/>
+	</recipe>
+	<recipe id="upgrade_dagger_bone_2_3" cost="70" minForge="1.2" type="UPGRADE">
+		<input name="dagger_bone_2" amount="1"/>
+		<input name="shard_bone" amount="2"/>
+		<output name="dagger_bone_3" amount="1"/>
+	</recipe>
+	<recipe id="upgrade_dagger_bone_3_4" cost="100" minForge="1.5" type="UPGRADE">
+		<input name="dagger_bone_3" amount="1"/>
+		<input name="shard_bone" amount="4"/>
+		<output name="dagger_bone_4" amount="1"/>
+	</recipe>
+	<recipe id="upgrade_dagger_bone_4_5" cost="200" minForge="1.9" type="UPGRADE">
+		<input name="dagger_bone_4" amount="1"/>
+		<input name="shard_bone" amount="7"/>
+		<output name="dagger_bone_5" amount="1"/>
+	</recipe>
+	<recipe id="upgrade_dagger_bone_5_6" cost="350" minForge="2.5" type="UPGRADE">
+		<input name="dagger_bone_5" amount="1"/>
+		<input name="large_shard_bone" amount="1"/>
+		<output name="dagger_bone_6" amount="1"/>
+	</recipe>
+	<recipe id="upgrade_dagger_bone_6_7" cost="500" minForge="3.0" type="UPGRADE">
+		<input name="dagger_bone_6" amount="1"/>
+		<input name="large_shard_bone" amount="2"/>
+		<output name="dagger_bone_7" amount="1"/>
+	</recipe>
+	<recipe id="upgrade_dagger_bone_7_8" cost="700" minForge="3.5" type="UPGRADE">
+		<input name="dagger_bone_7" amount="1"/>
+		<input name="large_shard_bone" amount="3"/>
+		<output name="dagger_bone_8" amount="1"/>
+	</recipe>
+	<recipe id="upgrade_dagger_bone_8_9" cost="1000" minForge="4.0" type="UPGRADE">
+		<input name="dagger_bone_8" amount="1"/>
+		<input name="large_shard_bone" amount="5"/>
+		<output name="dagger_bone_9" amount="1"/>
+	</recipe>
+	<recipe id="upgrade_dagger_bone_9_10" cost="1500" minForge="4.5" type="UPGRADE">
+		<input name="dagger_bone_9" amount="1"/>
+		<input name="slab_bone" amount="1"/>
+		<output name="dagger_bone_10" amount="1"/>
+	</recipe>
+</recipes>

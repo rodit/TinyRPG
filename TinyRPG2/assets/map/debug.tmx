@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" width="20" height="20" tilewidth="16" tileheight="16">
+ <tileset firstgid="1" name="Master" tilewidth="16" tileheight="16">
+  <image source="master.png" width="2000" height="1500"/>
+ </tileset>
+ <layer name="Floor" width="20" height="20">
+  <data encoding="csv">
+33,34,35,36,33,34,35,36,33,34,35,36,33,34,35,36,33,34,35,36,
+158,159,160,161,158,159,160,161,158,159,160,161,158,159,160,161,158,159,160,161,
+283,284,285,286,283,284,285,286,283,284,285,286,283,284,285,286,283,284,285,286,
+408,409,410,411,408,409,410,411,408,409,410,411,408,409,410,411,408,409,410,411,
+533,534,535,536,533,534,535,536,533,534,535,536,533,534,535,536,533,534,535,536,
+658,659,660,661,658,659,660,661,658,659,660,661,658,659,660,661,658,659,660,661,
+33,34,35,36,33,34,35,36,33,34,35,36,33,34,35,36,33,34,35,36,
+158,159,160,161,158,159,160,161,158,159,160,161,158,159,160,161,158,159,160,161,
+283,284,285,286,283,284,285,286,283,284,285,286,283,284,285,286,283,284,285,286,
+408,409,410,411,408,409,410,411,408,409,410,411,408,409,410,411,408,409,410,411,
+533,534,535,536,533,534,535,536,533,534,535,536,533,534,535,536,533,534,535,536,
+658,659,660,661,658,659,660,661,658,659,660,661,658,659,660,661,658,659,660,661,
+33,34,35,36,33,34,35,36,33,34,35,36,33,34,35,36,33,34,35,36,
+158,159,160,161,158,159,160,161,158,159,160,161,158,159,160,161,158,159,160,161,
+283,284,285,286,283,284,285,286,283,284,285,286,283,284,285,286,283,284,285,286,
+408,409,410,411,408,409,410,411,408,409,410,411,408,409,410,411,408,409,410,411,
+533,534,535,536,533,534,535,536,533,534,535,536,533,534,535,536,533,534,535,536,
+658,659,660,661,658,659,660,661,658,659,660,661,658,659,660,661,658,659,660,661,
+33,34,35,36,33,34,35,36,33,34,35,36,33,34,35,36,33,34,35,36,
+158,159,160,161,158,159,160,161,158,159,160,161,158,159,160,161,158,159,160,161
+</data>
+ </layer>
+ <objectgroup name="entities" width="20" height="20">
+  <object name="spawn_initial" x="144" y="160" width="16" height="16">
+   <properties>
+    <property name="condition" value="respawn"/>
+    <property name="noclip" value="true"/>
+    <property name="script" value="script/entity/spawn_conditional.js"/>
+    <property name="type" value="0"/>
+   </properties>
+  </object>
+  <object name="spawn_merek" x="144" y="112" width="16" height="16">
+   <properties>
+    <property name="config" value="config/entity/merek.xml"/>
+    <property name="script" value="script/entity/entity_spawn.js"/>
+   </properties>
+  </object>
+  <object name="debug_chest_default_0" x="96" y="112" width="16" height="16">
+   <properties>
+    <property name="loot" value="dagger_bone_1"/>
+    <property name="script" value="script/entity/chest.js"/>
+   </properties>
+  </object>
+  <object name="debug_chest_locked_cant_unlock_0" x="64" y="112" width="16" height="16">
+   <properties>
+    <property name="key" value="null"/>
+    <property name="loot" value="dagger_bone_1"/>
+    <property name="script" value="script/entity/locked_chest.js"/>
+   </properties>
+  </object>
+  <object name="debug_chest_locked_0" x="32" y="112" width="16" height="16">
+   <properties>
+    <property name="key" value="dagger_bone_1"/>
+    <property name="loot" value="dagger_bone_1"/>
+    <property name="script" value="script/entity/locked_chest.js"/>
+   </properties>
+  </object>
+  <object name="debug_chest_mimic_0" x="192" y="112" width="16" height="16">
+   <properties>
+    <property name="loot" value="dagger_bone_1"/>
+    <property name="script" value="script/entity/chest_mimic.js"/>
+   </properties>
+  </object>
+ </objectgroup>
+ <objectgroup name="collisions" width="20" height="20">
+  <object x="-16" y="0" width="16" height="320"/>
+  <object x="320" y="0" width="16" height="320"/>
+  <object x="-16" y="-16" width="352" height="16"/>
+  <object x="-16" y="320" width="352" height="16"/>
+ </objectgroup>
+</map>

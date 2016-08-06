@@ -1,6 +1,0 @@
-<gui link="net.site40.rodit.tinyrpg.game.gui2.GuiMenu" name="menu">
-	<component name="txtTitle" text="TinyRPG" x="640" y="92" color="WHITE" textSize="FONT_SIZE_HUGE"/>
-	<component name="btnPlay" text="Play" x="540" y="335" width="200" height="360" color="WHITE" textSize="FONT_SIZE_BIG">
-		<event id="TOUCH_UP" method="btnPlayClick"/>
-	</component>
-</gui>

@@ -1,0 +1,5 @@
+<effects>
+	<effect class="TimedEffect" name="poison" showName="Poison" resource="effects/poison.png" script="script/effect/poison.js" level="1" negative="true" delay="5000" count="3"/>
+	<effect class="Effect" name="strength_up" showName="Strength Up" resource="effects/strength_up.png" script="" level="1" negative="false"/>
+	<effect class="Effect"  name="strength_down" showName="Strength Down" resource="effects/strength_down.png" script="" level="1" negative="false"/>
+</effects>
