@@ -7,7 +7,7 @@ import net.site40.rodit.tinyrpg.game.SuperCalc;
 import net.site40.rodit.tinyrpg.game.entity.Entity;
 import net.site40.rodit.tinyrpg.game.entity.EntityLiving;
 import net.site40.rodit.tinyrpg.game.entity.npc.TempShopOwner;
-import net.site40.rodit.tinyrpg.game.gui.GuiShop;
+import net.site40.rodit.tinyrpg.game.gui.windows.WindowShop;
 import net.site40.rodit.tinyrpg.game.item.Inventory;
 import net.site40.rodit.tinyrpg.game.item.ItemStack;
 
@@ -136,8 +136,11 @@ public class Shop {
 	}
 	
 	public void open(Game game){
-		game.setGlobal("current_container", new TempShopOwner(this));
+		TempShopOwner tempOwner = new TempShopOwner(this);
+		game.setGlobal("current_container", tempOwner);
 		game.setGlobal("current_shop", this);
-		game.getGuis().show(GuiShop.class);
+		WindowShop shopWindow = new WindowShop(game, tempOwner, this);
+		game.getWindows().register(shopWindow);
+		shopWindow.show();
 	}
 }

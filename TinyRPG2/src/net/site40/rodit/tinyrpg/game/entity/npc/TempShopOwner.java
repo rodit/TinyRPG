@@ -1,12 +1,12 @@
 package net.site40.rodit.tinyrpg.game.entity.npc;
 
 import net.site40.rodit.tinyrpg.game.Game;
-import net.site40.rodit.tinyrpg.game.entity.Entity;
+import net.site40.rodit.tinyrpg.game.entity.EntityLiving;
 import net.site40.rodit.tinyrpg.game.item.Inventory;
 import net.site40.rodit.tinyrpg.game.shop.Shop;
 import android.graphics.Canvas;
 
-public class TempShopOwner extends Entity{
+public class TempShopOwner extends EntityLiving{
 	
 	private Shop shop;
 	
