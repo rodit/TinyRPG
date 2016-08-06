@@ -18,7 +18,7 @@ public class Inventory implements ISavable{
 	public Inventory(){
 		this.items = new ArrayList<ItemStack>();
 	}
-	
+
 	public Inventory(Inventory inv){
 		this();
 		for(ItemStack stack : inv.getItems())
@@ -59,7 +59,7 @@ public class Inventory implements ISavable{
 		items.add(stack);
 		return stack;
 	}
-	
+
 	public ItemStack getExistingStack(Item item, ItemStack... ignore){
 		for(ItemStack stack : items)
 			if(stack.getItem() == item && (ignore != null && !Util.arrayContains(ignore, stack, ItemStack.class)))
@@ -73,7 +73,7 @@ public class Inventory implements ISavable{
 				return stack;
 		return null;
 	}
-	
+
 	public int getCount(Item item){
 		int count = 0;
 		for(ItemStack stack : items)
@@ -81,7 +81,30 @@ public class Inventory implements ISavable{
 				count += stack.getAmount();
 		return count;
 	}
-	
+
+	public void setCountRemove(Item item, int count){
+		if(item.isStackable()){
+			int oldCount = getCount(item);
+			int toRemove = oldCount - count;
+			while(toRemove > 0){
+				ItemStack stack = getStack(item);
+				if(stack == null)
+					break;
+				if(stack.getAmount() >= toRemove){
+					stack.setAmount(stack.getAmount() - toRemove);
+					if(stack.getAmount() == 0)
+						items.remove(stack);
+					break;
+				}else if(stack.getAmount() < toRemove){
+					toRemove -= stack.getAmount();
+					items.remove(stack);
+				}
+			}
+		}else
+			for(int i = 0; i < count; i++)
+				items.remove(this.getStack(item));
+	}
+
 	public void setCountAdd(Item item, int count){
 		count -= getCount(item);
 		if(item.isStackable()){
@@ -103,16 +126,19 @@ public class Inventory implements ISavable{
 	public void add(String itemName, int count){
 		add(Item.get(itemName), count);
 	}
-	
+
 	public void add(Item item){
 		add(item, 1);
 	}
 
 	public void add(Item item, int count){
 		int nCount = getCount(item) + count;
-		setCountAdd(item, nCount);
+		if(count > 0)
+			setCountAdd(item, nCount);
+		else if(count < 0)
+			setCountRemove(item, nCount);
 	}
-	
+
 	public void add(ItemStack stack){
 		add(stack.getItem(), stack.getAmount());
 	}
@@ -120,6 +146,10 @@ public class Inventory implements ISavable{
 	public void add(Inventory inventory){
 		for(ItemStack stack : inventory.items)
 			add(stack.getItem(), stack.getAmount());
+	}
+	
+	public void remove(Item item, int count){
+		add(item, -count);
 	}
 
 	public int getSize(){
@@ -130,7 +160,7 @@ public class Inventory implements ISavable{
 		}
 		return size;
 	}
-	
+
 	public int getIndexByItemStack(ItemStack stack){
 		return items.indexOf(stack);
 	}
@@ -190,15 +220,15 @@ public class Inventory implements ISavable{
 		public Inventory getInventory(){
 			return inventory;
 		}
-		
+
 		public Entity getOwner(){
 			return owner;
 		}
-		
+
 		public EntityLiving getOwnerLiving(){
 			return (EntityLiving)getOwner();
 		}
-		
+
 		public ItemStack provide(int type, int index){
 			if(type == TAB_EQUIPPED){
 				if(owner == null)
