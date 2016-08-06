@@ -10,16 +10,16 @@ import android.graphics.Paint;
 public interface IGameObject {
 	
 	public static enum RenderLayer{
-		TOP_OVERRIDE_PLAYER, TOP_ALL, TOP, MIDDLE, BOTTOM
+		POST_PROCESS, TOP_OVERRIDE_PLAYER, TOP_ALL, TOP, MIDDLE, BOTTOM
 	}
 	
 	public static final Comparator<IGameObject> RENDER_COMPARATOR = new Comparator<IGameObject>(){
 
 		@Override
 		public int compare(IGameObject ig0, IGameObject ig1){
-			if(ig0.getRenderLayer() == RenderLayer.TOP_OVERRIDE_PLAYER)
+			if((ig0.getRenderLayer() == RenderLayer.TOP_OVERRIDE_PLAYER && ig1.getRenderLayer() != RenderLayer.POST_PROCESS) || ig0.getRenderLayer() == RenderLayer.POST_PROCESS)
 				return 1;
-			if(ig1.getRenderLayer() == RenderLayer.TOP_OVERRIDE_PLAYER)
+			if(ig1.getRenderLayer() == RenderLayer.TOP_OVERRIDE_PLAYER || ig1.getRenderLayer() == RenderLayer.POST_PROCESS)
 				return -1;
 			if(ig0 instanceof EntityPlayer)
 				return 1;
