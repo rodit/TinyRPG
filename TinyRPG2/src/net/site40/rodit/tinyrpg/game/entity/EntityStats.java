@@ -7,6 +7,8 @@ import net.site40.rodit.util.TinyInputStream;
 import net.site40.rodit.util.TinyOutputStream;
 
 public class EntityStats implements ISavable{
+	
+	public static final float DEFAULT_STAT = 0.5f;
 
 	private int level;
 	private int xp;
