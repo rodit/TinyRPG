@@ -13,11 +13,17 @@ function onAction(actor){
 		}else if(rarity.equals("bronze")){
 
 		}else if(rarity.equals("gold")){
-			actor.addMoney(game.getRandom().nextInt(20, 200));
+			var money = game.getRandom().nextInt(20, 200);
+			actor.addMoney(money);
+			helper.dialog("You found " + money + " gold.");
 		}else if(rarity.equals("gold_small")){
-			actor.addMoney(game.getRandom().nextInt(1, 20));
+			var money = game.getRandom().nextInt(1, 20);
+			actor.addMoney(money);
+			helper.dialog("You found " + money + " gold.");
 		}else if(rarity.equals("gold_large")){
-			actor.addMoney(game.getRandom().nextInt(200, 1000));
+			var money = game.getRandom().nextInt(200, 1000);
+			actor.addMoney(money);
+			helper.dialog("You found " + money + " gold.");
 		}else if(rarity.equals("empty")){
 			helper.dialog("You found nothing in this container.");
 		}

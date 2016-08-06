@@ -1,0 +1,6 @@
+sheet:bitmap/entity/chest/mimic.png;
+rows:1;
+columns:4;
+start:0;
+length:4;
+delay:150;

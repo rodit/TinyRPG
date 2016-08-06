@@ -8,8 +8,7 @@ if(game.getGlobal("intro_done") == "false"){
 	game.addObject(bgSprite);
 
 	function dialogCallback1(option){
-		helper.hideGui("GuiIngame");
-		helper.showGui("GuiSetname");
+		helper.showWindow("WindowSetname");
 	}
 
 	function dialogCallback0(option){

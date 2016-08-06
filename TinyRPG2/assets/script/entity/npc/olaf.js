@@ -4,7 +4,7 @@ function onCollide(collision){}
 
 function dialog_callback(option){
 	if(option == 0)
-		helper.showWindow("WindowUpgradeItem");//helper.dialog("Sorry friend. I cannot upgrade any items at the moment.");
+		helper.dialog("Sorry friend. I cannot upgrade any items at the moment.");
 	else if(option == 1)
 		helper.dialog("I do not have the required resources to infuse items right now.");
 	else if(option == 2)
@@ -12,10 +12,10 @@ function dialog_callback(option){
 	else if(option == 3){
 		if(!game.getGlobalb("merek_home_given_item") && game.getGlobalb("merek_home_give_item")){
 			helper.dialog("Here, have this Steel Dagger. It's forged from some of the finest steel around. Wield it with care.~You received a Steel Dagger.~This will help you greatly in the beginning of your travels. Good luck friend.");
-			game.getPlayer().getInventory().add("dagger_steel_1", 1);
+			game.getPlayer().getInventory().add("dagger_steel", 1);
 			game.setGlobalb("merek_home_given_item", true);
 		}else
-			helper.runTalk("dialog/merek_home.tlk");
+			helper.runTalk("dialog/olaf_home.tlk");
 	}else{
 		if(helper.should(50))
 			helper.dialog("Well I'll be seeing you then. Be careful out there.");
