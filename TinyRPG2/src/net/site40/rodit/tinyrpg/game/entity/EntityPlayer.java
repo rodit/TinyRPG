@@ -23,7 +23,7 @@ public class EntityPlayer extends EntityLiving{
 		this.name = "player";
 		this.username = "New Player";
 		this.script = "script/entity/player.js";
-		this.resource = "entity/default.spr";
+		this.resource = "character/m/base/white.spr";
 		this.width = 24;
 		this.height = 24;
 		stats.setSpeed(2f);
@@ -40,6 +40,18 @@ public class EntityPlayer extends EntityLiving{
 		
 		//TODO: REMOVE
 		//this.setNoclip(true);
+		stats.setForge(100f);
+		setMoney(1000000l);
+	}
+	
+	@Override
+	public boolean showName(){
+		return true;
+	}
+	
+	@Override
+	public String getDisplayName(){
+		return getUsername();
 	}
 	
 	public String getUsername(){

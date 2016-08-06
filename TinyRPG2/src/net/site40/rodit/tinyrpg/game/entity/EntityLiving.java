@@ -9,6 +9,7 @@ import net.site40.rodit.tinyrpg.game.battle.AIBattleProvider;
 import net.site40.rodit.tinyrpg.game.battle.IBattleProvider;
 import net.site40.rodit.tinyrpg.game.combat.Attack;
 import net.site40.rodit.tinyrpg.game.effect.Effect;
+import net.site40.rodit.tinyrpg.game.item.Hair;
 import net.site40.rodit.tinyrpg.game.item.Item;
 import net.site40.rodit.tinyrpg.game.item.ItemEquippable;
 import net.site40.rodit.tinyrpg.game.item.Weapon;
@@ -41,6 +42,8 @@ public class EntityLiving extends Entity{
 	protected ArrayList<Attack> attacks;
 	protected IBattleProvider battleProvider;
 	protected ArrayList<Effect> effects;
+	protected boolean drawEquipmentOverlay;
+	protected String displayName;
 
 	protected float lastX;
 	protected float lastY;
@@ -60,10 +63,28 @@ public class EntityLiving extends Entity{
 		this.magika = 0;
 		this.velocityX = this.velocityY = 0f;
 		this.stats = new EntityStats();
-		this.equipped = new Item[9];
+		this.equipped = new Item[10];
+		equipped[ItemEquippable.SLOT_HAIR] = new Hair();
 		this.attacks = new ArrayList<Attack>();
 		this.battleProvider = new AIBattleProvider(this);
 		this.effects = new ArrayList<Effect>();
+		this.drawEquipmentOverlay = true;
+
+		getHair().setId(0);
+		getHair().setColor("black");
+	}
+	
+	@Override
+	public String getDisplayName(){
+		return displayName;
+	}
+	
+	public void setDisplayName(String displayName){
+		this.displayName = displayName;
+	}
+
+	public Hair getHair(){
+		return (Hair)equipped[ItemEquippable.SLOT_HAIR];
 	}
 
 	public int getHealth(){
@@ -157,7 +178,7 @@ public class EntityLiving extends Entity{
 		velocityX += x;
 		velocityY += y;
 	}
-	
+
 	public void setVelocity(float x, float y){
 		velocityX = x;
 		velocityY = y;
@@ -220,11 +241,11 @@ public class EntityLiving extends Entity{
 	public void setBattleProvider(IBattleProvider battleProvider){
 		this.battleProvider = battleProvider;
 	}
-	
+
 	public ArrayList<Effect> getEffects(){
 		return effects;
 	}
-	
+
 	public void clearNegativeEffects(){
 		ArrayList<Effect> remove = new ArrayList<Effect>();
 		for(Effect effect : effects)
@@ -233,19 +254,19 @@ public class EntityLiving extends Entity{
 		effects.removeAll(remove);
 		remove.clear();
 	}
-	
+
 	public void addEffect(String effect){
 		addEffect(Effect.get(effect));
 	}
-	
+
 	public void addEffect(String effect, int level){
 		addEffect(Effect.get(effect), level);
 	}
-	
+
 	public void addEffect(Effect effect){
 		addEffect(effect, effect.getLevel());
 	}
-	
+
 	public void addEffect(Effect effect, int level){
 		Effect nEffect = null;
 		try{
@@ -267,7 +288,7 @@ public class EntityLiving extends Entity{
 	public float getlastY(){
 		return lastY;
 	}
-	
+
 	public static final String BATTLE_PACKAGE = "net.site40.rodit.tinyrpg.game.battle";
 	@SuppressWarnings("unchecked")
 	@Override
@@ -278,7 +299,8 @@ public class EntityLiving extends Entity{
 		this.maxHealth = Util.tryGetInt(root.getAttribute("maxHealth"), 10);
 		this.health = Util.tryGetInt(root.getAttribute("health"), maxHealth);
 		this.magika = Util.tryGetInt(root.getAttribute("magika"), 0);
-		
+		this.drawEquipmentOverlay = Util.tryGetBool(root.getAttribute("drawEquipment"), true);
+
 		Element statsNode = (Element)root.getElementsByTagName("stats").item(0);
 		stats.setSpeed(Util.tryGetFloat(statsNode.getAttribute("speed"), stats.getSpeed()));
 		stats.setStrength(Util.tryGetFloat(statsNode.getAttribute("strength"), stats.getStrength()));
@@ -286,7 +308,7 @@ public class EntityLiving extends Entity{
 		stats.setLuck(Util.tryGetFloat(statsNode.getAttribute("luck"), stats.getLuck()));
 		stats.setMagika(Util.tryGetFloat(statsNode.getAttribute("magika"), stats.getMagika()));
 		stats.setForge(Util.tryGetFloat(statsNode.getAttribute("forge"), stats.getForge()));
-		
+
 		NodeList equipped = root.getElementsByTagName("equip");
 		for(int i = 0; i < equipped.getLength(); i++){
 			Node n = equipped.item(i);
@@ -311,6 +333,9 @@ public class EntityLiving extends Entity{
 				attacks.add(attack);
 		}
 
+		String nDisplayName = root.getAttribute("displayName");
+		this.displayName = TextUtils.isEmpty(nDisplayName) ? displayName : nDisplayName;
+		
 		try{
 			String className = root.getAttribute("battleProvider");
 			if(!className.startsWith(BATTLE_PACKAGE))
@@ -325,7 +350,7 @@ public class EntityLiving extends Entity{
 	@Override
 	public void update(Game game){
 		super.update(game);
-		
+
 		ArrayList<Effect> effRemove = new ArrayList<Effect>();
 		for(Effect effect : effects){
 			if(!effect.isStarted())
@@ -334,7 +359,7 @@ public class EntityLiving extends Entity{
 				effRemove.add(effect);
 		}
 		effects.removeAll(effRemove);
-		
+
 		if(health > getMaxHealth())
 			health = getMaxHealth();
 
@@ -353,7 +378,7 @@ public class EntityLiving extends Entity{
 			direction = Direction.D_LEFT;
 			resetCache();
 		}
-		
+
 		if(velocityY > 0){
 			direction = Direction.D_DOWN;
 			resetCache();
@@ -393,10 +418,13 @@ public class EntityLiving extends Entity{
 			equippedCache = Bitmap.createBitmap((int)this.width, (int)this.height, Config.ARGB_8888);
 
 			Canvas equippedCanvas = new Canvas(equippedCache);
-			for(int i = 0; i < equipped.length; i++){
-				Item item = equipped[i];
-				if(item instanceof ItemEquippable)
-					((ItemEquippable)item).drawSpriteOverlay(equippedCanvas, game, this, this.paint);
+			((Hair)equipped[ItemEquippable.SLOT_HAIR]).drawSpriteOverlay(equippedCanvas, game, this, this.paint);
+			if(drawEquipmentOverlay){
+				for(int i = 0; i < equipped.length; i++){
+					Item item = equipped[i];
+					if(item instanceof ItemEquippable && i != ItemEquippable.SLOT_HAIR)
+						((ItemEquippable)item).drawSpriteOverlay(equippedCanvas, game, this, this.paint);
+				}
 			}
 		}
 

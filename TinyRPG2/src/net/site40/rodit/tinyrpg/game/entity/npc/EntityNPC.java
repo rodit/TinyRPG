@@ -8,16 +8,10 @@ import net.site40.rodit.tinyrpg.game.util.Direction;
 import net.site40.rodit.util.TinyInputStream;
 import net.site40.rodit.util.TinyOutputStream;
 import net.site40.rodit.util.Util;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-
 import android.graphics.Canvas;
-import android.text.TextUtils;
 
 public class EntityNPC extends EntityAI{
 	
-	protected String displayName;
 	protected Nametag nametag;
 	
 	public EntityNPC(){
@@ -29,12 +23,9 @@ public class EntityNPC extends EntityAI{
 		this.displayName = displayName;
 	}
 	
-	public String getDisplayName(){
-		return displayName;
-	}
-	
-	public void setDisplayName(String displayName){
-		this.displayName = displayName;
+	@Override
+	public boolean showName(){
+		return true;
 	}
 	
 	@Override
@@ -75,13 +66,5 @@ public class EntityNPC extends EntityAI{
 	@Override
 	public void draw(Game game, Canvas canvas){
 		super.draw(game, canvas);
-	}
-	
-	@Override
-	public void linkConfig(Document document){
-		super.linkConfig(document);
-		Element root = (Element)document.getElementsByTagName("entity").item(0);
-		String nDisplayName = root.getAttribute("displayName");
-		this.displayName = TextUtils.isEmpty(nDisplayName) ? displayName : nDisplayName;
 	}
 }
