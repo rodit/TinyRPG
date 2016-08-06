@@ -1,7 +1,6 @@
 package net.site40.rodit.tinyrpg.game.gui;
 
 import net.site40.rodit.tinyrpg.game.Game;
-import net.site40.rodit.tinyrpg.game.event.EventReceiver.EventType;
 import android.view.MotionEvent;
 
 public class ControlButton extends Component{
@@ -30,13 +29,6 @@ public class ControlButton extends Component{
 	public void setKey(int key){
 		this.key = key;
 	}
-
-	@Override
-	public void update(Game game){
-		super.update(game);
-		if(!isSelected() && game.getInput().isUp(key) && game.getInput().getUpTime(key) != game.getTime())
-			game.getInput().setKeyUpState(key, false, game.getTime());
-	}
 	
 	@Override
 	public void input(MotionEvent event, Game game){
@@ -44,25 +36,18 @@ public class ControlButton extends Component{
 		int action = event.getAction();
 		switch(action){
 		case MotionEvent.ACTION_DOWN:
-			game.getInput().setKeyState(key, true);
-			game.getEvents().onEvent(game, EventType.KEY_DOWN, key);
+			game.getInput().setDown(game, key);
 			break;
 		case MotionEvent.ACTION_UP:
-			game.getInput().setKeyState(key, false);
-			game.getInput().setKeyUpState(key, true, game.getTime());
-			game.getEvents().onEvent(game, EventType.KEY_UP, key);
+			game.getInput().setUp(game, key);
 			break;
 		case MotionEvent.ACTION_MOVE:
-			boolean contains = getBoundsF().contains(event.getX(), event.getY());
-			if(!contains && joystick && game.getInput().allowMovement()){
-				game.getInput().setKeyState(key, false);
-				game.getInput().setKeyUpState(key, true, game.getTime());
-			}
-			if(contains && joystick && game.getInput().allowMovement())
-				game.getInput().setKeyState(key, true);
-			if(contains && !isSelected()){
-				game.getInput().setKeyState(key, true);
-				setSelected(true);
+			if(!game.isShowingDialog() && game.getInput().allowMovement()){
+				boolean contains = getBoundsF().contains(event.getX(), event.getY());
+				if(joystick && !contains)
+					game.getInput().setUp(game, key);
+				if(joystick && contains)
+					game.getInput().setDown(game, key);
 			}
 			break;
 		}

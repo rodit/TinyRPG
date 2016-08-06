@@ -2,7 +2,7 @@ package net.site40.rodit.tinyrpg.game;
 
 
 
-public class Input {
+public class Input_Old {
 	
 	public static final int KEY_UP = 0;
 	public static final int KEY_DOWN = 1;
@@ -19,7 +19,7 @@ public class Input {
 	private boolean allowMovement;
 	private boolean disabled = false;
 	
-	public Input(){
+	public Input_Old(){
 		this.keyStates = new boolean[8];
 		this.keyUpStates = new boolean[8];
 		this.keyUpTimes = new long[8];
