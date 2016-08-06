@@ -1,0 +1,44 @@
+<classes>
+	<class name="warrior" showName="Warrior" description="A well rounded fighter with high strength and defence." level="5" speed="0.7" strength="1.1" defence="1.0" luck="0.6" magika="0.4" forge="0.7" abilityDescription="Can duel wield one handed weapons effectively.">
+		<item name="longsword_iron_1" amount="1"/>
+		<item name="leather_helmet_1" amount="1"/>
+		<item name="leather_chestplate_1" amount="1"/>
+		<item name="leather_shoulders_1" amount="1"/>
+	</class>
+	<class name="knight" showName="Knight" description="A low ranking knight with high strength and defence at the cost of a little speed." level="5" speed="0.6" strength="1.2" defence="1.2" luck="0.5" magika="0.3" forge="0.7" abilityDescription="Can duel wield both one handed and two handed weapons.">
+		<item name="shortsword_iron_1" amount="1"/>
+		<item name="hard_leather_helmet_1" amount="1"/>
+		<item name="hard_leather_chestplate_1" amount="1"/>
+		<item name="hard_leather_shoulders_1" amount="1"/>
+	</class>
+	<class name="assassin" showName="Assassin" description="A fast, agile assassin with high luck and low defence." level="5" speed="1.2" strength="0.7" defence="0.6" luck="0.9" magika="0.5" forge="0.6" abilityDescription="2% chance to parry physical attacks (+0.1%/character level, +0.05%/luck level > 0.9).">
+		<item name="dagger_iron_1" amount="1"/>
+		<item name="dagger_iron_1" amount="1"/>
+		<item name="assassin_hood_1" amount="1"/>
+		<item name="assassin_robe_1" amount="1"/>
+		<item name="assassin_shoulders_1" amount="1"/>
+	</class>
+	<class name="hunter" showName="Hunter" description="A skilled, dexterous hunter with high speed." level="5" speed="1.1" strength="0.8" defence="0.7" luck="0.8" magika="0.5" forge="0.6" abilityDescription="5% chance to fire two arrows/turn against enemies slower than the hunter (+0.5%/character level, +0.25%/speed level > 1.1).">
+		<item name="hunting_bow_1" amount="1"/>
+		<item name="dagger_bone_1" amount="1"/>
+		<item name="leather_helmet_1" amount="1"/>
+		<item name="leather_chestplate_1" amount="1"/>
+		<item name="leather_shoulders_1" amount="1"/>
+	</class>
+	<class name="mage" showName="Mage" description="An apprentice mage equipped with advanced magic capabilites." level="5" speed="0.5" strength="0.6" defence="0.6" luck="0.7" magika="1.6" forge="0.5" abilityDescription="Damage taken from magic attacks is reduced by 10% (+0.5%/character level).">
+		<item name="wooden_staff_1" amount="1"/>
+		<item name="mage_hood_1" amount="1"/>
+		<item name="mage_robes_1" amount="1"/>
+		<item name="mage_cape_1" amount="1"/>
+	</class>
+	<class name="thief" showName="Thief" description="A cunning thief with high speed and luck." level="5" speed="1.2" strength="0.5" defence="0.5" luck="1.3" magika="0.5" forge="0.5" abilityDescription="Gains 10% extra gold from winning battles (+0.5%/character level).">
+		<item name="dagger_stone" amount="1"/>
+		<item name="dagger_stone" amount="1"/>
+		<item name="theif_mask_1" amount="1"/>
+		<item name="black_leather_chestplate_1" amount="1"/>
+		<item name="black_leather_shoulders_1" amount="1"/>
+	</class>
+	<class name="deprived" showName="Deprived" description="A skilled scavanger who is clueless about magic." level="6" speed="1.0" strength="1.1" defence="1.1" luck="1.0" magika="0.0" forge="0.6" abilityDescription="Start the game at a higher level.">
+		<item name="peasant_clothes" amount="1"/>
+	</class>
+</classes>

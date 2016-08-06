@@ -1,12 +1,19 @@
 package net.site40.rodit.tinyrpg.game.render;
 
+import java.util.ArrayList;
+
 import net.site40.rodit.tinyrpg.game.combat.Attack;
 import net.site40.rodit.tinyrpg.game.effect.Effect;
+import net.site40.rodit.tinyrpg.game.forge.ForgeRegistry;
+import net.site40.rodit.tinyrpg.game.forge.ForgeRegistry.ForgeRecipy.ForgeType;
 import net.site40.rodit.tinyrpg.game.item.Item;
+import net.site40.rodit.tinyrpg.game.item.ItemStack;
 import net.site40.rodit.tinyrpg.game.map.MapObject;
 import net.site40.rodit.tinyrpg.game.map.RPGMap;
 import net.site40.rodit.tinyrpg.game.quest.Quest;
 import net.site40.rodit.tinyrpg.game.quest.QuestManager;
+import net.site40.rodit.tinyrpg.game.start.StartClass;
+import net.site40.rodit.util.Util;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -20,7 +27,7 @@ import davidiserovich.TMXLoader.TileMapData;
 
 public class XmlResourceLoader {
 	
-	private static int loadCount = 0;
+	public static int loadCount = 0;
 
 	public static RPGMap loadMap(ResourceManager resources, String file){
 		RPGMap map = new RPGMap(file, true);
@@ -167,6 +174,77 @@ public class XmlResourceLoader {
 		loadCount++;
 		
 		Log.i("QuestLoader", "Loaded " + loaded + " quests from " + file + ".");
-		Log.i("XmlResourceLoader", "Total load count = " + loadCount + ".");
+	}
+	
+	public static void loadForge(ForgeRegistry forge, ResourceManager resources, String file){
+		Document doc = resources.readDocument(file);
+		NodeList rNodes = doc.getElementsByTagName("recipe");
+		int loaded = 0;
+		for(int i = 0; i < rNodes.getLength(); i++){
+			Node n = rNodes.item(i);
+			if(n.getNodeType() != Node.ELEMENT_NODE)
+				continue;
+			Element e = (Element)n;
+			String id = e.getAttribute("id");
+			long cost = Util.tryGetLong(e.getAttribute("cost"));
+			float minForge = Util.tryGetFloat(e.getAttribute("minForge"));
+			ForgeType type = Util.tryGetForgeType(e.getAttribute("type"));
+			
+			ArrayList<ItemStack> inputs = new ArrayList<ItemStack>();
+			NodeList inputNodes = e.getElementsByTagName("input");
+			for(int x = 0; x < inputNodes.getLength(); x++){
+				Node iNode = inputNodes.item(x);
+				if(iNode.getNodeType() != Node.ELEMENT_NODE)
+					continue;
+				Element ie = (Element)iNode;
+				Item item = Item.get(ie.getAttribute("name"));
+				int amount = Util.tryGetInt(ie.getAttribute("amount"));
+				inputs.add(new ItemStack(item, amount));
+			}
+			
+			ArrayList<ItemStack> outputs = new ArrayList<ItemStack>();
+			NodeList outputNodes = e.getElementsByTagName("output");
+			for(int x = 0; x < outputNodes.getLength(); x++){
+				Node oNode = outputNodes.item(x);
+				if(oNode.getNodeType() != Node.ELEMENT_NODE)
+					continue;
+				Element oe = (Element)oNode;
+				Item item = Item.get(oe.getAttribute("name"));
+				int amount = Util.tryGetInt(oe.getAttribute("amount"));
+				outputs.add(new ItemStack(item, amount));
+			}
+			
+			ItemStack[] inputArray = new ItemStack[inputs.size()];
+			ItemStack[] outputArray = new ItemStack[outputs.size()];
+			for(int j = 0; j < inputs.size() || j < outputs.size(); j++){
+				if(j < inputs.size())
+					inputArray[j] = inputs.get(j);
+				if(j < outputs.size())
+					outputArray[j] = outputs.get(j);
+			}
+			
+			forge.register(id, inputArray, outputArray, cost, minForge, type);
+			
+			loaded++;
+		}
+				
+		Log.i("ForgeLoader", "Loaded " + loaded + " forge recipes from " + file + ".");
+	}
+	
+	public static void loadStartClasses(ResourceManager resources, String file){
+		Document doc = resources.readDocument(file);
+		NodeList sNodes = doc.getElementsByTagName("class");
+		int loaded = 0;
+		for(int i = 0; i < sNodes.getLength(); i++){
+			Node n = sNodes.item(i);
+			if(n.getNodeType() != Node.ELEMENT_NODE)
+				continue;
+			Element e = (Element)n;
+			StartClass start = new StartClass();
+			start.deserializeXmlElement(e);
+			StartClass.register(start);
+			loaded++;
+		}
+		Log.i("StartClassLoader", "Loaded " + loaded + " started classes from " + file + ".");
 	}
 }
