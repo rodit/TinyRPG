@@ -1,7 +1,9 @@
 package net.site40.rodit.tinyrpg.game;
 
 import net.site40.rodit.tinyrpg.game.entity.EntityLiving;
+import net.site40.rodit.tinyrpg.game.entity.EntityPlayer;
 import net.site40.rodit.tinyrpg.game.item.Item;
+import net.site40.rodit.tinyrpg.game.item.ItemStack;
 import net.site40.rodit.tinyrpg.game.item.Weapon;
 import net.site40.rodit.tinyrpg.game.item.armour.Armour;
 
@@ -57,7 +59,12 @@ public class SuperCalc {
 	}
 	
 	public static int getMaxHealth(EntityLiving ent){
-		return (int)(BASE_HEALTH + (float)Math.pow(1.13f, ent.getStats().getLevel()));
+		return (int)(BASE_HEALTH + (float)Math.pow(1.13f, ent.getStats().getLevel())) + getHealthBonus(ent);
+	}
+	
+	private static int getHealthBonus(EntityLiving ent){
+		int strMulti = (int)(ent.getStats().getStrength() / 2f);
+		return strMulti * 10;
 	}
 	
 	public static int getXpForLevel(int level){
@@ -80,12 +87,24 @@ public class SuperCalc {
 		return (int)(Math.log(x) / Math.log(base));
 	}
 	
-	public static int getItemValue(Item item, EntityLiving seller){
+	public static long getItemValue(Item item, EntityLiving seller){
 		float luckVal = seller == null ? 0f : seller.getStats().getLuck();
 		float value = (float)item.getValue();
 		if(seller != null)
-			value /= 8 * (1 + luckVal);
+			value /= 8 * (1 + luckVal);	
 		value = Math.min(value, item.getValue());
-		return (int)value;
+		return (long)value;
+	}
+	
+	public static long getStackValue(ItemStack stack, EntityLiving seller){
+		return getItemValue(stack.getItem(), seller) * stack.getAmount();
+	}
+	
+	public static long getItemValueFromShop(Item item, EntityPlayer player){
+		return item.getValue();
+	}
+	
+	public static long getStackValueFromShop(ItemStack stack, EntityPlayer player){
+		return getItemValueFromShop(stack.getItem(), player) * stack.getAmount();
 	}
 }
