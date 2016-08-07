@@ -7,6 +7,7 @@ import net.site40.rodit.tinyrpg.game.Dialog.DialogCallback;
 import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.Scheduler.ScheduledEvent;
 import net.site40.rodit.tinyrpg.game.battle.Battle;
+import net.site40.rodit.tinyrpg.game.battle.Team;
 import net.site40.rodit.tinyrpg.game.entity.Entity;
 import net.site40.rodit.tinyrpg.game.entity.EntityLiving;
 import net.site40.rodit.tinyrpg.game.entity.EntityStats;
@@ -15,6 +16,7 @@ import net.site40.rodit.tinyrpg.game.event.EventReceiver.EventType;
 import net.site40.rodit.tinyrpg.game.gui.Gui;
 import net.site40.rodit.tinyrpg.game.gui.GuiLoading;
 import net.site40.rodit.tinyrpg.game.gui.windows.Window;
+import net.site40.rodit.tinyrpg.game.gui.windows.WindowIngame;
 import net.site40.rodit.tinyrpg.game.item.Item;
 import net.site40.rodit.tinyrpg.game.map.MapState;
 import net.site40.rodit.tinyrpg.game.map.RPGMap;
@@ -39,7 +41,6 @@ import android.graphics.Paint.Align;
 import android.text.TextUtils;
 import android.util.Log;
 
-
 public class ScriptHelper {
 
 	private Game game;
@@ -47,11 +48,11 @@ public class ScriptHelper {
 	public ScriptHelper(Game game){
 		this.game = game;
 	}
-	
+
 	public Item getItem(String name){
 		return Item.get(name);
 	}
-	
+
 	public String[] safeSplit(String in, String del){
 		return in.split(Pattern.quote(del));
 	}
@@ -59,7 +60,7 @@ public class ScriptHelper {
 	public String[] empty(){
 		return new String[0];
 	}
-	
+
 	public int[] emptyi(){
 		return new int[0];
 	}
@@ -79,7 +80,7 @@ public class ScriptHelper {
 	public Object[] arrayo(Object... args){
 		return args;
 	}
-	
+
 	public float percentageMulti(float percent){
 		return 1 + percent / 100f;
 	}
@@ -119,7 +120,7 @@ public class ScriptHelper {
 	public String fixNewLines(String str){
 		return str.replace("\\n", "\n");
 	}
-	
+
 	public void runTalk(String resource){
 		DialogText dialog = game.getResources().getDialogText(resource);
 		if(dialog != null)
@@ -156,7 +157,7 @@ public class ScriptHelper {
 		game.addObject(d);
 		return d;
 	}
-	
+
 	public Object runScript(String file){
 		return runScript(file, new String[0], new Object[0]);
 	}
@@ -192,7 +193,7 @@ public class ScriptHelper {
 		game.getGuis().hide(cls);
 		Log.d("ScriptHelper", "Hidden gui " + className + ".");
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public Gui getGui(String className){
 		if(!className.startsWith("net.site40.rodit.tinyrpg.game.gui."))
@@ -208,7 +209,6 @@ public class ScriptHelper {
 	}
 
 	public void setMap(final String name){
-		game.getGuis().show(GuiLoading.class);
 		game.runAsyncTask(new Runnable(){
 			public void run(){
 				game.setMap(null);
@@ -232,7 +232,7 @@ public class ScriptHelper {
 	public Sprite createObject(String resource, float x, float y, float width, float height, boolean scale){
 		return scale ? new Sprite(x, y, width, height, resource, "script_obj_" + game.getRandom().nextString(4)) : new SpriteNonScale(x, y, width, height, resource, "script_obj_" + game.getRandom().nextString(4));
 	}
-	
+
 	public TextRenderer createText(String text, float x, float y, float size){
 		Paint paint = Game.getDefaultPaint();
 		paint.setTextAlign(Align.CENTER);
@@ -242,13 +242,14 @@ public class ScriptHelper {
 	}
 
 	public void givePlayerItem(String itemName, int count){
+		Log.i("a", itemName);
 		game.getPlayer().getInventory().add(Item.get(itemName), count);
 	}
 
 	public ScheduledEvent scheduleFunction(Object function, final Object self, long delay){
 		return scheduleFunction(function, self, delay, new Object[0]);
 	}
-	
+
 	public ScheduledEvent scheduleFunction(Object function, final Object self, long delay, final Object[] args){
 		final Function fnc = (Function)Context.jsToJava(function, Function.class);
 		Runnable runnable = new Runnable(){
@@ -259,9 +260,9 @@ public class ScriptHelper {
 		};
 		return game.getScheduler().schedule(runnable, game.getTime(), delay);
 	}
-	
+
 	@SuppressLint("DefaultLocale")
-	public void scheduleEvent(String name, String event, Object function){
+	public EventReceiver registerEvent(String name, String event, Object function){
 		EventType type = EventType.valueOf(event.toUpperCase());
 		EventReceiver receiver = new EventReceiver(name, "", type, function){
 			@Override
@@ -271,19 +272,20 @@ public class ScriptHelper {
 			}
 		};
 		game.registerEvent(receiver);
+		return receiver;
 	}
-	
+
 	public EventReceiver getEvent(String name){
 		for(EventReceiver receiver : game.getEvents().getReceivers())
 			if(receiver.getName().equals(name))
 				return receiver;
 		return null;
 	}
-	
+
 	public void openShop(String name){
 		openShop(Shop.get(name));
 	}
-	
+
 	public void openShop(Shop shop){
 		shop.open(game);
 	}
@@ -316,7 +318,29 @@ public class ScriptHelper {
 		game.getWindows().register(windowObj);
 		windowObj.show();
 	}
-	
+
+	public void showIngameWindow(){
+		game.getWindows().get(WindowIngame.class).show();
+	}
+
+	public void hideIngameWindow(){
+		game.getWindows().get(WindowIngame.class).hide();
+	}
+
+	@SuppressWarnings("unchecked")
+	public void hideWindow(String windowName){
+		if(!windowName.startsWith(WINDOW_PACKAGE))
+			windowName = WINDOW_PACKAGE + "." + windowName;
+		try{
+			Class<? extends Window> cls = (Class<? extends Window>)Class.forName(windowName);
+			game.getWindows().get(cls).hide();
+		}catch(Exception e){
+			Log.e("ScriptHelper", "Error while hiding window " + windowName + " - " + e.getMessage());
+			e.printStackTrace();
+			return;
+		}
+	}
+
 	public void var_dump(Object o){
 		String dump = "[VAR DUMP]\nHash Code: " + o.toString() + "\nClass: " + o.getClass().getName();
 		if(o instanceof Entity){
@@ -327,7 +351,7 @@ public class ScriptHelper {
 		}
 		Log.d("ScriptHelper", dump);
 	}
-	
+
 	public EntityLiving createEntity(String name, String resource, String script, int maxHealth){
 		EntityLiving ent = new EntityLiving(maxHealth);
 		ent.setName(name);
@@ -335,7 +359,7 @@ public class ScriptHelper {
 		ent.setScript(script);
 		return ent;
 	}
-	
+
 	public static final String ENTITY_PACKAGE = "net.site40.rodit.tinyrpg.game.entity";
 	@SuppressWarnings("unchecked")
 	public Entity createEntity(String config){
@@ -354,13 +378,22 @@ public class ScriptHelper {
 		return entity;
 	}
 
+	public Team createTeam(EntityLiving... members){
+		return new Team(members);
+	}
+
 	@SuppressLint("DefaultLocale")
 	public Battle battle(String region, EntityLiving attack, EntityLiving defence){
+		return battle(region, createTeam(attack), createTeam(defence));
+	}
+
+	@SuppressLint("DefaultLocale")
+	public Battle battle(String region, Team attack, Team defence){
 		Battle b = new Battle(Region.valueOf(region.toUpperCase()), attack, defence);
 		game.setBattle(b);
 		return b;
 	}
-	
+
 	private Util util;
 	public Util getUtil(){
 		return util == null ? util = new Util() : util;

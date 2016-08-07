@@ -44,6 +44,9 @@ public class SaveGame {
 		game.getGuis().hide(GuiSaves.class);
 		game.getGuis().hide(GuiMenu.class);
 		game.getGuis().show(GuiIngame.class);
+//		WindowIngame wing = new WindowIngame(game);
+//		game.getWindows().register(wing);
+//		wing.show();
 	}
 	
 	public void save(Game game)throws IOException{
