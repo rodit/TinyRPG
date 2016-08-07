@@ -28,7 +28,7 @@ public class Nametag extends GameObject{
 		
 		canvas.drawRect(new RectF(entity.getX() + entity.getWidth() / 2 - textWidth / 2 - 4f, entity.getY() - 10f, entity.getX() + entity.getWidth() / 2 + textWidth / 2 + 2f, entity.getY() - 2f), paint);
 		paint.setColor(Color.WHITE);
-		canvas.drawText(entity.displayName, entity.getX() + entity.getWidth() / 2, entity.getY() - 3.2f, paint);
+		canvas.drawText(entity.getDisplayName(), entity.getX() + entity.getWidth() / 2, entity.getY() - 3.2f, paint);
 	}
 
 	@Override
