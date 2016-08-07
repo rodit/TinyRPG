@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import net.site40.rodit.tinyrpg.game.Values;
+import net.site40.rodit.tinyrpg.game.forge.ForgeRegistry.ForgeRecipy.ForgeType;
 import net.site40.rodit.tinyrpg.game.item.ItemEquippable;
 import net.site40.rodit.tinyrpg.game.render.SpriteSheet.MovementState;
 import net.site40.rodit.tinyrpg.game.util.Direction;
@@ -21,6 +22,18 @@ import android.graphics.Paint.Align;
 import android.text.TextUtils;
 
 public class Util {
+
+	public static String[] join(String[]... arrays){
+		int totalLength = 0;
+		for(int i = 0; i < arrays.length; i++)
+			totalLength += arrays[i].length;
+		String[] total = new String[totalLength];
+		int k = 0;
+		for(int i = 0; i < arrays.length; i++)
+			for(int j = 0; j < arrays[i].length; j++)
+				total[k++] = arrays[i][j];
+		return total;
+	}
 
 	public static <K, V> void sortValuesInMap(LinkedHashMap<K, V> map, final Comparator<? super V> comparator){
 		List<Map.Entry<K, V>> entries = new ArrayList<Entry<K, V>>(map.entrySet());
@@ -179,6 +192,17 @@ public class Util {
 		try{
 			Field f = ItemEquippable.class.getDeclaredField(key);
 			return f.getInt(null);
+		}catch(Exception e){}
+		return ret;
+	}
+
+	public static ForgeType tryGetForgeType(String key){
+		return tryGetForgeType(key, ForgeType.CRAFT);
+	}
+
+	public static ForgeType tryGetForgeType(String key, ForgeType ret){
+		try{
+			return ForgeType.valueOf(key);
 		}catch(Exception e){}
 		return ret;
 	}
