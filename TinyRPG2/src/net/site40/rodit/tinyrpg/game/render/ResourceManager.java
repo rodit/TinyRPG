@@ -15,6 +15,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.text.TextUtils;
+import android.util.Log;
 
 public class ResourceManager {
 
@@ -33,6 +34,8 @@ public class ResourceManager {
 	public Object getObject(String key){
 		if(key == null || TextUtils.isEmpty(key))
 			return null;
+		if((key.endsWith(".png") || key.endsWith(".spr")) || key.endsWith(".anm") && !key.startsWith("bitmap/"))
+			key = "bitmap/" + key;
 		Object value = resources.containsKey(key) ? resources.get(key) : null;
 		if(value == null){
 			if(key.endsWith(".tlk")){
@@ -57,11 +60,13 @@ public class ResourceManager {
 				return XmlResourceLoader.loadMap(this, key);//value = XmlResourceLoader.loadMap(this, key);
 			else if(key.endsWith(".spr"))
 				value = new SpriteSheet(BitmapFactory.decodeByteArray(data, 0, data.length));
-			else{
+			else if(key.endsWith(".anm")){
 				Animation a = new Animation();
 				a.load(key, this);
 				value = a;
 			}
+			else
+				Log.w("ResourceManager", "Resource requested with unsupported extension: " + key + ".");
 			resources.put(key, value);
 		}
 		return value;
