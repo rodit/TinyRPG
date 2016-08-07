@@ -13,7 +13,7 @@ public class RenderUtil {
 
 	public static int drawWrappedText(Game game, String text, int width, Paint paint, Canvas canvas){
 		TextPaint tp = new TextPaint(paint);
-		StaticLayout layout = new StaticLayout(Html.fromHtml(text), tp, width, Layout.Alignment.ALIGN_NORMAL, 1, 0, false);
+		StaticLayout layout = new StaticLayout(Html.fromHtml(text.replace("\n", "<br>")), tp, width, Layout.Alignment.ALIGN_NORMAL, 1, 0, false);
 		
 //		LinearLayout layout = new LinearLayout(game.getContext());
 //		TextView tv = new TextView(game.getContext());
@@ -28,7 +28,7 @@ public class RenderUtil {
 
 	public static void drawBitmapBox(Canvas canvas, Game game, RectF bounds, Paint paint){
 		canvas.drawBitmap(game.getResources().getBitmap("gui/window/m.png"), null, new RectF(bounds.left + 128f, bounds.top + 128f, bounds.right - 128f, bounds.bottom - 128f), paint);
-
+		
 		canvas.drawBitmap(game.getResources().getBitmap("gui/window/tlc.png"), null, new RectF(bounds.left, bounds.top, bounds.left + 128f, bounds.top + 128f), paint);
 		canvas.drawBitmap(game.getResources().getBitmap("gui/window/trc.png"), null, new RectF(bounds.right - 128f, bounds.top, bounds.right, bounds.top + 128f), paint);
 		canvas.drawBitmap(game.getResources().getBitmap("gui/window/blc.png"), null, new RectF(bounds.left, bounds.bottom - 128f, bounds.left + 128f, bounds.bottom), paint);
