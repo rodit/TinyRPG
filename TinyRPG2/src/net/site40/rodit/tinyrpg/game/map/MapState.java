@@ -18,6 +18,7 @@ import net.site40.rodit.tinyrpg.game.render.XmlResourceLoader;
 import net.site40.rodit.util.ISavable;
 import net.site40.rodit.util.TinyInputStream;
 import net.site40.rodit.util.TinyOutputStream;
+import net.site40.rodit.util.Util;
 import android.graphics.Canvas;
 import android.graphics.RectF;
 import android.util.Log;
@@ -94,6 +95,14 @@ public class MapState extends GameObject implements ISavable{
 		game.removeObject(e);
 		Log.i("MapState", "Despawned entity " + e.getName() + ".");
 		game.getEvents().onEvent(game, EventType.ENTITY_DESPAWNED, e);
+	}
+	
+	public ArrayList<Entity> getCollidingEntities(RectF bounds, Object... exclude){
+		ArrayList<Entity> collisions = new ArrayList<Entity>();
+		for(Entity e : entities)
+			if(!e.isNoclip() && !Util.arrayContains(exclude, e, Object.class) && RectF.intersects(bounds, e.getCollisionBounds()))
+				collisions.add(e);
+		return collisions;
 	}
 
 	public Object getCollisionObject(float x, float y, Object... exclude){
