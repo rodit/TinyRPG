@@ -1,5 +1,7 @@
 package net.site40.rodit.tinyrpg.game.item;
 
+import java.util.regex.Pattern;
+
 import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.entity.EntityLiving;
 import net.site40.rodit.tinyrpg.game.render.SpriteSheet;
@@ -23,6 +25,7 @@ public class ItemEquippable extends Item{
 	public static final int SLOT_FINGER_1 = 5;
 	public static final int SLOT_HAND_0 = 6;
 	public static final int SLOT_HAND_1 = 7;
+	public static final int SLOT_HAIR = 8;
 
 	protected int[] equipSlots = new int[0];
 	
@@ -46,7 +49,9 @@ public class ItemEquippable extends Item{
 	}
 	
 	public boolean drawSpriteOverlay(Canvas canvas, Game game, EntityLiving equipper, Paint paint){
-		return drawSpriteOverlay(canvas, game, equipper, paint, this.getName());
+		String[] tmp = getResource().split(Pattern.quote("/"));
+		String spriteName = tmp[tmp.length - 1].replace(".png", "");
+		return drawSpriteOverlay(canvas, game, equipper, paint, spriteName);
 	}
 	
 	public static final String SPRITE_DIR = "item/sprite";
