@@ -6,7 +6,7 @@ public enum Region {
 
 	GRASS, FOREST, LAKE, SEA, BEACH, DESERT, SNOW, MOUNTAIN, PEAK, UNKNOWN;
 	
-	public static class RegionLocal{
+	public static class RegionLocale{
 		
 		@SuppressLint("DefaultLocale")
 		public static String getString(Region region){
