@@ -7,3 +7,27 @@ defense - armour val * 1.(defense * 10)
 luck - crit hit chance multi = 1.(luck * 10); loot rare find chance = 1.(luck * 2.5)
 magika - amount of magic available for spells = 10 * magika * levelFactor
 forge - chance of successfuly forge = 15 * forge
+
+FORGE:
+Weapons/Shields:
+wood
+bone
+stone
+iron
+steel
+black steel
+
+Jewlery:
+bronze
+silver
+gold
+emerald
+ruby
+sapphire
+
+Armour:
+leather
+bone
+iron
+steel
+black steel
