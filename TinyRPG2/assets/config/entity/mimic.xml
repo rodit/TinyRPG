@@ -1,4 +1,4 @@
-<entity class="mob.EntityMob" name="mimc_default" displayName="Mimic" health="50" maxHealth="50" resource="entity/chest/mimic.anm" width="32" height="32" drawEquipment="false">
+<entity class="mob.EntityMob" name="mimc_default" displayName="Mimic" health="50" maxHealth="50" resource="entity/chest/mimic.anm" width="32" height="32" drawEquipment="false" difficulty="easy">
 
 	<stats level="1" speed="10" strength="1.0" defence="1.0"/>
 	<equip item="knuckle_dusters_1" slot="SLOT_HAND_0"/>
