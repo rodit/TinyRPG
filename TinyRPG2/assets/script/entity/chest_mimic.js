@@ -18,8 +18,11 @@ function onAction(actor){
 	}
 }
 
-function onBattleComplete(battle){
-	var mimic_entity = battle.getAttack().getMembers().get(0);
+function onBattleComplete(battle, winners){
+	var winning = winners.getMembers().get(0);
+	if(winning != game.getPlayer())
+		return;
+	var mimic_entity = battle.getMembers(0).get(0);
 	var loot = helper.getItem(game.getGlobal("current_mimic_loot"));
 	var loot_count = game.getGlobali("current_mimic_loot_count");
 	game.getPlayer().getInventory().add(loot, loot_count);
