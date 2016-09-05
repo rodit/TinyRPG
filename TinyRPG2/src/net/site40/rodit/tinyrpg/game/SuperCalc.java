@@ -23,6 +23,12 @@ public class SuperCalc {
 	}
 	
 	public static float getDamage(Game game, EntityLiving user, EntityLiving receiver, Weapon weapon){
+		float rand = game.getRandom().nextFloat() - 0.5f;
+		rand /= 0.5f;
+		return getDirectDamage(game, user, receiver, weapon) * (1f + rand);
+	}
+	
+	public static float getDirectDamage(Game game, EntityLiving user, EntityLiving receiver, Weapon weapon){
 		float dmgMulti = weapon.isMagic() ? getMagikaDamageMulti(user, receiver) : getDamageMulti(user, receiver);
 		float def = getDefenceMulti(user, receiver) * receiver.getTotalDefence();
 		float damage = dmgMulti * weapon.getDamage() - def;
