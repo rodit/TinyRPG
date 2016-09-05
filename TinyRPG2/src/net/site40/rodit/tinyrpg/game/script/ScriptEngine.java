@@ -3,6 +3,7 @@ package net.site40.rodit.tinyrpg.game.script;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import net.site40.rodit.tinyrpg.game.Benchmark;
 import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.util.GenericCallback.ObjectCallback;
 
@@ -21,7 +22,7 @@ public class ScriptEngine {
 	private HashMap<String, Script> scriptCache = new HashMap<String, Script>();
 
 	public Object executeFunction(Game game, Function function, Object thisObj, String[] varNames, Object[] varVals, Object[] vars){
-		long time = System.currentTimeMillis();
+		Benchmark.start("sf_" + function);
 
 		Context cx = ContextFactory.getGlobal().enterContext();
 		try{
@@ -38,7 +39,7 @@ public class ScriptEngine {
 			e.printStackTrace();
 		}finally{
 			Context.exit();
-			Log.d("ScriptEngine", "Script function execution took " + (System.currentTimeMillis() - time) + "ms.");
+			Log.d("ScriptEngine", "Script function execution took " + Benchmark.stop("sf_" + function) + "ms.");
 		}
 		return null;
 	}
@@ -55,7 +56,7 @@ public class ScriptEngine {
 	}
 
 	public Object execute(Game game, String scriptPath, String[] varNames, Object[] varVals){
-		long time = System.currentTimeMillis();
+		Benchmark.start("se_" + scriptPath);
 		Context cx2 = ContextFactory.getGlobal().enterContext();
 		cx2.setOptimizationLevel(-1);
 
@@ -82,7 +83,7 @@ public class ScriptEngine {
 			e.printStackTrace();
 		}finally{
 			Context.exit();
-			Log.d("ScriptEngine", "Script execution took " + (System.currentTimeMillis() - time) + "ms.");
+			Log.d("ScriptEngine", "Script execution took " + Benchmark.stop("se_" + scriptPath) + "ms.");
 		}
 		return null;
 	}
