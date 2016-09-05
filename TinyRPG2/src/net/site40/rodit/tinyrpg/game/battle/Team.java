@@ -27,7 +27,7 @@ public class Team {
 	private int[] battleAttribs;
 	
 	public Team(){
-		this(null, null);
+		this(new EntityLiving[0]);
 	}
 	
 	public Team(EntityLiving... members){
