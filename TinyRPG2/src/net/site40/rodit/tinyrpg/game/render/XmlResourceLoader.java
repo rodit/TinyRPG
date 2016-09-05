@@ -2,6 +2,7 @@ package net.site40.rodit.tinyrpg.game.render;
 
 import java.util.ArrayList;
 
+import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.combat.Attack;
 import net.site40.rodit.tinyrpg.game.effect.Effect;
 import net.site40.rodit.tinyrpg.game.forge.ForgeRegistry;
@@ -9,6 +10,7 @@ import net.site40.rodit.tinyrpg.game.forge.ForgeRegistry.ForgeRecipy.ForgeType;
 import net.site40.rodit.tinyrpg.game.item.Item;
 import net.site40.rodit.tinyrpg.game.item.ItemStack;
 import net.site40.rodit.tinyrpg.game.map.MapObject;
+import net.site40.rodit.tinyrpg.game.map.MobSpawnRegistry.MobSpawn;
 import net.site40.rodit.tinyrpg.game.map.RPGMap;
 import net.site40.rodit.tinyrpg.game.quest.Quest;
 import net.site40.rodit.tinyrpg.game.quest.QuestManager;
@@ -246,5 +248,21 @@ public class XmlResourceLoader {
 			loaded++;
 		}
 		Log.i("StartClassLoader", "Loaded " + loaded + " started classes from " + file + ".");
+	}
+	
+	public static void loadMobSpawns(Game game, String file){
+		Document doc = game.getResources().readDocument(file);
+		NodeList msNodes = doc.getElementsByTagName("mobspawn");
+		int loaded = 0;
+		for(int i = 0; i < msNodes.getLength(); i++){
+			Node n = msNodes.item(i);
+			if(n.getNodeType() != Node.ELEMENT_NODE)
+				continue;
+			Element e = (Element)n;
+			MobSpawn spawn = new MobSpawn();
+			spawn.deserializeXmlElement(e);
+			game.getMobSpawns().registerMobSpawn(spawn.getSpawnAreaKey(), spawn);
+			loaded++;
+		}
 	}
 }
