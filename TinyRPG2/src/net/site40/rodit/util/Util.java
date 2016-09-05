@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import net.site40.rodit.tinyrpg.game.Values;
+import net.site40.rodit.tinyrpg.game.battle.AIBattleProvider.AIDifficulty;
 import net.site40.rodit.tinyrpg.game.forge.ForgeRegistry.ForgeRecipy.ForgeType;
 import net.site40.rodit.tinyrpg.game.item.ItemEquippable;
 import net.site40.rodit.tinyrpg.game.render.SpriteSheet.MovementState;
@@ -100,6 +101,19 @@ public class Util {
 	public static long tryGetLong(String key, long ret){
 		try{
 			return Long.valueOf(key);
+		}catch(Exception e){}
+		return ret;
+	}
+
+	public static AIDifficulty tryGetAIDifficulty(String key){
+		return tryGetAIDifficulty(key, AIDifficulty.MEDIUM);
+	}
+
+	@SuppressLint("DefaultLocale")
+	public static AIDifficulty tryGetAIDifficulty(String key, AIDifficulty ret){
+		try{
+			AIDifficulty diff = AIDifficulty.valueOf(key.toUpperCase());
+			return diff == null ? ret : diff;
 		}catch(Exception e){}
 		return ret;
 	}
