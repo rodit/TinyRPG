@@ -46,10 +46,10 @@ public class WindowSlotted extends Window{
 		providerInfo.put(key, info);
 	}
 
-	public void addSlot(float x, float y, Object providerKey, String id){
+	public WindowSlot addSlot(float x, float y, Object providerKey, String id){
 		ProviderInfo info = providerInfo.get(providerKey);
 		if(info == null)
-			return;
+			return null;
 		WindowSlot slot = new WindowSlot(providerKey, InventoryProvider.TAB_ALL, info.slots.size());
 		slot.setName("slot_" + id);
 		slot.addListener(new WindowListener(){
@@ -61,12 +61,13 @@ public class WindowSlotted extends Window{
 		info.slots.add(slot);
 		slots.add(slot);
 		add(slot);
+		return slot;
 	}
 	
-	public void addEquipmentSlot(float x, float y, Object providerKey, int equipId){
+	public WindowSlot addEquipmentSlot(float x, float y, Object providerKey, int equipId){
 		ProviderInfo info = providerInfo.get(providerKey);
 		if(info == null)
-			return;
+			return null;
 		WindowEquipmentSlot slot = new WindowEquipmentSlot(providerKey, equipId);
 		slot.setName("slot_equip_" + equipId);
 		slot.addListener(new WindowListener(){
@@ -77,12 +78,13 @@ public class WindowSlotted extends Window{
 		slot.setBounds(x, y, WindowSlot.SLOT_WIDTH, WindowSlot.SLOT_HEIGHT);
 		equipmentSlots.add(slot);
 		add(slot);
+		return slot;
 	}
 	
-	public void addTab(float x, float y, int index, Object providerKey){
+	public WindowTab addTab(float x, float y, int index, Object providerKey){
 		ProviderInfo info = providerInfo.get(providerKey);
 		if(info == null)
-			return;
+			return null;
 		WindowTab tab = new WindowTab(index, providerKey);
 		tab.addListener(new WindowListener(){
 			public void touchUp(Game game, WindowComponent component){
@@ -93,6 +95,7 @@ public class WindowSlotted extends Window{
 		info.tabs.add(tab);
 		tabs.add(tab);
 		add(tab);
+		return tab;
 	}
 	
 	public int getItemsPerPage(Object providerKey){

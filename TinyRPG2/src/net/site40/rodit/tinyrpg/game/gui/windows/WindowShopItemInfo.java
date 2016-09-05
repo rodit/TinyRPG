@@ -2,34 +2,40 @@ package net.site40.rodit.tinyrpg.game.gui.windows;
 
 import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.SuperCalc;
+import net.site40.rodit.tinyrpg.game.entity.Entity;
 import net.site40.rodit.tinyrpg.game.entity.EntityLiving;
 import net.site40.rodit.tinyrpg.game.gui.windows.WindowSlotted.ProviderInfo;
 import net.site40.rodit.tinyrpg.game.gui.windows.WindowUserInput.InputCallback;
 import net.site40.rodit.tinyrpg.game.gui.windows.WindowUserInput.InputResult;
 import net.site40.rodit.tinyrpg.game.item.ItemStack;
+import net.site40.rodit.tinyrpg.game.shop.Shop;
 import net.site40.rodit.util.Util;
 
 public class WindowShopItemInfo extends WindowItemInfo{
 
 	public WindowShopItemInfo(Game game, ItemStack stack, ProviderInfo info){
 		super(game, stack, info);
+		initialize(game);
 	}
-	
+
 	public boolean isShop(){
 		return !info.provider.getOwner().isPlayer();
 	}
-	
+
 	public EntityLiving getCurrentShopOwner(Game game){
-		return (EntityLiving)game.getGlobal("current_shop");
+		Entity e = ((Shop)game.getGlobal("current_shop")).getOwner();
+		if(e instanceof EntityLiving)
+			return (EntityLiving)e;
+		throw new RuntimeException("Current shop owner is not an EntityLiving!");
 	}
-	
+
 	@Override
 	public void initialize(Game game){
 		if(info == null)
 			return;
 		
 		super.initialize(game);
-		
+
 		remove(btnDispose);
 
 		final boolean isShop = isShop();
@@ -78,11 +84,11 @@ public class WindowShopItemInfo extends WindowItemInfo{
 			}
 		});
 	}
-	
+
 	public boolean isVanillaWindow(){
 		return false;
 	}
-	
+
 	public boolean tradeItem(Game game, ItemStack stack, boolean buying){
 		long itemValue = buying ? SuperCalc.getStackValueFromShop(stack, game.getPlayer()) : SuperCalc.getStackValue(stack, game.getPlayer());
 		boolean canAfford = buying ? game.getPlayer().getMoney() >= itemValue : getCurrentShopOwner(game).getMoney() >= itemValue;
@@ -96,5 +102,15 @@ public class WindowShopItemInfo extends WindowItemInfo{
 			getCurrentShopOwner(game).getInventory().add(stack);
 		}
 		return true;
+	}
+
+	@Override
+	public void initAfterInit(Game game){
+		super.initAfterInit(game);
+		
+		if(info.provider.getOwner() instanceof EntityLiving)
+			txtItemValue.setText("Price: " + SuperCalc.getStackValue(stack, (EntityLiving)info.provider.getOwner()) + " Gold");
+		else
+			txtItemValue.setText("Priceless...");
 	}
 }

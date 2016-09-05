@@ -36,6 +36,10 @@ public class WindowUserInput extends Window{
 		initialize(game);
 	}
 	
+	public WindowTextBoxComponent getInputBox(){
+		return inputBox;
+	}
+	
 	@Override
 	public void initialize(Game game){
 		if(initTxt == null)

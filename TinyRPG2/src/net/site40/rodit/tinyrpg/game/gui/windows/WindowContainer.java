@@ -20,15 +20,15 @@ public class WindowContainer extends WindowSlotted{
 	
 	private Entity container;
 	
-	private WindowComponent txtTitle;
+	protected WindowComponent txtTitle;
 	
-	private WindowComponent txtPageNoPlayer;
-	private WindowComponent btnPageUpPlayer;
-	private WindowComponent btnPageDownPlayer;
+	protected WindowComponent txtPageNoPlayer;
+	protected WindowComponent btnPageUpPlayer;
+	protected WindowComponent btnPageDownPlayer;
 
-	private WindowComponent txtPageNoContainer;
-	private WindowComponent btnPageUpContainer;
-	private WindowComponent btnPageDownContainer;
+	protected WindowComponent txtPageNoContainer;
+	protected WindowComponent btnPageUpContainer;
+	protected WindowComponent btnPageDownContainer;
 
 	public WindowContainer(Game game, Entity container){
 		super(game);

@@ -48,6 +48,10 @@ public class WindowTextBoxComponent extends WindowComponent{
 	public int getInputType(){
 		return inputType;
 	}
+	
+	public void setInputType(int inputType){
+		this.inputType = inputType;
+	}
 
 	public int getTextColor(){
 		return textColor;

@@ -20,6 +20,7 @@ import net.site40.rodit.util.RenderUtil;
 import net.site40.rodit.util.Util;
 import android.graphics.Canvas;
 import android.graphics.Paint.Align;
+import android.util.Log;
 import android.view.MotionEvent;
 
 public class WindowItemInfo extends Window{
@@ -52,7 +53,7 @@ public class WindowItemInfo extends Window{
 	}
 
 	@Override
-	public void initialize(Game game){		
+	public void initialize(Game game){
 		this.setBounds(576, 152, WindowSlot.SLOT_WIDTH * WindowInventory.COUNT_COLUMNS + 128, WindowSlot.SLOT_HEIGHT * WindowInventory.COUNT_ROWS + 128);
 
 		txtItemName = new WindowComponent("txtItemName");

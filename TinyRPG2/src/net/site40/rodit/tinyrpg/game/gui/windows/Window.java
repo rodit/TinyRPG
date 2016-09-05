@@ -12,7 +12,7 @@ import android.view.MotionEvent;
 
 public abstract class Window extends GameObject{
 	
-	protected int zIndex = 99;
+	public int zIndex = 99;
 
 	private float x;
 	private float y;
