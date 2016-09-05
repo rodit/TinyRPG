@@ -1,6 +1,6 @@
 function dialogCallback0(option){
 	game.removeObject(game.getSprite(game.getGlobal("bg_sprite_obj_name")));
-	helper.setMap(game.getGlobal("start_map"));
+	helper.setMap(game.getGlobal("start_map"), true);
 	game.getPlayer().addMoney(100);
 }
 

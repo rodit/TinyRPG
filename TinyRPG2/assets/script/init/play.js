@@ -20,5 +20,5 @@ if(game.getGlobal("intro_done") == "false"){
 
 	helper.dialog("Hello adventurer! Welcome to the world of TinyRPG. How are you feeling?", helper.array("Amazing", "Great", "Okay", "Get on with it..."), dialogCallback0);
 }else{
-	helper.setMap(game.getGlobal("start_map"));
+	helper.setMap(game.getGlobal("start_map"), true);
 }
