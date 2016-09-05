@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" width="20" height="20" tilewidth="16" tileheight="16">
- <tileset firstgid="1" name="Master" tilewidth="16" tileheight="16">
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="20" height="20" tilewidth="16" tileheight="16" nextobjectid="15">
+ <tileset firstgid="1" name="Master" tilewidth="16" tileheight="16" tilecount="11625">
   <image source="master.png" width="2000" height="1500"/>
  </tileset>
  <layer name="Floor" width="20" height="20">
@@ -27,8 +27,32 @@
 158,159,160,161,158,159,160,161,158,159,160,161,158,159,160,161,158,159,160,161
 </data>
  </layer>
- <objectgroup name="entities" width="20" height="20">
-  <object name="spawn_initial" x="144" y="160" width="16" height="16">
+ <layer name="FloorCover" width="20" height="20">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,291,292,293,292,293,294,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,416,417,418,417,418,419,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,541,542,543,542,543,544,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,416,417,418,417,418,419,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,541,542,543,542,543,544,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,666,667,668,667,668,669
+</data>
+ </layer>
+ <objectgroup name="entities">
+  <object id="1" name="spawn_initial" x="144" y="160" width="16" height="16">
    <properties>
     <property name="condition" value="respawn"/>
     <property name="noclip" value="true"/>
@@ -36,43 +60,49 @@
     <property name="type" value="0"/>
    </properties>
   </object>
-  <object name="spawn_merek" x="144" y="112" width="16" height="16">
+  <object id="2" name="spawn_merek" x="144" y="112" width="16" height="16">
    <properties>
     <property name="config" value="config/entity/merek.xml"/>
     <property name="script" value="script/entity/entity_spawn.js"/>
    </properties>
   </object>
-  <object name="debug_chest_default_0" x="96" y="112" width="16" height="16">
+  <object id="3" name="debug_chest_default_0" x="96" y="112" width="16" height="16">
    <properties>
     <property name="loot" value="dagger_bone_1"/>
     <property name="script" value="script/entity/chest.js"/>
    </properties>
   </object>
-  <object name="debug_chest_locked_cant_unlock_0" x="64" y="112" width="16" height="16">
+  <object id="4" name="debug_chest_locked_cant_unlock_0" x="64" y="112" width="16" height="16">
    <properties>
     <property name="key" value="null"/>
     <property name="loot" value="dagger_bone_1"/>
     <property name="script" value="script/entity/locked_chest.js"/>
    </properties>
   </object>
-  <object name="debug_chest_locked_0" x="32" y="112" width="16" height="16">
+  <object id="5" name="debug_chest_locked_0" x="32" y="112" width="16" height="16">
    <properties>
     <property name="key" value="dagger_bone_1"/>
     <property name="loot" value="dagger_bone_1"/>
     <property name="script" value="script/entity/locked_chest.js"/>
    </properties>
   </object>
-  <object name="debug_chest_mimic_0" x="192" y="112" width="16" height="16">
+  <object id="6" name="debug_chest_mimic_0" x="192" y="112" width="16" height="16">
    <properties>
     <property name="loot" value="dagger_bone_1"/>
     <property name="script" value="script/entity/chest_mimic.js"/>
    </properties>
   </object>
+  <object id="13" name="spawn_mob_000" x="228" y="228" width="88" height="88">
+   <properties>
+    <property name="key" value="testarea_mobspawn_0"/>
+    <property name="script" value="script/entity/mobspawn.js"/>
+   </properties>
+  </object>
  </objectgroup>
- <objectgroup name="collisions" width="20" height="20">
-  <object x="-16" y="0" width="16" height="320"/>
-  <object x="320" y="0" width="16" height="320"/>
-  <object x="-16" y="-16" width="352" height="16"/>
-  <object x="-16" y="320" width="352" height="16"/>
+ <objectgroup name="collisions">
+  <object id="7" x="-16" y="0" width="16" height="320"/>
+  <object id="8" x="320" y="0" width="16" height="320"/>
+  <object id="9" x="-16" y="-16" width="352" height="16"/>
+  <object id="10" x="-16" y="320" width="352" height="16"/>
  </objectgroup>
 </map>
