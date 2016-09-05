@@ -28,10 +28,10 @@ public class GameActivity extends Activity {
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 
-		//		this.glSurfaceView = new GLSurfaceView(this);
-		//		glSurfaceView.setEGLContextClientVersion(2);
-		//		glSurfaceView.setRenderer(new RGLRenderer(game = new Game(getApplicationContext(), glSurfaceView)));
-		//		setContentView(glSurfaceView);
+		//this.glSurfaceView = new GLSurfaceView(this);
+		//glSurfaceView.setEGLContextClientVersion(2);
+		//glSurfaceView.setRenderer(new RGLRenderer(game = new Game(getApplicationContext(), glSurfaceView)));
+		//setContentView(glSurfaceView);
 		if(view == null){
 			this.view = new GameView(getApplicationContext(), this);
 			setContentView(view);
@@ -50,7 +50,7 @@ public class GameActivity extends Activity {
 	protected void onResume() {
 		super.onResume();
 		if(glSurfaceView != null)
-			glSurfaceView.onPause();
+			glSurfaceView.onResume();
 		game.unpause();
 	}
 
