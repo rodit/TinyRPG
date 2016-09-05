@@ -136,6 +136,7 @@ public class ResourceManager {
 			e.printStackTrace();
 		}
 	}
+	
 	public Document readDocument(String file){
 		try{
 			return builder.parse(openAsset(file));
@@ -150,6 +151,10 @@ public class ResourceManager {
 			return assets.open(name);
 		}catch(IOException e){
 			if(!notFounds.contains(name)){
+				if(name.endsWith(".png")){
+					Log.w("ResourceManager", "Asset not found Bitmap:(" + name + ")");
+				return openAsset("bitmap/undefined.png");
+				}
 				e.printStackTrace();
 				notFounds.add(name);
 			}
