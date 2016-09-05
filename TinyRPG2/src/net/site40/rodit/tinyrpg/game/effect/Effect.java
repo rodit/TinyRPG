@@ -1,9 +1,12 @@
 package net.site40.rodit.tinyrpg.game.effect;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.entity.EntityLiving;
+import net.site40.rodit.util.TinyInputStream;
+import net.site40.rodit.util.TinyOutputStream;
 import net.site40.rodit.util.Util;
 
 import org.mozilla.javascript.Context;
@@ -139,5 +142,27 @@ public class Effect {
 		this.script = e.getAttribute("script");
 		this.level = Util.tryGetInt(e.getAttribute("level"), 1);
 		this.negative = Util.tryGetBool(e.getAttribute("negative"), false);
+	}
+	
+	public void load(Game game, TinyInputStream in, EntityLiving ent)throws IOException{
+		this.name = in.readString();
+		this.showName = in.readString();
+		this.resource = in.readString();
+		this.script = in.readString();
+		this.level = in.readInt();
+		this.negative = in.readBoolean();
+		this.started = in.readBoolean();
+		this.stopped = in.readBoolean();
+	}
+	
+	public void save(TinyOutputStream out)throws IOException{
+		out.writeString(name);
+		out.writeString(showName);
+		out.writeString(resource);
+		out.writeString(script);
+		out.write(level);
+		out.write(negative);
+		out.write(started);
+		out.write(stopped);
 	}
 }

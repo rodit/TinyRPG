@@ -48,11 +48,15 @@ public class TinyOutputStream {
 	}
 	
 	public void writeString(String s)throws IOException{
+		if(s == null)
+			s = "";
 		write(s.length());
 		write(s.getBytes());
 	}
 	
 	public void writeStringNoHead(String s)throws IOException{
+		if(s == null)
+			s = "";
 		write(s.getBytes());
 	}
 	

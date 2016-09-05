@@ -1,10 +1,14 @@
 package net.site40.rodit.tinyrpg.game;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-public class Scheduler {
+import net.site40.rodit.util.TinyInputStream;
+import net.site40.rodit.util.TinyOutputStream;
 
+public class Scheduler {
+	
 	private ArrayList<ScheduledEvent> addQueue;
 	private ArrayList<ScheduledEvent> removeQueue;
 
@@ -59,7 +63,7 @@ public class Scheduler {
 	}
 
 	public static class ScheduledEvent {
-
+		
 		private long startTime;
 		private long delay;
 		private Runnable runnable;
@@ -77,5 +81,15 @@ public class Scheduler {
 		public Runnable getRunnable(){
 			return runnable;
 		}
+	}
+	
+	public void load(TinyInputStream in)throws IOException{
+		int count = in.readInt();
+		//TODO: make this work...
+	}
+	
+	public void save(TinyOutputStream out)throws IOException{
+		out.write(events.size());
+		//TODO: make this work...
 	}
 }

@@ -17,6 +17,7 @@ public class RPGMap {
 	private ArrayList<MapObject> objects;
 	private HashMap<String, ArrayList<MapObject>> objectGroupCache;
 	private HashMap<Region, ArrayList<RectF>> regions;
+	private HashMap<String, ArrayList<RectF>> mobSpawnAreaKeys;
 
 	private boolean loaded = false;
 
@@ -29,6 +30,7 @@ public class RPGMap {
 		this.objects = new ArrayList<MapObject>();
 		this.objectGroupCache = new HashMap<String, ArrayList<MapObject>>();
 		this.regions = new HashMap<Region, ArrayList<RectF>>();
+		this.mobSpawnAreaKeys = new HashMap<String, ArrayList<RectF>>();
 	}
 
 	public boolean isLoaded(){
@@ -80,6 +82,18 @@ public class RPGMap {
 	public HashMap<Region, ArrayList<RectF>> getRegions(){
 		return regions;
 	}
+	
+	public Region getRegion(float x, float y){
+		for(Region region : regions.keySet()){
+			ArrayList<RectF> allBounds = regions.get(region);
+			if(allBounds == null)
+				continue;
+			for(RectF rect : allBounds)
+				if(rect.contains(x, y))
+					return region;
+		}
+		return Region.GRASS;
+	}
 
 	public void addRegionLocation(Region region, RectF location){
 		ArrayList<RectF> locations = regions.get(region);
@@ -88,6 +102,32 @@ public class RPGMap {
 		if(!locations.contains(location))
 			locations.add(location);
 		regions.put(region, locations);
+	}
+	
+	public ArrayList<RectF> getMobSpawnAreas(String key){
+		return mobSpawnAreaKeys.get(key);
+	}
+	
+	public String getMobSpawnAreaKeys(float x, float y){
+		for(String key : this.mobSpawnAreaKeys.keySet()){
+			ArrayList<RectF> allBounds = this.mobSpawnAreaKeys.get(key);
+			if(allBounds == null)
+				continue;
+			for(RectF rect : allBounds)
+				if(rect.contains(x, y))
+					return key;
+		}
+		return "null_mobspawn";
+	}
+	
+	public void addMobSpawnArea(String key, RectF area){
+		ArrayList<RectF> locations = mobSpawnAreaKeys.get(key);
+		if(locations == null)
+			locations = new ArrayList<RectF>();
+		if(!locations.contains(area))
+			locations.add(area);
+		mobSpawnAreaKeys.put(key, locations);
+		Log.i("RPGMap", "Registered mob spawn area key=" + key + " area=" + area.toString());
 	}
 
 	public void dispose(ResourceManager resources){

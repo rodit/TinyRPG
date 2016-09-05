@@ -1,8 +1,12 @@
 package net.site40.rodit.tinyrpg.game.effect;
 
+import java.io.IOException;
+
 import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.Scheduler.ScheduledEvent;
 import net.site40.rodit.tinyrpg.game.entity.EntityLiving;
+import net.site40.rodit.util.TinyInputStream;
+import net.site40.rodit.util.TinyOutputStream;
 import net.site40.rodit.util.Util;
 
 import org.mozilla.javascript.Context;
@@ -93,11 +97,28 @@ public class TimedEffect extends Effect{
 		super.start(game, entity);
 		run(game, entity);
 	}
-
+	
 	@Override
 	public void deserializeXmlElement(Element element){
 		super.deserializeXmlElement(element);
 		this.delay = Util.tryGetLong(element.getAttribute("delay"), 0);
 		this.count = Util.tryGetInt(element.getAttribute("count"), 0);
+	}
+	
+	@Override
+	public void load(Game game, TinyInputStream in, EntityLiving ent)throws IOException{
+		super.load(game, in, ent);
+		this.delay = in.readLong();
+		this.count = in.readInt();
+		this.run = in.readInt();
+		run(game, ent);
+	}
+	
+	@Override
+	public void save(TinyOutputStream out)throws IOException{
+		super.save(out);
+		out.write(delay);
+		out.write(count);
+		out.write(run);
 	}
 }

@@ -6,12 +6,11 @@ import java.util.ArrayList;
 import net.site40.rodit.tinyrpg.game.entity.Entity;
 import net.site40.rodit.tinyrpg.game.entity.EntityLiving;
 import net.site40.rodit.tinyrpg.game.item.armour.Armour;
-import net.site40.rodit.util.ISavable;
 import net.site40.rodit.util.TinyInputStream;
 import net.site40.rodit.util.TinyOutputStream;
 import net.site40.rodit.util.Util;
 
-public class Inventory implements ISavable{
+public class Inventory {
 
 	private ArrayList<ItemStack> items;
 
@@ -176,26 +175,23 @@ public class Inventory implements ISavable{
 	public InventoryProvider getProvider(Entity owner){
 		return new InventoryProvider(this, owner);
 	}
-
-	@Override
-	public void serialize(TinyOutputStream out)throws IOException{
-		out.write(items.size());
-		for(ItemStack stack : items){
-			out.writeString(stack.getItem().getName());
-			out.write(stack.getAmount());
+	
+	public void load(TinyInputStream in)throws IOException{
+		int count = in.readInt();
+		while(items.size() < count){
+			String itemName = in.readString();
+			Item i = Item.get(itemName);
+			items.add(new ItemStack(i, in.readInt()));
 		}
 	}
-
-	@Override
-	public void deserialize(TinyInputStream in)throws IOException{
-		int itemCount = in.readInt();
-		int read = 0;
-		while(read < itemCount){
-			String name = in.readString();
-			Item i = Item.get(name);
-			int count = in.readInt();
-			items.add(new ItemStack(i, count));
-			read++;
+	
+	public void save(TinyOutputStream out)throws IOException{
+		out.write(items.size());
+		for(ItemStack stack : items){
+			if(stack == null)
+				continue;
+			out.writeString(stack.getItem().getName());
+			out.write(stack.getAmount());
 		}
 	}
 

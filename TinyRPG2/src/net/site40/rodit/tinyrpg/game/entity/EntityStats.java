@@ -2,11 +2,10 @@ package net.site40.rodit.tinyrpg.game.entity;
 
 import java.io.IOException;
 
-import net.site40.rodit.util.ISavable;
 import net.site40.rodit.util.TinyInputStream;
 import net.site40.rodit.util.TinyOutputStream;
 
-public class EntityStats implements ISavable{
+public class EntityStats {
 	
 	public static final float DEFAULT_STAT = 0.5f;
 
@@ -196,9 +195,20 @@ public class EntityStats implements ISavable{
 	public void setForgeMulti(float forgeMulti) {
 		this.forgeMulti = forgeMulti;
 	}
-
-	@Override
-	public void serialize(TinyOutputStream out)throws IOException{
+	
+	public void load(TinyInputStream in)throws IOException{
+		this.level = in.readInt();
+		this.xp = in.readInt();
+		this.speed = in.readFloat();
+		this.strength = in.readFloat();
+		this.defence = in.readFloat();
+		this.luck = in.readFloat();
+		this.magika = in.readFloat();
+		this.forge = in.readFloat();
+		//TODO: Multipliers are re-applied by re-equipping inventory items.
+	}
+	
+	public void save(TinyOutputStream out)throws IOException{
 		out.write(level);
 		out.write(xp);
 		out.write(speed);
@@ -207,32 +217,6 @@ public class EntityStats implements ISavable{
 		out.write(luck);
 		out.write(magika);
 		out.write(forge);
-		out.write(hpMulti);
-		out.write(speedMulti);
-		out.write(strengthMulti);
-		out.write(defenceMulti);
-		out.write(luckMulti);
-		out.write(magikaMulti);
-		out.write(forgeMulti);
-	}
-	
-	@Override
-	public void deserialize(TinyInputStream in)throws IOException{
-		level = in.readInt();
-		xp = in.readInt();
-		speed = in.readFloat();
-		strength = in.readFloat();
-		defence = in.readFloat();
-		luck = in.readFloat();
-		magika = in.readFloat();
-		forge = in.readFloat();
-		hpMulti = in.readFloat();
-		speedMulti = in.readFloat();
-		strengthMulti = in.readFloat();
-		defenceMulti = in.readFloat();
-		luckMulti = in.readFloat();
-		magikaMulti = in.readFloat();
-		forgeMulti = in.readFloat();
 	}
 	
 	public static float fPointF(float f0, float f1){

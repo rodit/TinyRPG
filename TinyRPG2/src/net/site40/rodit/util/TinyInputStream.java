@@ -15,6 +15,10 @@ public class TinyInputStream {
 		this.in = in;
 	}
 	
+	public void close()throws IOException{
+		in.close();
+	}
+	
 	public byte[] read(int length)throws IOException{
 		byte[] data = new byte[length];
 		in.read(data);

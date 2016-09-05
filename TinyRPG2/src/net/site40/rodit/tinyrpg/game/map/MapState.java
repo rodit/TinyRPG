@@ -15,7 +15,6 @@ import net.site40.rodit.tinyrpg.game.item.Item;
 import net.site40.rodit.tinyrpg.game.render.BitmapRenderer;
 import net.site40.rodit.tinyrpg.game.render.ResourceManager;
 import net.site40.rodit.tinyrpg.game.render.XmlResourceLoader;
-import net.site40.rodit.util.ISavable;
 import net.site40.rodit.util.TinyInputStream;
 import net.site40.rodit.util.TinyOutputStream;
 import net.site40.rodit.util.Util;
@@ -23,11 +22,11 @@ import android.graphics.Canvas;
 import android.graphics.RectF;
 import android.util.Log;
 
-public class MapState extends GameObject implements ISavable{
+public class MapState extends GameObject {
 	
 	public static final int LOAD_STATE_SAVE = 1;
 	
-	public static int MAP_LOAD_STATE = 0;
+	private int loadState;
 
 	private RPGMap map;
 	private BitmapRenderer rotObj;
@@ -74,7 +73,7 @@ public class MapState extends GameObject implements ISavable{
 	public void spawn(Game game, Entity e){
 		spawn(game, e, true);
 	}
-
+	
 	public void spawn(Game game, Entity e, boolean triggerEvent){
 		if(this.getEntityByName(e.getName()) != null)
 			Log.w("EntitySpawn", "Entity with name " + e.getName() + " already spawned.");
@@ -88,7 +87,7 @@ public class MapState extends GameObject implements ISavable{
 		}
 		Log.i("MapState", "Spawned entity " + e.getName() + ".");
 	}
-
+	
 	public void despawn(Game game, Entity e){
 		e.onDespawn(game);
 		entities.remove(e);
@@ -161,10 +160,20 @@ public class MapState extends GameObject implements ISavable{
 		if(map == null)
 			return;
 		if(!spawnedEntities){
-			if(MAP_LOAD_STATE == LOAD_STATE_SAVE){
-				for(Entity e : entities)
+			if(loadState == LOAD_STATE_SAVE){
+				this.rotObj = new BitmapRenderer(map.getRenderOnTop()){
+					@Override
+					public RenderLayer getRenderLayer(){
+						return RenderLayer.TOP_OVERRIDE_PLAYER;
+					}
+				};
+				for(Entity e : entities){
 					spawn(game, e, false);
+					if(e instanceof EntityNPC)
+						((EntityNPC)e).createNametag(game);
+				}
 				spawnedEntities = true;
+				loadState = 0;
 				return;
 			}
 			for(MapObject obj : map.getObjects("entities")){
@@ -245,51 +254,44 @@ public class MapState extends GameObject implements ISavable{
 		return true;
 	}
 
-	@Override
-	public void serialize(TinyOutputStream out)throws IOException{
-		out.writeString(map.getFile());
-		out.write(entities.size());
-		for(Entity e : entities)
-			e.serialize(out);
-	}
-
-	@Override
-	public void deserialize(TinyInputStream in)throws IOException{
-		String mapFile = in.readString();
-		map = new RPGMap(mapFile, false);
-		int eLen = in.readInt();
-		int read = 0;
-		while(read < eLen){
-			int type = in.readInt();
-			Entity add = null;
-			switch(type){
-			case Entity.ENTITY_DEFAULT:
-				add = new Entity();
-				break;
-			case Entity.ENTITY_LIVING:
-				add = new EntityLiving();
-				break;
-			case Entity.ENTITY_PLAYER:
-				add = new EntityPlayer();
-				break;
-			case Entity.ENTITY_NPC:
-				add = new EntityNPC();
-				break;
-			default:
-				add = new Entity();
-				break;
-			}
-			add.deserialize(in);
-			entities.add(add);
-			read++;
-		}
-	}
-
 	public void dispose(ResourceManager resources){
 		if(map != null){
 			map.dispose(resources);
 			resources.release(map);
 			map = null;
+		}
+	}
+	
+	public void load(Game game, TinyInputStream in)throws IOException{
+		map = new RPGMap(in.readString(), false);
+		int entCount = in.readInt();
+		for(int i = 0; i < entCount; i++){
+			String clsName = in.readString();
+			try{
+				Class<? extends Entity> cls = (Class<? extends Entity>)Class.forName(clsName);
+				Entity e = cls.newInstance();
+				e.load(game, in);
+				entities.add(e);
+			}catch(Exception e){
+				Log.e("MapState/Load", "Exception while initializing entity:");
+				e.printStackTrace();
+			}
+		}
+		loadState = LOAD_STATE_SAVE;
+	}
+	
+	public void save(Game game, TinyOutputStream out)throws IOException{
+		out.writeString(map.getFile());
+		int entCount = entities.size();
+		if(entities.contains(game.getPlayer()))
+			entCount--;
+		out.write(entCount);
+		for(int i = 0; i < entities.size(); i++){
+			Entity e = entities.get(i);
+			if(e == game.getPlayer())
+				continue;
+			out.writeString(e.getClass().getCanonicalName());
+			e.save(out);
 		}
 	}
 }

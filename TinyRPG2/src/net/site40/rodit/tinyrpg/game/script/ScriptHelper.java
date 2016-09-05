@@ -207,12 +207,17 @@ public class ScriptHelper {
 		}
 		return game.getGuis().get(cls);
 	}
-
+	
 	public void setMap(final String name){
+		setMap(name, false);
+	}
+
+	public void setMap(final String name, final boolean fromSave){
+		game.getGuis().show(GuiLoading.class);
 		game.runAsyncTask(new Runnable(){
 			public void run(){
 				game.setMap(null);
-				game.setMap(new MapState((RPGMap)game.getResources().getObject(name)));
+				game.setMap(new MapState((RPGMap)game.getResources().getObject(name)), fromSave);
 			}
 		}, new GenericCallback(){
 			public void callback(){
@@ -232,7 +237,7 @@ public class ScriptHelper {
 	public Sprite createObject(String resource, float x, float y, float width, float height, boolean scale){
 		return scale ? new Sprite(x, y, width, height, resource, "script_obj_" + game.getRandom().nextString(4)) : new SpriteNonScale(x, y, width, height, resource, "script_obj_" + game.getRandom().nextString(4));
 	}
-
+	
 	public TextRenderer createText(String text, float x, float y, float size){
 		Paint paint = Game.getDefaultPaint();
 		paint.setTextAlign(Align.CENTER);
@@ -377,19 +382,26 @@ public class ScriptHelper {
 		game.setGlobal(entity.getName() + "_talk_count", 0);
 		return entity;
 	}
+	
+	@SuppressLint("DefaultLocale")
+	public Region getRegion(String region){
+		return Region.valueOf(region.toUpperCase());
+	}
 
 	public Team createTeam(EntityLiving... members){
 		return new Team(members);
 	}
-
-	@SuppressLint("DefaultLocale")
+	
 	public Battle battle(String region, EntityLiving attack, EntityLiving defence){
 		return battle(region, createTeam(attack), createTeam(defence));
 	}
 
-	@SuppressLint("DefaultLocale")
 	public Battle battle(String region, Team attack, Team defence){
-		Battle b = new Battle(Region.valueOf(region.toUpperCase()), attack, defence);
+		return battle(getRegion(region), attack, defence);
+	}
+	
+	public Battle battle(Region region, Team attack, Team defence){
+		Battle b = new Battle(region, attack, defence);
 		game.setBattle(b);
 		return b;
 	}

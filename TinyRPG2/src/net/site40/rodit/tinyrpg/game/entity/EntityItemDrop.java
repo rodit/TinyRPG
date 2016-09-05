@@ -12,7 +12,7 @@ public class EntityItemDrop extends Entity{
 	public EntityItemDrop(ItemStack stack){
 		super();
 
-		this.setResource("bitmap/entity/bag.png");
+		this.setResource("entity/bag.png");
 		this.setWidth(DEFAULT_WIDTH);
 		this.setHeight(DEFAULT_HEIGHT);
 

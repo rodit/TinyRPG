@@ -8,10 +8,13 @@ import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.Input;
 import net.site40.rodit.tinyrpg.game.Values;
 import net.site40.rodit.tinyrpg.game.gui.windows.WindowInventory;
+import net.site40.rodit.tinyrpg.game.gui.windows.WindowTextBoxComponent;
+import net.site40.rodit.tinyrpg.game.gui.windows.WindowUserInput;
+import net.site40.rodit.tinyrpg.game.gui.windows.WindowUserInput.InputCallback;
+import net.site40.rodit.tinyrpg.game.gui.windows.WindowUserInput.InputResult;
 import net.site40.rodit.tinyrpg.game.render.effects.FadeOutEffect;
 import net.site40.rodit.tinyrpg.game.render.effects.Weather.Lightning;
 import net.site40.rodit.tinyrpg.game.render.effects.Weather.Rain;
-import net.site40.rodit.tinyrpg.game.saves.SaveGame;
 import net.site40.rodit.util.RenderUtil;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -48,9 +51,8 @@ public class GuiIngameMenu extends Gui{
 					break;
 				case 3:
 					boolean success = false;
-					SaveGame newSave = game.getSaves().newSave(game, true);
 					try{
-						newSave.save(game);
+						game.getSaves().save(game);
 						success = true;
 					}catch(IOException e){
 						e.printStackTrace();
@@ -80,7 +82,7 @@ public class GuiIngameMenu extends Gui{
 				case 7:
 					game.getGuis().hide(GuiIngameMenu.class);
 					game.getInput().allowMovement(true);
-					game.getHelper().dialog("Choose a debug operation.", new String[] { "Fade Out", "Start Lightning", "Stop Lightning", "Start Rain", "Cancel" }, new DialogCallback(){
+					game.getHelper().dialog("Choose a debug operation.", new String[] { "Fade Out", "Start Lightning", "Stop Lightning", "Start Rain", "Load Map", "Cancel" }, new DialogCallback(){
 						public void onSelected(int option){
 							switch(option){
 							case 0:
@@ -100,6 +102,20 @@ public class GuiIngameMenu extends Gui{
 								break;
 							case 3:
 								game.getWeather().add(new Rain());
+								break;
+							case 4:
+								WindowUserInput input = new WindowUserInput(game, "Map File:", "map/world.tmx", new InputCallback(){
+									public boolean onResult(WindowUserInput window, Object result){
+										if(result == InputResult.CANCELLED)
+											return true;
+										game.getHelper().setMap(result.toString());
+										return true;
+									}
+								});
+								input.getInputBox().setInputType(WindowTextBoxComponent.INPUT_TYPE_ALPHA_NUMERIC);
+								game.getWindows().register(input);
+								input.zIndex = 0;
+								input.show();
 								break;
 							}
 						}

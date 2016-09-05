@@ -2,11 +2,14 @@ package net.site40.rodit.tinyrpg.game.gui;
 
 import java.util.ArrayList;
 
+import net.site40.rodit.tinyrpg.game.Benchmark;
 import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.Input;
 import net.site40.rodit.tinyrpg.game.Values;
 import net.site40.rodit.tinyrpg.game.effect.Effect;
 import net.site40.rodit.tinyrpg.game.gui.windows.WindowInventory;
+import net.site40.rodit.tinyrpg.game.render.SpriteSheet.MovementState;
+import net.site40.rodit.tinyrpg.game.util.Direction;
 import net.site40.rodit.util.ColorGradient;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -90,15 +93,33 @@ public class GuiIngame extends Gui{
 					if(gui.isActive() && (gui instanceof GuiIngameMenu || gui instanceof GuiPlayerInventory || gui instanceof GuiOptions || gui instanceof GuiQuest))
 						return;
 				}
+				if(Game.DEBUG)
+					Benchmark.start("draw_pp");
 
 				paint.setTextAlign(Align.CENTER);
 				paint.setTextSize(Values.FONT_SIZE_SMALL - 4f);
 				paint.setStyle(Style.FILL);
 
-				canvas.drawBitmap(game.getResources().getBitmap("gui/pp/bg.png"), null, getBoundsF(), paint);
+				canvas.drawBitmap(game.getResources().getBitmap("gui/pp/icon.png"), null, new RectF(getX(), getY(), getX() + 128f, getY() + 128f), paint);
+				int state = canvas.save();
+				RectF oBounds = game.getPlayer().getBounds();
+				Direction d = game.getPlayer().getDirection();
+				MovementState ms = game.getPlayer().getMoveState();
+
+				float clipFact = 24f / 32f;
+				game.getPlayer().setBounds(new RectF(18, 42, 18 + 92, 42 + 92));
+				game.getPlayer().setDirection(Direction.D_DOWN);
+				game.getPlayer().setMoveState(MovementState.IDLE);
+				canvas.clipRect(new RectF(18, 42, 18 + 92, 42 + 92f * clipFact));
+				game.getPlayer().draw(game, canvas);
+
+				game.getPlayer().setMoveState(ms);
+				game.getPlayer().setDirection(d);
+				game.getPlayer().setBounds(oBounds);
+				canvas.restoreToCount(state);
 
 				float healthRatio = game.getPlayer().getHealthRatio();
-				RectF healthBounds = new RectF(getX() + 32f, getY() + 40f, getX() + 232f, getY() + 68f);
+				RectF healthBounds = new RectF(getX() + 128f, getY() + 16f, getX() + 384f, getY() + 44f);
 				paint.setColor(Color.rgb(180, 0, 0));
 				canvas.drawRect(healthBounds, paint);
 
@@ -112,7 +133,7 @@ public class GuiIngame extends Gui{
 				canvas.drawText(game.getPlayer().getHealth() + "/" + game.getPlayer().getMaxHealth(), healthCenter[0], healthCenter[1], paint);
 
 				float magikaRatio = game.getPlayer().getMagikaRatio();
-				RectF magikaBounds = new RectF(getX() + 32f, getY() + 80f, getX() + 232f, getY() + 108f);
+				RectF magikaBounds = new RectF(getX() + 128f, getY() + 44f, getX() + 328f, getY() + 72f);
 				paint.setColor(Color.rgb(0, 0, 120));
 				canvas.drawRect(magikaBounds, paint);
 
@@ -124,13 +145,19 @@ public class GuiIngame extends Gui{
 				paint.setColor(magikaTextGradient.getColor(magikaRatio));
 				canvas.drawText(game.getPlayer().getMagika() + "/" + game.getPlayer().getMaxMagika(), magikaCenter[0], magikaCenter[1], paint);
 
+				paint.setColor(Color.YELLOW);
+				paint.setTextAlign(Align.LEFT);
+				canvas.drawText(game.getPlayer().getMoney() + " Gold", getX() + 132f, getY() + 94f, paint);
+
 				ArrayList<String> drawn = new ArrayList<String>();
 				for(Effect e : game.getPlayer().getEffects()){
 					if(drawn.contains(e.getName()))
 						continue;
-					canvas.drawBitmap(game.getResources().getBitmap(e.getResource()), null, new RectF(32f + drawn.size() * 32f, getY() + 120f, 32f + drawn.size() * 32f + 32f, getY() + 120f + 32f), paint);
+					canvas.drawBitmap(game.getResources().getBitmap(e.getResource()), null, new RectF(getX() + 128f + drawn.size() * 32f, getY() + 120f, getX() + 128f + drawn.size() * 32f + 32f, getY() + 120f + 32f), paint);
 					drawn.add(e.getName());
 				}
+				if(Game.DEBUG)
+					Benchmark.stop("draw_pp");
 			}
 		};
 		playerPanel.setName("playerPanel");

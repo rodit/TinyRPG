@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.SuperCalc;
 import net.site40.rodit.tinyrpg.game.battle.AIBattleProvider;
+import net.site40.rodit.tinyrpg.game.battle.AIBattleProvider.AIDifficulty;
 import net.site40.rodit.tinyrpg.game.battle.IBattleProvider;
 import net.site40.rodit.tinyrpg.game.combat.Attack;
 import net.site40.rodit.tinyrpg.game.effect.Effect;
@@ -66,19 +67,19 @@ public class EntityLiving extends Entity{
 		this.equipped = new Item[10];
 		equipped[ItemEquippable.SLOT_HAIR] = new Hair();
 		this.attacks = new ArrayList<Attack>();
-		this.battleProvider = new AIBattleProvider(this);
+		this.battleProvider = new AIBattleProvider(this, AIDifficulty.MEDIUM);
 		this.effects = new ArrayList<Effect>();
 		this.drawEquipmentOverlay = true;
 
 		getHair().setId(0);
 		getHair().setColor("black");
 	}
-	
+
 	@Override
 	public String getDisplayName(){
 		return displayName;
 	}
-	
+
 	public void setDisplayName(String displayName){
 		this.displayName = displayName;
 	}
@@ -335,7 +336,7 @@ public class EntityLiving extends Entity{
 
 		String nDisplayName = root.getAttribute("displayName");
 		this.displayName = TextUtils.isEmpty(nDisplayName) ? displayName : nDisplayName;
-		
+
 		try{
 			String className = root.getAttribute("battleProvider");
 			if(!className.startsWith(BATTLE_PACKAGE))
@@ -345,6 +346,74 @@ public class EntityLiving extends Entity{
 			if(provider != null)
 				this.battleProvider = provider;
 		}catch(Exception e){}
+	}
+
+	@Override
+	public void load(Game game, TinyInputStream in)throws IOException{
+		super.load(game, in);
+		this.health = in.readInt();
+		this.maxHealth = in.readInt();
+		this.magika = in.readInt();
+		this.stats = new EntityStats();
+		stats.load(in);
+		this.equipped = new Item[10];
+		for(int i = 0; i < ItemEquippable.SLOT_HAIR; i++){
+			Item item = Item.get(in.readString());
+			setEquipped(i, item);
+			if(item != null)
+				item.onEquip(game, this);
+		}
+		Hair hair = new Hair();
+		hair.setId(in.readInt());
+		hair.setColor(in.readString());
+		this.equipped[ItemEquippable.SLOT_HAIR] = hair;
+		this.attacks = new ArrayList<Attack>();
+		int attackCount = in.readInt();
+		int attackRead = 0;
+		while(attackRead < attackCount){
+			attacks.add(Attack.get(in.readString()));
+			attackRead++;
+		}
+		int effectCount = in.readInt();
+		int effectRead = 0;
+		while(effectRead < effectCount){
+			String effectCls = in.readString();
+			try{
+				Class<? extends Effect> cls = (Class<? extends Effect>)Class.forName(effectCls);
+				Effect e = cls.newInstance();
+				e.load(game, in, this);
+				effects.add(e);
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+			effectRead++;
+		}
+		this.drawEquipmentOverlay = in.readBoolean();
+		this.displayName = in.readString();
+	}
+
+	@Override
+	public void save(TinyOutputStream out)throws IOException{
+		super.save(out);
+		out.write(health);
+		out.write(maxHealth);
+		out.write(magika);
+		stats.save(out);
+		for(int i = 0; i < ItemEquippable.SLOT_HAIR; i++)
+			out.writeString(equipped[i] == null ? "null" : equipped[i].getName());
+		Hair hair = (Hair)equipped[ItemEquippable.SLOT_HAIR];
+		out.write(hair.getId());
+		out.writeString(hair.getColor());
+		out.write(attacks.size());
+		for(Attack attack : attacks)
+			out.writeString(attack.getName());
+		out.write(effects.size());
+		for(Effect e : effects){
+			out.writeString(e.getClass().getCanonicalName());
+			e.save(out);
+		}
+		out.write(drawEquipmentOverlay);
+		out.writeString(displayName);
 	}
 
 	@Override
@@ -432,41 +501,6 @@ public class EntityLiving extends Entity{
 			synchronized(equippedCache){
 				canvas.drawBitmap(equippedCache, null, getBounds(), this.paint);
 			}
-		}
-	}
-
-	@Override
-	public void serialize(TinyOutputStream out)throws IOException{
-		super.serialize(out);
-		out.write(health);
-		out.write(maxHealth);
-		out.write(magika);
-		out.write(velocityX);
-		out.write(velocityY);
-		stats.serialize(out);
-		for(int i = 0; i < equipped.length; i++){
-			if(equipped[i] == null){
-				out.writeString("null");
-				continue;
-			}
-			String name = equipped[i].getName();
-			out.writeString(name);
-		}
-	}
-
-	@Override
-	public void deserialize(TinyInputStream in)throws IOException{
-		super.deserialize(in);
-		health = in.readInt();
-		maxHealth = in.readInt();
-		magika = in.readInt();
-		velocityX = in.readFloat();
-		velocityY = in.readFloat();
-		stats.deserialize(in);
-		for(int i = 0; i < equipped.length; i++){
-			String iName = in.readString();
-			if(!TextUtils.isEmpty(iName) && !iName.equals("null"))
-				equipped[i] = Item.get(iName);
 		}
 	}
 }

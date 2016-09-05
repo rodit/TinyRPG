@@ -6,16 +6,16 @@ import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.GameObject;
 import net.site40.rodit.tinyrpg.game.render.SpriteSheet.MovementState;
 import net.site40.rodit.tinyrpg.game.util.Direction;
-import net.site40.rodit.util.ISavable;
 import net.site40.rodit.util.TinyInputStream;
 import net.site40.rodit.util.TinyOutputStream;
+import net.site40.rodit.util.Util;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.RectF;
 import android.text.TextUtils;
 import android.util.Log;
 
-public class Sprite extends GameObject implements ISavable{
+public class Sprite extends GameObject {
 
 	protected float x;
 	protected float y;
@@ -108,6 +108,13 @@ public class Sprite extends GameObject implements ISavable{
 	public RectF getBounds(){
 		return new RectF(x, y, x + width, y + height);
 	}
+	
+	public void setBounds(RectF bounds){
+		setX(bounds.left);
+		setY(bounds.top);
+		setWidth(bounds.width());
+		setHeight(bounds.height());
+	}
 
 	public float getCenterX(){
 		return x + width / 2f;
@@ -127,6 +134,10 @@ public class Sprite extends GameObject implements ISavable{
 	
 	public MovementState getMoveState(){
 		return moveState;
+	}
+	
+	public void setMoveState(MovementState moveState){
+		this.moveState = moveState;
 	}
 
 	@Override
@@ -183,6 +194,30 @@ public class Sprite extends GameObject implements ISavable{
 		this.resource = sprite.resource;
 		this.name = sprite.name;
 	}
+	
+	public void load(Game game, TinyInputStream in)throws IOException{
+		this.x = in.readFloat();
+		this.y = in.readFloat();
+		this.width = in.readFloat();
+		this.height = in.readFloat();
+		this.resource = in.readString();
+		this.name = in.readString();
+		this.ignoreScroll = in.readBoolean();
+		this.direction = Util.tryGetDirection(in.readString());
+		this.moveState = Util.tryGetMoveState(in.readString());
+	}
+	
+	public void save(TinyOutputStream out)throws IOException{
+		out.write(x);
+		out.write(y);
+		out.write(width);
+		out.write(height);
+		out.writeString(resource);
+		out.writeString(name);
+		out.write(ignoreScroll);
+		out.writeString(direction.toString());
+		out.writeString(moveState.toString());
+	}
 
 	@Override
 	public RenderLayer getRenderLayer(){
@@ -193,32 +228,6 @@ public class Sprite extends GameObject implements ISavable{
 	public boolean shouldScale(){
 		return true;
 	}
-
-	@Override
-	public void serialize(TinyOutputStream out)throws IOException{
-		out.write(x);
-		out.write(y);
-		out.write(width);
-		out.write(height);
-		out.writeString(resource);
-		out.writeString(name);
-		out.writeString(direction.toString());
-		out.writeString(moveState.toString());
-	}
-
-	@Override
-	public void deserialize(TinyInputStream in)throws IOException{
-		x = in.readFloat();
-		y = in.readFloat();
-		width = in.readFloat();
-		height = in.readFloat();
-		resource = in.readString();
-		name = in.readString();
-		direction = Direction.valueOf(in.readString());
-		moveState = MovementState.valueOf(in.readString());
-	}
-	
-
 	
 	private boolean disposed = false;
 	@Override

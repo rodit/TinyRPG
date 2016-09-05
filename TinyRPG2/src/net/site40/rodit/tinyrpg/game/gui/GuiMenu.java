@@ -11,7 +11,6 @@ import net.site40.rodit.tinyrpg.game.render.TransitionalRenderer;
 import net.site40.rodit.tinyrpg.game.render.effects.EffectCompletionHolder;
 import net.site40.rodit.tinyrpg.game.render.effects.FadeInEffect;
 import net.site40.rodit.tinyrpg.game.render.effects.FadeOutEffect;
-import net.site40.rodit.tinyrpg.game.saves.SaveGame;
 import android.graphics.Color;
 import android.media.MediaPlayer;
 
@@ -31,14 +30,14 @@ public class GuiMenu extends Gui{
 		transitionRes.add("menu/4.png");
 		transitionRes.add("menu/5.png");
 		final TransitionalRenderer r = new TransitionalRenderer(transitionRes, 10000L);
-		
+
 		Component txtTinyRpg = new Component("txtTinyRpg", "TinyRPG");
 		txtTinyRpg.getPaint().setTextSize(Values.FONT_SIZE_HUGE);
 		txtTinyRpg.getPaint().setColor(Color.WHITE);
 		txtTinyRpg.setX(640);
 		txtTinyRpg.setY(92);
 		add(txtTinyRpg);
-		
+
 		Component btnPlay = new Component("btnPlay", "New Game");
 		btnPlay.getPaint().setTextSize(Values.FONT_SIZE_MEDIUM);
 		btnPlay.setWidth(320);
@@ -70,27 +69,24 @@ public class GuiMenu extends Gui{
 		btnContinue.setY(btnPlay.getY());
 		btnContinue.addListener(new ComponentListenerImpl(){
 			public void touchUp(Component component, Game game){
-				ArrayList<SaveGame> saves = game.getSaves().all();
-				if(saves.size() == 0)
-					return;
-				else{
-					SaveGame save = saves.get(saves.size() - 1);
-					if(save != null){
-						try{
-							save.load(game);
-							game.removeObject(r);
-						}catch(IOException e){
-							game.showMessage("There was an error while loading your save.\n" + e.getClass().getName() + ": " + e.getMessage() + "\n" + e.getLocalizedMessage(), GuiMenu.this);
-						}
+				if(game.getSaves().canContinue(game)){
+					try{
+						game.getSaves().load(game);
+						game.removeObject(r);
+						game.getGuis().hide(GuiMenu.class);
+						game.getGuis().show(GuiIngame.class);
+					}catch(IOException e){
+						game.showMessage("There was an error while loading your save.\n" + e.getClass().getName() + ": " + e.getMessage() + "\n" + e.getLocalizedMessage(), GuiMenu.this);
+						e.printStackTrace();
 					}
 				}
 			}
 
 			public void update(Component component, Game game){
-				if(game.getSaves().all().size() == 0)
-					component.getPaint().setColor(Color.GRAY);
-				else
+				if(game.getSaves().canContinue(game))
 					component.getPaint().setColor(Color.WHITE);
+				else
+					component.getPaint().setColor(Color.GRAY);
 			}
 		});
 		add(btnContinue);
@@ -104,10 +100,10 @@ public class GuiMenu extends Gui{
 		btnSaves.addListener(new ComponentListenerImpl(){
 			public void touchUp(Component component, Game game){
 				game.getGuis().hide(GuiMenu.class);
-				game.getGuis().show(GuiSaves.class);
+				//game.getGuis().show(GuiSaves.class);
 			}
 		});
-		add(btnSaves);
+		//add(btnSaves);
 
 		Component btnExit = new Component("btnExit", "Exit");
 		btnExit.getPaint().setTextSize(Values.FONT_SIZE_MEDIUM);
@@ -121,7 +117,7 @@ public class GuiMenu extends Gui{
 			}
 		});
 		add(btnExit);
-		
+
 		RendererComponent bg = new RendererComponent(r){
 			boolean f0 = true;
 			@Override

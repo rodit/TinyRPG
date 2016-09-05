@@ -6,7 +6,6 @@ import java.util.HashMap;
 import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.Ticker;
 import net.site40.rodit.tinyrpg.game.chat.IChatSender;
-import net.site40.rodit.tinyrpg.game.entity.npc.EntityNPC;
 import net.site40.rodit.tinyrpg.game.item.Inventory;
 import net.site40.rodit.tinyrpg.game.item.Item;
 import net.site40.rodit.tinyrpg.game.render.Sprite;
@@ -214,6 +213,34 @@ public class Entity extends Sprite implements IChatSender{
 	}
 	
 	@Override
+	public void load(Game game, TinyInputStream in)throws IOException{
+		super.load(game, in);
+		this.noclip = in.readBoolean();
+		this.money = in.readLong();
+		this.inventory = new Inventory();
+		inventory.load(in);
+		this.script = in.readString();
+		this.runtimeProperties = new HashMap<String, String>();
+		int runtimePropCount = in.readInt();
+		while(runtimeProperties.size() < runtimePropCount)
+			setRuntimeProperty(in.readString(), in.readString());
+	}
+	
+	@Override
+	public void save(TinyOutputStream out)throws IOException{
+		super.save(out);
+		out.write(noclip);
+		out.write(money);
+		inventory.save(out);
+		out.writeString(script);
+		out.write(runtimeProperties.size());
+		for(String key : runtimeProperties.keySet()){
+			out.writeString(key);
+			out.writeString(runtimeProperties.get(key));
+		}
+	}
+	
+	@Override
 	public void update(Game game){
 		super.update(game);
 		
@@ -222,32 +249,6 @@ public class Entity extends Sprite implements IChatSender{
 	}
 	
 	public void tick(Game game){}
-
-	@Override
-	public void serialize(TinyOutputStream out)throws IOException{
-		if(this instanceof EntityPlayer)
-			out.write(ENTITY_PLAYER);
-		else if(this instanceof EntityLiving)
-			out.write(ENTITY_LIVING);
-		else if(this instanceof EntityNPC)
-			out.write(ENTITY_NPC);
-		else
-			out.write(ENTITY_DEFAULT);
-		super.serialize(out);
-		out.write(noclip);
-		out.write(money);
-		inventory.serialize(out);
-		out.writeString(script);
-	}
-
-	@Override
-	public void deserialize(TinyInputStream in)throws IOException{
-		super.deserialize(in);
-		noclip = in.readBoolean();
-		money = in.readLong();
-		inventory.deserialize(in);
-		script = in.readString();
-	}
 
 	public boolean isPlayer(){
 		return this instanceof EntityPlayer;

@@ -4,9 +4,11 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 
+import net.site40.rodit.tinyrpg.game.Benchmark.BenchmarkClass;
 import net.site40.rodit.tinyrpg.game.audio.AudioManager;
 import net.site40.rodit.tinyrpg.game.battle.Battle;
 import net.site40.rodit.tinyrpg.game.chat.Chat;
@@ -20,10 +22,10 @@ import net.site40.rodit.tinyrpg.game.forge.ForgeRegistry;
 import net.site40.rodit.tinyrpg.game.gui.Gui;
 import net.site40.rodit.tinyrpg.game.gui.GuiManager;
 import net.site40.rodit.tinyrpg.game.gui.GuiMessage;
-import net.site40.rodit.tinyrpg.game.gui.GuiPlayerInventory;
 import net.site40.rodit.tinyrpg.game.gui.windows.WindowManager;
 import net.site40.rodit.tinyrpg.game.item.Item;
 import net.site40.rodit.tinyrpg.game.map.MapState;
+import net.site40.rodit.tinyrpg.game.map.MobSpawnRegistry;
 import net.site40.rodit.tinyrpg.game.quest.QuestManager;
 import net.site40.rodit.tinyrpg.game.render.ResourceManager;
 import net.site40.rodit.tinyrpg.game.render.Sprite;
@@ -36,10 +38,10 @@ import net.site40.rodit.tinyrpg.game.saves.SaveManager;
 import net.site40.rodit.tinyrpg.game.script.ScriptEngine;
 import net.site40.rodit.tinyrpg.game.script.ScriptHelper;
 import net.site40.rodit.tinyrpg.game.util.EagleTracer;
+import net.site40.rodit.tinyrpg.game.util.Savable;
 import net.site40.rodit.tinyrpg.game.util.ScreenUtil;
 import net.site40.rodit.util.ExtendedRandom;
 import net.site40.rodit.util.GenericCallback;
-import net.site40.rodit.util.ISavable;
 import net.site40.rodit.util.TinyInputStream;
 import net.site40.rodit.util.TinyOutputStream;
 import net.site40.rodit.util.Util;
@@ -47,6 +49,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Paint.Align;
 import android.graphics.Paint.Style;
 import android.graphics.PointF;
 import android.util.Log;
@@ -54,13 +57,17 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 
-public class Game implements ISavable{
+public class Game implements Savable{
+
+	public static final byte[] FILE_SIGNATURE = new byte[] { 7, 1, 5, 7 };
+	public static final String VERSION = "TinyRPG0";
 
 	private static Paint DEFAULT_PAINT;
 	public static Paint getDefaultPaint(){
 		return new Paint(DEFAULT_PAINT);
 	}
 
+	public static final boolean DEBUG = true;
 	public static boolean DEBUG_DRAW = false;
 
 	public static final float SCALE_FACTOR = 3f;
@@ -83,6 +90,7 @@ public class Game implements ISavable{
 	private GuiManager guis;
 	private WindowManager windows;
 	private MapState map;
+	private MobSpawnRegistry mobSpawns;
 	private EntityPlayer player;
 	private LinkedHashMap<String, Object> globals;
 	private Battle battle;
@@ -109,6 +117,11 @@ public class Game implements ISavable{
 	private int objectModCount = 0;
 
 	public Game(Context context, View view){
+		if(DEBUG){
+			Benchmark.start("init");
+			//TODO: Set log level
+		}
+
 		this.context = context;
 		this.view = view;
 		this.random = new ExtendedRandom();
@@ -132,6 +145,7 @@ public class Game implements ISavable{
 		this.guis = new GuiManager();
 		this.windows = new WindowManager();
 		this.map = new MapState(null);
+		this.mobSpawns = new MobSpawnRegistry();
 		this.player = new EntityPlayer();
 		this.globals = new LinkedHashMap<String, Object>();
 		globals.put("game", this);
@@ -152,7 +166,7 @@ public class Game implements ISavable{
 		globals.put("bookshelf_skill_count", "0");
 		//ENTITY VARS
 		globals.put("merek_speak_count", "0");
-		
+
 		this.saves = new SaveManager(this);
 		this.chat = new Chat();
 		this.pp = new PostProcessor();
@@ -163,16 +177,17 @@ public class Game implements ISavable{
 		this.dayNight = new DayNightCycle(this);
 		addObject(dayNight);
 		this.audio = new AudioManager(context);
-		
+
 		XmlResourceLoader.loadItems(resources, "config/items.xml");
 		XmlResourceLoader.loadAttacks(resources, "config/attacks.xml");
 		XmlResourceLoader.loadEffects(resources, "config/effects.xml");
 		XmlResourceLoader.loadQuests(quests, resources, "config/quests.xml");
 		XmlResourceLoader.loadForge(forge, resources, "config/forge.xml");
 		XmlResourceLoader.loadStartClasses(resources, "config/classes.xml");
-		
+		XmlResourceLoader.loadMobSpawns(this, "config/mobs.xml");
+
 		Log.i("XmlResourceLoader", "Total load count = " + XmlResourceLoader.loadCount + ".");
-		
+
 		windows.initialize(this);
 
 		this.events = new EventHandler();
@@ -183,6 +198,9 @@ public class Game implements ISavable{
 
 		for(Item key : Item.getItems())
 			player.getInventory().add(key, key.getStackSize());
+
+		if(DEBUG)
+			Log.i("Benchmark", "Game initialization took " + Benchmark.stop("init") + "ms.");
 	}
 
 	public Context getContext(){
@@ -283,13 +301,17 @@ public class Game implements ISavable{
 	public GuiManager getGuis(){
 		return guis;
 	}
-	
+
 	public WindowManager getWindows(){
 		return windows;
 	}
 
 	public MapState getMap(){
 		return map;
+	}
+
+	public MobSpawnRegistry getMobSpawns(){
+		return mobSpawns;
 	}
 
 	public Battle getBattle(){
@@ -299,47 +321,66 @@ public class Game implements ISavable{
 	public void setBattle(Battle battle){
 		this.battle = battle;
 	}
-	
+
 	public SaveManager getSaves(){
 		return saves;
 	}
-	
+
 	public Chat getChat(){
 		return chat;
 	}
-	
+
 	public PostProcessor getPostProcessor(){
 		return pp;
 	}
-	
+
 	public Lighting getLighting(){
 		return lighting;
 	}
-	
+
 	public Weather getWeather(){
 		return weather;
 	}
-	
+
 	public AudioManager getAudio(){
 		return audio;
 	}
-	
+
 	public void setMap(MapState newMap){
+		setMap(newMap, false);
+	}
+
+	public void setMap(MapState newMap, boolean fromSave){
 		if(player == null)
 			player = new EntityPlayer();
 		MapState current = this.map;
 		events.onEvent(this, EventType.MAP_CHANGE, newMap, current);
 		if(current != null && current != newMap){
+			try{
+				if(current.getMap() != null)
+					saves.saveMap(this, current);
+			}catch(IOException e){
+				Log.e("Game/setMap", "IOException while saving map state - " + e.getMessage());
+				e.printStackTrace();
+			}
 			ArrayList<Entity> forDespawn = new ArrayList<Entity>();
 			forDespawn.addAll(current.getEntities());
 			for(Entity e : forDespawn){
 				if(e == player)
-					continue;
+					return;
 				current.despawn(this, e);
 			}
 			removeObject(current);
 			removeObject(current.getRotObj());
 			current.dispose(resources);
+		}
+		if(!fromSave){
+			try{
+				MapState loaded = saves.loadMap(this, newMap == null ? "" : newMap.getMap().getFile());
+				newMap = loaded == null ? newMap : loaded;
+			}catch(IOException e){
+				e.printStackTrace();
+			}
 		}
 		this.map = newMap;
 		if(newMap != null){
@@ -386,7 +427,7 @@ public class Game implements ISavable{
 	public int getGlobali(String key){
 		return Util.tryGetInt(getGlobals(key));
 	}
-	
+
 	public boolean getGlobalb(String key){
 		return Util.tryGetBool(getGlobals(key));
 	}
@@ -426,7 +467,7 @@ public class Game implements ISavable{
 	public void unregisterEvent(EventReceiver receiver){
 		events.remove(receiver);
 	}
-	
+
 	public void showMessage(String message, Gui returnGui){
 		GuiMessage msgGui = (GuiMessage)guis.get(GuiMessage.class);
 		msgGui.get("txtMessage").setText(message);
@@ -458,6 +499,9 @@ public class Game implements ISavable{
 	}
 
 	public void update(){
+		if(DEBUG)
+			Benchmark.start("update");
+
 		long now = System.currentTimeMillis();
 		delta = now - time;
 		time = now;
@@ -490,7 +534,9 @@ public class Game implements ISavable{
 		guis.update(this);
 
 		input.update(this);
-		updateTime = System.currentTimeMillis() - now;
+
+		if(DEBUG)
+			updateTime = Benchmark.stop("update");
 	}
 
 	public void pushTranslate(Canvas canvas){
@@ -500,23 +546,23 @@ public class Game implements ISavable{
 	public void popTranslate(Canvas canvas){
 		canvas.translate(-scrollX, -scrollY);
 	}
-	
+
 	long lastFps = 0;
 	private int lastFpsI = 0;
 	private int frameCounter = 0;
 	private Paint fpsPaint;
 	public void draw(Canvas canvas){
-		long drawStart = System.currentTimeMillis();
-		
+		if(DEBUG)
+			Benchmark.start("draw");
+
 		canvas.drawColor(Color.BLACK);
 		if(skipFrames > 0){
 			skipFrames--;
 			return;
 		}
-		
+
 		pp.preDraw(this, canvas);
 
-		screen.apply(canvas);
 		scrollX = player.getX() * SCALE_FACTOR - 1280f / 2f;
 		scrollY = player.getY() * SCALE_FACTOR - 720f / 2f;
 
@@ -527,6 +573,8 @@ public class Game implements ISavable{
 
 		canvas.scale(SCALE_FACTOR, SCALE_FACTOR);
 
+		if(DEBUG)
+			Benchmark.start("draw_objects");
 		synchronized(objects){
 			if(objectModCount > 0){
 				Collections.sort(objects, IGameObject.RENDER_COMPARATOR);
@@ -561,34 +609,41 @@ public class Game implements ISavable{
 				}
 			}
 		}
+		long objDrawTime = 0L;
+		if(DEBUG)
+			objDrawTime = Benchmark.stop("draw_objects");
 		pp.draw(this, canvas);
 
 		canvas.scale(SCALE_FACTOR_1, SCALE_FACTOR_1);
 
 		pushTranslate(canvas);
+		if(DEBUG)
+			Benchmark.start("draw_gui");
 		windows.draw(this, canvas);
 		guis.draw(canvas, this);
 		pp.postDraw(this, canvas);
+		long guiDrawTime = 0l;
+		if(DEBUG){
+			guiDrawTime = Benchmark.stop("draw_gui");
+			if(fpsPaint == null){
+				fpsPaint = new Paint(DEFAULT_PAINT);
+				fpsPaint.setColor(Color.WHITE);
+				fpsPaint.setTextAlign(Align.RIGHT);
+				fpsPaint.setTextSize(24f);
+			}
 
-		if(fpsPaint == null){
-			fpsPaint = new Paint(DEFAULT_PAINT);
-			fpsPaint.setColor(Color.WHITE);
+			if(time - lastFps >= 1000L){
+				lastFps = time;
+				lastFpsI = frameCounter;
+				frameCounter = 0;
+			}
+			canvas.drawText("FPS: " + lastFpsI, 1280f, 24f, fpsPaint);
+			long memUsed = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+			canvas.drawText("Memory: " + (memUsed / 1024l) + "/" + Runtime.getRuntime().maxMemory() + "KB", 1280f, 40f, fpsPaint);
+			canvas.drawText("Objects: " + objects.size(), 1280f, 56f, fpsPaint);
+			BenchmarkClass ppDraw = Benchmark.getBenchmark("draw_pp");
+			drawTimes(canvas, fpsPaint, drawTime, new long[] { objDrawTime, guiDrawTime, ppDraw != null ? ppDraw.getTime() : 0L });
 		}
-
-		if(time - lastFps >= 1000L){
-			lastFps = time;
-			lastFpsI = frameCounter;
-			frameCounter = 0;
-		}
-		canvas.drawText("FPS: " + lastFpsI, 1100f, 32f, fpsPaint);
-		long memUsed = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-		canvas.drawText("Memory: " + (memUsed / 1024l) + "/" + Runtime.getRuntime().maxMemory() + "KB", 700f, 64f, fpsPaint);
-		canvas.drawText("Objects: " + objects.size(), 1000f, 96f, fpsPaint);
-		canvas.drawText("Time: " + updateTime + "ms, " + drawTime + "ms", 1000f, 128f, fpsPaint);
-		int npcCount = 0;
-		for(IGameObject obj : objects)
-			if(obj instanceof EntityNPC)
-				canvas.drawText("NPC: " + obj.hashCode() + "", 800f, 160f + (float)npcCount++ * 32f, fpsPaint);
 
 		if(delta > 17L && delta < 33L){
 			long diff = 33 - delta;
@@ -601,61 +656,39 @@ public class Game implements ISavable{
 
 		frameCounter++;
 
-		drawTime = System.currentTimeMillis() - drawStart;
+		if(DEBUG)
+			drawTime = Benchmark.stop("draw");
+	}
+
+	private void drawTimes(Canvas canvas, Paint paint, long drawTime, long[] times){
+		long highest = 0l;
+		int highestIndex = 0;
+		for(int i = 0; i < times.length; i++){
+			if(times[i] > highest){
+				highest = times[i];
+				highestIndex = i;
+			}
+		}
+		String toDraw = "Time: " + drawTime + "ms, ";
+		for(int i = 0; i < times.length; i++)
+			toDraw += times[i] + "ms, ";
+		toDraw += " H:" + highest + "ms, " + highestIndex + "i";
+		canvas.drawText(toDraw, 1280f, 72f, paint);
 	}
 
 	public void input(MotionEvent event){
 		PointF scaled = screen.scaleInput(event.getX(), event.getY());
 		event.setLocation(scaled.x, scaled.y);
-		
+
 		windows.touchInput(this, event);
 		guis.input(event, this);
 	}
-	
+
 	public void keyInput(KeyEvent event){
 		windows.keyInput(this, event);
 		guis.keyInput(event, this);
 	}
 
-	@Override
-	public void serialize(TinyOutputStream out)throws IOException{
-		int count = 0;
-		for(String key : globals.keySet())
-			if(globals.get(key) instanceof String)
-				count++;
-		out.write(count);
-		for(String key : globals.keySet()){
-			Object value = globals.get(key);
-			if(value instanceof String){
-				out.writeString(key);
-				out.writeString((String)value);
-			}
-		}
-		map.serialize(out);
-	}
-	
-	@Override
-	public void deserialize(TinyInputStream in)throws IOException{
-		int globLen = in.readInt();
-		int read = 0;
-		while(read < globLen){
-			String key = in.readString();
-			String value = in.readString();
-			globals.put(key, value);
-			read++;
-		}
-		MapState.MAP_LOAD_STATE = MapState.LOAD_STATE_SAVE;
-		map = new MapState(null);
-		map.deserialize(in);
-		removeObject(this.player);
-		this.player = (EntityPlayer)map.getEntityByName("player");
-		((GuiPlayerInventory)guis.get(GuiPlayerInventory.class)).provider = null;
-		addObject(map);
-		addObject(player);
-		input.allowMovement(true);
-		MapState.MAP_LOAD_STATE = 0;
-	}
-	
 	public FileInputStream openLocalRead(String file)throws IOException{
 		return context.openFileInput(file);
 	}
@@ -663,7 +696,7 @@ public class Game implements ISavable{
 	public FileOutputStream openLocal(String file)throws IOException{
 		return context.openFileOutput(file, Context.MODE_PRIVATE);
 	}
-	
+
 	public void writeLocal(String file, byte[] data){
 		try{
 			FileOutputStream fout = context.openFileOutput(file, Context.MODE_PRIVATE);
@@ -687,9 +720,36 @@ public class Game implements ISavable{
 		}
 		return null;
 	}
-	
+
 	private volatile int skipFrames;
 	public void skipFrames(int frames){
 		skipFrames += frames;
+	}
+
+	public void load(TinyInputStream in)throws IOException{
+		byte[] sig = in.read(FILE_SIGNATURE.length);
+		if(!Arrays.equals(sig, FILE_SIGNATURE))
+			throw new IOException("Invalid save file signature.");
+		String versionStr = in.readString();
+		Log.i("Load", "Save version: " + versionStr);
+		if(!versionStr.equals(VERSION))
+			Log.w("Load", "Attempting to load save with version " + versionStr + " when game version is " + VERSION + ".");
+		player.load(this, in);
+		String mapFileName = in.readString();
+		setMap(saves.loadMap(this, mapFileName), true);
+		GlobalSerializer.deserialize(globals, in);
+		scheduler.load(in);
+		quests.load(quests, in);
+	}
+
+	public void save(TinyOutputStream out)throws IOException{
+		out.write(FILE_SIGNATURE);
+		out.writeString(VERSION);
+		player.save(out);
+		out.writeString(map.getMap().getFile());
+		saves.saveMap(this, map);
+		GlobalSerializer.serialize(globals, out);
+		scheduler.save(out);
+		quests.save(out);
 	}
 }
