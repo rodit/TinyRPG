@@ -8,6 +8,8 @@ import java.util.HashMap;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import net.site40.rodit.tinyrpg.game.Game;
+
 import org.w3c.dom.Document;
 
 import android.content.res.AssetManager;
@@ -96,7 +98,7 @@ public class ResourceManager {
 	public String getString(String key){
 		return (String)getObject(key);
 	}
-	
+
 	public DialogText getDialogText(String key){
 		return (DialogText)getObject(key);
 	}
@@ -136,7 +138,7 @@ public class ResourceManager {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public Document readDocument(String file){
 		try{
 			return builder.parse(openAsset(file));
@@ -153,9 +155,10 @@ public class ResourceManager {
 			if(!notFounds.contains(name)){
 				if(name.endsWith(".png")){
 					Log.w("ResourceManager", "Asset not found Bitmap:(" + name + ")");
-				return openAsset("bitmap/undefined.png");
+					return openAsset("bitmap/undefined.png");
 				}
-				e.printStackTrace();
+				if(Game.DEBUG)
+					e.printStackTrace();
 				notFounds.add(name);
 			}
 		}
@@ -171,7 +174,8 @@ public class ResourceManager {
 			return data;
 		}catch(Exception e){
 			if(!notFounds.contains(name)){
-				e.printStackTrace();
+				if(Game.DEBUG)
+					e.printStackTrace();
 				notFounds.add(name);
 			}
 		}
