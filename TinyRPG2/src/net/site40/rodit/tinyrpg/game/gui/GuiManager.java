@@ -26,7 +26,7 @@ public class GuiManager {
 		guis.add(new GuiIngameMenu());
 		guis.add(new GuiOptions());
 		guis.add(new GuiIngame());
-		//guis.add(new GuiSaves());
+		guis.add(new GuiMods());
 		guis.add(new GuiMessage());
 		guis.add(new GuiContainer());
 		guis.add(new GuiShop());

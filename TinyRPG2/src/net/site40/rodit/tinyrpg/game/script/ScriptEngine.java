@@ -1,11 +1,13 @@
 package net.site40.rodit.tinyrpg.game.script;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 import net.site40.rodit.tinyrpg.game.Benchmark;
 import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.util.GenericCallback.ObjectCallback;
+import net.site40.rodit.util.Util;
 
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.ContextFactory;
@@ -17,7 +19,7 @@ import org.mozilla.javascript.ScriptableObject;
 import android.util.Log;
 
 public class ScriptEngine {
-	
+
 	private ArrayList<Thread> threads = new ArrayList<Thread>();
 	private HashMap<String, Script> scriptCache = new HashMap<String, Script>();
 
@@ -43,7 +45,7 @@ public class ScriptEngine {
 		}
 		return null;
 	}
-	
+
 	public void executeAsyncFunction(final Game game, final Function function, final Object thisObj, final String[] varNames, final Object[] varVals, final Object[] vars, final ObjectCallback<Object> callback){
 		new Thread(){
 			@Override
@@ -56,17 +58,30 @@ public class ScriptEngine {
 	}
 
 	public Object execute(Game game, String scriptPath, String[] varNames, Object[] varVals){
-		Benchmark.start("se_" + scriptPath);
+		return execute(game, scriptPath, varNames, varVals, false);
+	}
+
+	public Object execute(Game game, String scriptPath, String[] varNames, Object[] varVals, boolean localFile){
+		if(Game.DEBUG)
+			Benchmark.start("se_" + scriptPath);
 		Context cx2 = ContextFactory.getGlobal().enterContext();
 		cx2.setOptimizationLevel(-1);
 
-		if(!scriptCache.containsKey(scriptPath)){
-			String script = game.getResources().getString(scriptPath);
-			Script scr = cx2.compileString(script, "", 1, null);
-			scriptCache.put(scriptPath, scr);
+		if(!localFile){
+			if(!scriptCache.containsKey(scriptPath)){
+				String script = game.getResources().getString(scriptPath);
+				Script scr = cx2.compileString(script, "", 1, null);
+				scriptCache.put(scriptPath, scr);
+			}
+		}else{
+			if(!scriptCache.containsKey("local_" + scriptPath)){
+				String script = new String(Util.readAll(Util.openFile(new File(game.getContext().getCacheDir(), "script_cache/" + scriptPath))));
+				Script scr = cx2.compileString(script, "", 1, null);
+				scriptCache.put("local_" + scriptPath, scr);
+			}
 		}
 
-		Script s = scriptCache.get(scriptPath);
+		Script s = localFile ? scriptCache.get("local_" + scriptPath) : scriptCache.get(scriptPath);
 		Context cx = ContextFactory.getGlobal().enterContext();
 		try{
 			Scriptable scope = cx.initStandardObjects();
@@ -83,11 +98,12 @@ public class ScriptEngine {
 			e.printStackTrace();
 		}finally{
 			Context.exit();
-			Log.d("ScriptEngine", "Script execution took " + Benchmark.stop("se_" + scriptPath) + "ms.");
+			if(Game.DEBUG)
+				Log.d("ScriptEngine", "Script execution took " + Benchmark.stop("se_" + scriptPath) + "ms.");
 		}
 		return null;
 	}
-	
+
 	public void executeAsync(final Game game, final String script, final String[] varNames, final Object[] varVals, final int delay, final ObjectCallback<Object> callback){
 		Thread t = new Thread(){
 			@Override

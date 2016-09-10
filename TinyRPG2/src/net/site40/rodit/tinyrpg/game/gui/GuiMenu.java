@@ -91,24 +91,24 @@ public class GuiMenu extends Gui{
 		});
 		add(btnContinue);
 
-		Component btnSaves = new Component("btnSaves", "Saves");
-		btnSaves.getPaint().setTextSize(Values.FONT_SIZE_MEDIUM);
-		btnSaves.setX(btnContinue.getX() + btnContinue.getWidth() + 48f);
-		btnSaves.setY(btnContinue.getY());
-		btnSaves.setWidth(256);
-		btnSaves.setHeight(92);
-		btnSaves.addListener(new ComponentListenerImpl(){
+		Component btnMods = new Component("btnSaves", "Mods");
+		btnMods.getPaint().setTextSize(Values.FONT_SIZE_MEDIUM);
+		btnMods.setX(btnContinue.getX() + btnContinue.getWidth() + 48f);
+		btnMods.setY(btnContinue.getY());
+		btnMods.setWidth(256);
+		btnMods.setHeight(92);
+		btnMods.addListener(new ComponentListenerImpl(){
 			public void touchUp(Component component, Game game){
 				game.getGuis().hide(GuiMenu.class);
-				//game.getGuis().show(GuiSaves.class);
+				game.getGuis().show(GuiMods.class);
 			}
 		});
-		//add(btnSaves);
+		add(btnMods);
 
 		Component btnExit = new Component("btnExit", "Exit");
 		btnExit.getPaint().setTextSize(Values.FONT_SIZE_MEDIUM);
-		btnExit.setX(btnSaves.getX() + btnSaves.getWidth() + 32f);
-		btnExit.setY(btnSaves.getY());
+		btnExit.setX(btnMods.getX() + btnMods.getWidth() + 32f);
+		btnExit.setY(btnMods.getY());
 		btnExit.setWidth(256);
 		btnExit.setHeight(92);
 		btnExit.addListener(new ComponentListenerImpl(){
