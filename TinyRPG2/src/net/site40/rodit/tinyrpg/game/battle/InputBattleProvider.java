@@ -81,14 +81,16 @@ public class InputBattleProvider implements IBattleProvider{
 	}
 
 	public void selectTarget(int mode){
-		ArrayList<EntityLiving> opposition = battle.getOpposition(player).getMembers();
+		ArrayList<EntityLiving> opposition = battle.getOppositionMembersOrdered(player);
 		targetSelectionMode = mode;
-		if(opposition.size() > 0)
+		if(opposition.size() > 1)
 			game.getHelper().dialog("Who will you target?", Util.join(genNameList(opposition), new String[] { "Cancel" }), targetSelectionCallback);
-		else
+		else if(opposition.size() > 0)
 			attackWeapon(opposition.get(0));
+		else
+			game.getHelper().dialog("There is no opposition to select a target from.", new String[] { "Hmm... That's strange..." }, returnCallback);
 	}
-
+	
 	public class ReturnCallback implements DialogCallback{
 
 		@Override

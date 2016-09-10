@@ -108,6 +108,14 @@ public class Battle extends GameObject{
 		return current == attack ? defence : attack;
 	}
 	
+	public ArrayList<EntityLiving> getOppositionMembersOrdered(EntityLiving ent){
+		return getOppositionMembersOrdered(getTeam(ent));
+	}
+	
+	public ArrayList<EntityLiving> getOppositionMembersOrdered(Team current){
+		return current == attack ? defenceMembers : attackMembers;
+	}
+	
 	private boolean firstUpdate = true;
 	@Override
 	public void update(Game game){
