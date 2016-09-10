@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 import net.site40.rodit.tinyrpg.game.Game;
+import net.site40.rodit.tinyrpg.game.GlobalSerializer;
 import net.site40.rodit.tinyrpg.game.map.MapState;
 import net.site40.rodit.util.TinyInputStream;
 import net.site40.rodit.util.TinyOutputStream;
@@ -16,6 +17,7 @@ public class SaveManager {
 	public static final String SAVE_DIR = "save";
 	public static final String SAVE_EXT = ".dat";
 	public static final String MAIN_SAVE = "game";
+	public static final String GLOBAL_SAVE = "global";
 	
 	public SaveManager(Game game){
 		checkDirs(game);
@@ -43,7 +45,14 @@ public class SaveManager {
 		FileInputStream fin = new FileInputStream(mainFile);
 		TinyInputStream tin = new TinyInputStream(fin);
 		game.load(tin);
+		loadGlobals(game);
 		tin.close();
+	}
+	
+	public void loadGlobals(Game game)throws IOException{
+		TinyInputStream gin = new TinyInputStream(new FileInputStream(getSaveFile(game.getContext(), GLOBAL_SAVE + SAVE_EXT)));
+		GlobalSerializer.deserialize(game.getGlobals(), gin);
+		gin.close();
 	}
 	
 	public void save(Game game)throws IOException{
@@ -53,6 +62,12 @@ public class SaveManager {
 		TinyOutputStream tout = new TinyOutputStream(fout);
 		game.save(tout);
 		tout.close();
+	}
+	
+	public void saveGlobals(Game game)throws IOException{
+		TinyOutputStream gout = new TinyOutputStream(new FileOutputStream(getSaveFile(game.getContext(), GLOBAL_SAVE + SAVE_EXT)));
+		GlobalSerializer.serialize(game.getGlobals(), gout);
+		gout.close();
 	}
 	
 	public MapState loadMap(Game game, String map)throws IOException{

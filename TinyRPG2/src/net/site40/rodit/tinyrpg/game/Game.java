@@ -26,6 +26,8 @@ import net.site40.rodit.tinyrpg.game.gui.windows.WindowManager;
 import net.site40.rodit.tinyrpg.game.item.Item;
 import net.site40.rodit.tinyrpg.game.map.MapState;
 import net.site40.rodit.tinyrpg.game.map.MobSpawnRegistry;
+import net.site40.rodit.tinyrpg.game.mod.ModManager;
+import net.site40.rodit.tinyrpg.game.mod.TinyMod;
 import net.site40.rodit.tinyrpg.game.quest.QuestManager;
 import net.site40.rodit.tinyrpg.game.render.ResourceManager;
 import net.site40.rodit.tinyrpg.game.render.Sprite;
@@ -101,6 +103,9 @@ public class Game implements Savable{
 	private Lighting lighting;
 	private Weather weather;
 	private DayNightCycle dayNight;
+	private ModManager mods;
+
+	private ScriptHelper helper;
 
 	private EventHandler events;
 
@@ -149,13 +154,13 @@ public class Game implements Savable{
 		this.player = new EntityPlayer();
 		this.globals = new LinkedHashMap<String, Object>();
 		globals.put("game", this);
-		globals.put("helper", new ScriptHelper(this));
+		globals.put("helper", helper = new ScriptHelper(this));
 		globals.put("quests", quests);
 		globals.put("util", new Util());
 		globals.put("gui_quest", null);
 		globals.put("gui_quest_parent", "");
 		//OPTIONS
-		globals.put("render_mode", "hardware");
+		globals.put("hardware_render", "true");
 		globals.put("controls_alpha", "50");
 		globals.put("chat_bg_alpha", "35");
 		globals.put("chat_text_alpha", "75");
@@ -198,6 +203,17 @@ public class Game implements Savable{
 
 		for(Item key : Item.getItems())
 			player.getInventory().add(key, key.getStackSize());
+
+		this.mods = new ModManager();
+		for(TinyMod mod : mods.listMods(this)){
+			try{
+				if(mods.isModEnabled(this, mod))
+					mod.load(this);
+			}catch(Exception e){
+				Log.e("Game", "Exception while loading mod.");
+				e.printStackTrace();
+			}
+		}
 
 		if(DEBUG)
 			Log.i("Benchmark", "Game initialization took " + Benchmark.stop("init") + "ms.");
@@ -432,6 +448,10 @@ public class Game implements Savable{
 		return Util.tryGetBool(getGlobals(key));
 	}
 
+	public float getGlobalf(String key){
+		return Util.tryGetFloat(getGlobals(key));
+	}
+
 	public void incGlobal(String key, int amount){
 		setGlobal(key, Util.tryGetInt(getGlobals(key), 0) + amount);
 	}
@@ -448,12 +468,20 @@ public class Game implements Savable{
 		setGlobal(key, String.valueOf(b));
 	}
 
+	public void setGlobalf(String key, float f){
+		setGlobal(key, String.valueOf(f));
+	}
+
 	public void setGlobal(String key, Object value){
 		globals.put(key, value);
 	}
 
+	public ModManager getMods(){
+		return mods;
+	}
+
 	public ScriptHelper getHelper(){
-		return (ScriptHelper)getGlobal("helper");
+		return helper;
 	}
 
 	public EventHandler getEvents(){
@@ -737,9 +765,13 @@ public class Game implements Savable{
 		player.load(this, in);
 		String mapFileName = in.readString();
 		setMap(saves.loadMap(this, mapFileName), true);
-		GlobalSerializer.deserialize(globals, in);
 		scheduler.load(in);
 		quests.load(quests, in);
+
+		if(getGlobalb("hardware_render"))
+			view.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+		else
+			view.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
 	}
 
 	public void save(TinyOutputStream out)throws IOException{
@@ -748,7 +780,6 @@ public class Game implements Savable{
 		player.save(out);
 		out.writeString(map.getMap().getFile());
 		saves.saveMap(this, map);
-		GlobalSerializer.serialize(globals, out);
 		scheduler.save(out);
 		quests.save(out);
 	}
