@@ -1,5 +1,10 @@
 package net.site40.rodit.util;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -219,5 +224,50 @@ public class Util {
 			return ForgeType.valueOf(key);
 		}catch(Exception e){}
 		return ret;
+	}
+
+	public static byte[] readAll(InputStream in){
+		try{
+			byte[] toRead = new byte[in.available()];
+			in.read(toRead);
+			return toRead;
+		}catch(IOException e){
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	public static InputStream openFile(String file){
+		return openFile(new File(file));
+	}
+
+	public static InputStream openFile(File file){
+		try{
+			return new FileInputStream(file);
+		}catch(IOException e){
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public static void writeFile(File file, byte[] contents){
+		try{
+			FileOutputStream fout = new FileOutputStream(file);
+			fout.write(contents);
+			fout.flush();
+			fout.close();
+		}catch(IOException e){
+			e.printStackTrace();
+		}
+	}
+	
+	public static void deleteDir(File dir){
+		for(File f : dir.listFiles()){
+			if(f.isDirectory())
+				deleteDir(f);
+			else
+				f.delete();
+		}
+		dir.delete();
 	}
 }
