@@ -3,6 +3,15 @@ package net.site40.rodit.tinyrpg.game.entity;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import android.graphics.Bitmap;
+import android.graphics.Bitmap.Config;
+import android.graphics.Canvas;
+import android.text.TextUtils;
 import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.SuperCalc;
 import net.site40.rodit.tinyrpg.game.battle.AIBattleProvider;
@@ -21,16 +30,6 @@ import net.site40.rodit.util.TinyInputStream;
 import net.site40.rodit.util.TinyOutputStream;
 import net.site40.rodit.util.Util;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
-import android.graphics.Bitmap;
-import android.graphics.Bitmap.Config;
-import android.graphics.Canvas;
-import android.text.TextUtils;
-
 public class EntityLiving extends Entity{
 
 	protected int health;
@@ -43,7 +42,7 @@ public class EntityLiving extends Entity{
 	protected ArrayList<Attack> attacks;
 	protected IBattleProvider battleProvider;
 	protected ArrayList<Effect> effects;
-	protected boolean drawEquipmentOverlay;
+	public boolean drawEquipmentOverlay;
 	protected String displayName;
 
 	protected float lastX;
@@ -98,6 +97,10 @@ public class EntityLiving extends Entity{
 
 	public int getMaxHealth(){
 		return stats.getMaxHealth(maxHealth);
+	}
+	
+	public int getMaxHealthUnmodified(){
+		return maxHealth;
 	}
 
 	public void setMaxHealth(int maxHealth){
@@ -178,6 +181,30 @@ public class EntityLiving extends Entity{
 	public void move(float x, float y){
 		velocityX += x;
 		velocityY += y;
+	}
+	
+	public float getVelocityX(){
+		return velocityX;
+	}
+	
+	public float getVelocityY(){
+		return velocityY;
+	}
+	
+	public void incVelocityX(float x){
+		this.velocityX += x;
+	}
+	
+	public void incVelocityY(float y){
+		this.velocityY += y;
+	}
+	
+	public void setVelocityX(float x){
+		this.velocityX = x;
+	}
+	
+	public void setVelocityY(float y){
+		this.velocityY = y;
 	}
 
 	public void setVelocity(float x, float y){
@@ -391,7 +418,7 @@ public class EntityLiving extends Entity{
 		this.drawEquipmentOverlay = in.readBoolean();
 		this.displayName = in.readString();
 	}
-
+	
 	@Override
 	public void save(TinyOutputStream out)throws IOException{
 		super.save(out);
@@ -447,7 +474,7 @@ public class EntityLiving extends Entity{
 			direction = Direction.D_LEFT;
 			resetCache();
 		}
-
+		
 		if(velocityY > 0){
 			direction = Direction.D_DOWN;
 			resetCache();
@@ -474,18 +501,19 @@ public class EntityLiving extends Entity{
 		super.resetCache();
 		if(equippedCache != null){
 			synchronized(equippedCache){
+				equippedCache.recycle();
 				this.equippedCache = null;
 			}
 		}
 	}
-
+	
 	private Bitmap equippedCache;
 	@Override
 	public void draw(Game game, Canvas canvas){
 		super.draw(game, canvas);
 		if(equippedCache == null){
 			equippedCache = Bitmap.createBitmap((int)this.width, (int)this.height, Config.ARGB_8888);
-
+			
 			Canvas equippedCanvas = new Canvas(equippedCache);
 			((Hair)equipped[ItemEquippable.SLOT_HAIR]).drawSpriteOverlay(equippedCanvas, game, this, this.paint);
 			if(drawEquipmentOverlay){
@@ -502,5 +530,19 @@ public class EntityLiving extends Entity{
 				canvas.drawBitmap(equippedCache, null, getBounds(), this.paint);
 			}
 		}
+	}
+	
+	public void copy(EntityLiving entity){
+		super.copy(entity);
+		this.health = entity.health;
+		this.maxHealth = entity.maxHealth;
+		this.magika = entity.magika;
+		this.stats = entity.stats;
+		this.equipped = entity.equipped;
+		this.attacks = entity.attacks;
+		this.battleProvider = entity.battleProvider;
+		this.effects = entity.effects;
+		this.drawEquipmentOverlay = entity.drawEquipmentOverlay;
+		this.displayName = entity.displayName;
 	}
 }

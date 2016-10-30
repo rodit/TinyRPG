@@ -3,17 +3,6 @@ package net.site40.rodit.tinyrpg.game.entity;
 import java.io.IOException;
 import java.util.HashMap;
 
-import net.site40.rodit.tinyrpg.game.Game;
-import net.site40.rodit.tinyrpg.game.Ticker;
-import net.site40.rodit.tinyrpg.game.chat.IChatSender;
-import net.site40.rodit.tinyrpg.game.item.Inventory;
-import net.site40.rodit.tinyrpg.game.item.Item;
-import net.site40.rodit.tinyrpg.game.render.Sprite;
-import net.site40.rodit.tinyrpg.game.shop.Shop;
-import net.site40.rodit.util.TinyInputStream;
-import net.site40.rodit.util.TinyOutputStream;
-import net.site40.rodit.util.Util;
-
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Function;
 import org.w3c.dom.Document;
@@ -24,6 +13,16 @@ import org.w3c.dom.NodeList;
 import android.graphics.RectF;
 import android.text.TextUtils;
 import android.util.Log;
+import net.site40.rodit.tinyrpg.game.Game;
+import net.site40.rodit.tinyrpg.game.Ticker;
+import net.site40.rodit.tinyrpg.game.chat.IChatSender;
+import net.site40.rodit.tinyrpg.game.item.Inventory;
+import net.site40.rodit.tinyrpg.game.item.Item;
+import net.site40.rodit.tinyrpg.game.render.Sprite;
+import net.site40.rodit.tinyrpg.game.shop.Shop;
+import net.site40.rodit.util.TinyInputStream;
+import net.site40.rodit.util.TinyOutputStream;
+import net.site40.rodit.util.Util;
 
 public class Entity extends Sprite implements IChatSender{
 	
@@ -166,10 +165,16 @@ public class Entity extends Sprite implements IChatSender{
 		RectF collision = getCollisionBounds();
 		collision.left = x;
 		collision.top = y;
+		collision.right = x + width;
+		collision.bottom = y + height;
 		return collision;
 	}
+	
+	public RectF getTraceBounds(){
+		return getCollisionBounds();
+	}
 
-	public void linkConfig(Document document){		
+	public void linkConfig(Document document){
 		Element root = (Element)document.getElementsByTagName("entity").item(0);
 		this.x = Util.tryGetFloat(root.getAttribute("x"), this.x);
 		this.y = Util.tryGetFloat(root.getAttribute("y"), this.y);
@@ -252,5 +257,14 @@ public class Entity extends Sprite implements IChatSender{
 
 	public boolean isPlayer(){
 		return this instanceof EntityPlayer;
+	}
+	
+	public void copy(Entity entity){
+		super.copy(entity);
+		this.noclip = entity.noclip;
+		this.money = entity.money;
+		this.inventory = entity.inventory;
+		this.script = entity.script;
+		this.runtimeProperties = entity.runtimeProperties;
 	}
 }
