@@ -5,13 +5,13 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 
+import org.w3c.dom.Element;
+
 import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.battle.Battle;
 import net.site40.rodit.tinyrpg.game.battle.Team;
 import net.site40.rodit.tinyrpg.game.entity.EntityLiving;
 import net.site40.rodit.util.Util;
-
-import org.w3c.dom.Element;
 
 public class MobSpawnRegistry{
 
