@@ -1,11 +1,21 @@
 package net.site40.rodit.tinyrpg.game.battle;
 
+import static net.site40.rodit.tinyrpg.game.render.Strings.DIALOG_BATTLE_LOSE;
+import static net.site40.rodit.tinyrpg.game.render.Strings.DIALOG_BATTLE_WIN;
+import static net.site40.rodit.tinyrpg.game.render.Strings.getString;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint.Align;
+import android.graphics.Paint.Style;
+import android.graphics.RectF;
 import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.GameObject;
+import net.site40.rodit.tinyrpg.game.Values;
 import net.site40.rodit.tinyrpg.game.entity.EntityLiving;
 import net.site40.rodit.tinyrpg.game.event.EventReceiver.EventType;
 import net.site40.rodit.tinyrpg.game.map.Region;
@@ -13,61 +23,57 @@ import net.site40.rodit.tinyrpg.game.map.Region.RegionLocale;
 import net.site40.rodit.tinyrpg.game.render.FlashMixer;
 import net.site40.rodit.tinyrpg.game.render.SpriteSheet.MovementState;
 import net.site40.rodit.tinyrpg.game.util.Direction;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint.Style;
-import android.graphics.RectF;
 
 public class Battle extends GameObject{
-	
+
 	public static Comparator<EntityLiving> speedComparator = new Comparator<EntityLiving>(){
 		@Override
 		public int compare(EntityLiving e0, EntityLiving e1){
-			return (int)(e1.getStats().getSpeed() - e0.getStats().getSpeed() * 100000);
+			return (int)(e1.getStats().getSpeed() * 100000f - e0.getStats().getSpeed() * 100000f);
 		}
 	};
-	
+
 	public static FlashMixer newHitMixer(){
 		return new FlashMixer(100L, 1000L);
 	}
-	
+
 	static final int ATTACK = 0;
 	static final int DEFENCE = 1;
-	
+
 	private Region region;
 	private Team attack;
 	private Team defence;
-	
+
 	private ArrayList<EntityLiving> attackMembers;
 	private ArrayList<EntityLiving> defenceMembers;
-	
+
 	private int turn;
 	private boolean turnTaken;
 	private boolean deciding;
 	private boolean ended;
-	
+
 	private int[] memberIndexes;
-	
+
 	public Battle(Region region, Team attack, Team defence){
 		this.region = region;
 		this.attack = attack;
 		this.defence = defence;
-		
+
 		this.attackMembers = new ArrayList<EntityLiving>(attack.getMembers());
 		Collections.sort(attackMembers, speedComparator);
 		this.defenceMembers = new ArrayList<EntityLiving>(defence.getMembers());
 		Collections.sort(defenceMembers, speedComparator);
-		
+
 		this.turn = getStartingTurn();
 		this.turnTaken = false;
-		
+
 		this.memberIndexes = new int[2];
 	}
-	
+
 	public int getStartingTurn(){
 		return attack.getSpeed() >= defence.getSpeed() ? ATTACK : DEFENCE;
 	}
-	
+
 	public ArrayList<EntityLiving> getMembers(int team){
 		return team == ATTACK ? attackMembers : defenceMembers;
 	}
@@ -76,46 +82,102 @@ public class Battle extends GameObject{
 		turnTaken = true;
 		deciding = false;
 	}
-	
+
 	protected void win(Game game, Team winner){
 		Team loser = getOpposition(winner);
+		long reward = 0l;
 		if(winner.getLeader().isPlayer()){
-			long gold = loser.getLeader().getMoney() / 2L;
-			if(gold == 0)
-				gold = 1;
-			winner.getLeader().addMoney(gold);
-			loser.getLeader().subtractMoney(gold);
-			game.getHelper().dialog("Congratulations! You have won the battle!~You earned " + gold + " gold!");
+			reward = loser.getLeader().getMoney() / 2L;
+			if(reward == 0)
+				reward = 1;
+			winner.getLeader().addMoney(reward);
+			loser.getLeader().subtractMoney(reward);
+			game.getHelper().dialog(getString(DIALOG_BATTLE_WIN, reward));
 		}else if(loser.getLeader().isPlayer()){
-			long gold = loser.getLeader().getMoney() / 7L;
-			winner.getLeader().addMoney(gold);
-			loser.getLeader().subtractMoney(gold);
-			game.getHelper().dialog("Oh no! You were killed in the battle!~You forfeited " + gold + " gold!");
+			reward = loser.getLeader().getMoney() / 7L;
+			winner.getLeader().addMoney(reward);
+			loser.getLeader().subtractMoney(reward);
+			game.getHelper().dialog(getString(DIALOG_BATTLE_LOSE, reward));
 		}
 		game.getEvents().onEvent(game, EventType.BATTLE_END, this, winner);
 		ended = true;
 	}
-	
+
 	public Team getTeam(EntityLiving ent){
 		return attackMembers.contains(ent) ? attack : defence;
 	}
-	
+
 	public Team getOpposition(EntityLiving ent){
 		return getOpposition(getTeam(ent));
 	}
-	
+
 	public Team getOpposition(Team current){
 		return current == attack ? defence : attack;
 	}
-	
+
+	public ArrayList<EntityLiving> getOppositionMembersDrawOrdered(EntityLiving ent){
+		return getOppositionMembersDrawOrdered(getTeam(ent));
+	}
+
+	public ArrayList<EntityLiving> getOppositionMembersDrawOrdered(Team current){
+		ArrayList<EntityLiving> members = getOppositionMembersOrdered(current);
+		return getDrawOrdered(members, false);
+	}
+
+	public ArrayList<EntityLiving> getDrawOrdered(ArrayList<EntityLiving> members, boolean alive){
+		ArrayList<EntityLiving> ordered = new ArrayList<EntityLiving>();
+		if(members.size() == 4){
+			if(!members.get(2).isDead() || !alive)
+				ordered.add(members.get(2));
+			if(!members.get(0).isDead() || !alive)
+				ordered.add(members.get(0));
+			if(!members.get(1).isDead() || !alive)
+				ordered.add(members.get(1));
+			if(!members.get(3).isDead() || !alive)
+				ordered.add(members.get(3));
+		}else if(members.size() == 3){
+			if(!members.get(2).isDead() || !alive)
+				ordered.add(members.get(2));
+			if(!members.get(0).isDead() || !alive)
+				ordered.add(members.get(0));
+			if(!members.get(1).isDead() || !alive)
+				ordered.add(members.get(1));
+		}else if(members.size() == 2){
+			if(!members.get(0).isDead() || !alive)
+				ordered.add(members.get(0));
+			if(!members.get(1).isDead() || !alive)
+				ordered.add(members.get(1));
+		}else if(members.size() == 1){
+			if(!members.get(0).isDead() || !alive)
+				ordered.add(members.get(0));
+		}
+		return ordered;
+	}
+
+	public ArrayList<EntityLiving> getOppositionMembersDrawOrderedAlive(EntityLiving ent){
+		return getOppositionMembersDrawOrderedAlive(getTeam(ent));
+	}
+
+	public ArrayList<EntityLiving> getOppositionMembersDrawOrderedAlive(Team current){
+		return getDrawOrdered(getOppositionMembersOrdered(current), true);
+	}
+
 	public ArrayList<EntityLiving> getOppositionMembersOrdered(EntityLiving ent){
 		return getOppositionMembersOrdered(getTeam(ent));
 	}
-	
+
 	public ArrayList<EntityLiving> getOppositionMembersOrdered(Team current){
 		return current == attack ? defenceMembers : attackMembers;
 	}
-	
+
+	public ArrayList<EntityLiving> getOppositionMembersOrderedAlive(Team current){
+		ArrayList<EntityLiving> alive = new ArrayList<EntityLiving>();
+		for(EntityLiving ent : getOppositionMembersOrdered(current))
+			if(!ent.isDead())
+				alive.add(ent);
+		return alive;
+	}
+
 	private boolean firstUpdate = true;
 	@Override
 	public void update(Game game){
@@ -123,17 +185,17 @@ public class Battle extends GameObject{
 			game.getEvents().onEvent(game, EventType.BATTLE_START, this);
 			firstUpdate = false;
 		}
-		
+
 		if(attack.isDefeated())
 			win(game, defence);
 		else if(defence.isDefeated())
 			win(game, attack);
-		
+
 		if(ended){
 			game.setBattle(null);
 			return;
 		}
-		
+
 		if(turnTaken){
 			int cIndex = memberIndexes[turn];
 			int maxIndex = getMembers(turn).size() - 1;
@@ -144,29 +206,32 @@ public class Battle extends GameObject{
 				memberIndexes[turn]++;
 			turnTaken = false;
 		}
-		
+
 		IBattleProvider provider = getMembers(turn).get(memberIndexes[turn]).getBattleProvider();
 		if(provider == null)
 			turnTaken = true;
 		else if(!deciding){
 			deciding = true;
-			provider.makeDecision(game, this);
+			if(provider.getEntity().isDead())
+				madeDecision(game, provider);
+			else
+				provider.makeDecision(game, this);
 		}
 	}
 
 	private static final RectF BOUNDS_DEFENCE[] = new RectF[] {
-		new RectF(256, 256, 256 + 64, 256 + 64),
-		new RectF(256, 384, 256 + 64, 384 + 64),
-		new RectF(256, 128, 256 + 64, 128 + 64),
-		new RectF(256, 512, 256 + 64, 512 + 64)
+			new RectF(256, 256, 256 + 64, 256 + 64),
+			new RectF(256, 384, 256 + 64, 384 + 64),
+			new RectF(256, 128, 256 + 64, 128 + 64),
+			new RectF(256, 512, 256 + 64, 512 + 64)
 	};
 	private static final RectF BOUNDS_ATTACK[] = new RectF[] {
-		new RectF(1280 - 256 - 64, 256, 1280 - 256, 256 + 64),
-		new RectF(1280 - 256 - 64, 384, 1280 - 256, 384 + 64),
-		new RectF(1280 - 256 - 64, 128, 1280 - 256, 128 + 64),
-		new RectF(1280 - 256 - 64, 512, 1280 - 256, 512 + 64)
+			new RectF(1280 - 256 - 64, 256, 1280 - 256, 256 + 64),
+			new RectF(1280 - 256 - 64, 384, 1280 - 256, 384 + 64),
+			new RectF(1280 - 256 - 64, 128, 1280 - 256, 128 + 64),
+			new RectF(1280 - 256 - 64, 512, 1280 - 256, 512 + 64)
 	};
-	
+
 	@Override
 	public void draw(Game game, Canvas canvas){
 		super.preRender(game, canvas);
@@ -178,8 +243,10 @@ public class Battle extends GameObject{
 
 		canvas.drawBitmap(game.getResources().getBitmap(RegionLocale.getResource(region)), null, new RectF(0, 0, 1280, 720), null);
 
-		for(int i = 0; i < defence.getMembers().size(); i++){
-			EntityLiving ent = defence.getMembers().get(i);
+		for(int i = 0; i < defenceMembers.size(); i++){
+			EntityLiving ent = defenceMembers.get(i);
+			if(ent.isDead())
+				continue;
 			float ox = ent.getX();
 			float oy = ent.getY();
 			float ow = ent.getWidth();
@@ -205,10 +272,16 @@ public class Battle extends GameObject{
 			canvas.drawRect(new RectF(bounds.left - 16, bounds.top - 32, bounds.right + 16, bounds.top - 16), paint);
 			paint.setColor(Color.GREEN);
 			canvas.drawRect(new RectF(bounds.left - 16, bounds.top - 32, bounds.left - 16 + (bounds.width() + 32) * ent.getHealthRatio(), bounds.top - 16), paint);
+			paint.setColor(Color.WHITE);
+			paint.setTextSize(Values.FONT_SIZE_TINY);
+			paint.setTextAlign(Align.CENTER);
+			canvas.drawText(ent.getHealth() + "/" + ent.getMaxHealth(), bounds.left + bounds.width() / 2f, bounds.top - 8f, paint);
 		}
-		
-		for(int i = 0; i < attack.getMembers().size(); i++){
-			EntityLiving ent = attack.getMembers().get(i);
+
+		for(int i = 0; i < attackMembers.size(); i++){
+			EntityLiving ent = attackMembers.get(i);
+			if(ent.isDead())
+				continue;
 			float ox = ent.getX();
 			float oy = ent.getY();
 			float ow = ent.getWidth();
@@ -234,6 +307,10 @@ public class Battle extends GameObject{
 			canvas.drawRect(new RectF(bounds.left - 16, bounds.top - 32, bounds.right + 16, bounds.top - 16), paint);
 			paint.setColor(Color.GREEN);
 			canvas.drawRect(new RectF(bounds.left - 16, bounds.top - 32, bounds.left - 16 + (bounds.width() + 32) * ent.getHealthRatio(), bounds.top - 16), paint);
+			paint.setColor(Color.WHITE);
+			paint.setTextSize(Values.FONT_SIZE_TINY);
+			paint.setTextAlign(Align.CENTER);
+			canvas.drawText(ent.getHealth() + "/" + ent.getMaxHealth(), bounds.left + bounds.width() / 2f, bounds.top - 8f, paint);
 		}
 
 		super.postRender(game, canvas);
