@@ -2,24 +2,33 @@ package net.site40.rodit.tinyrpg.game.gui;
 
 import java.io.IOException;
 
+import org.w3c.dom.Document;
+
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint.Align;
+import android.graphics.RectF;
 import net.site40.rodit.tinyrpg.game.Dialog;
 import net.site40.rodit.tinyrpg.game.Dialog.DialogCallback;
 import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.Input;
 import net.site40.rodit.tinyrpg.game.Values;
+import net.site40.rodit.tinyrpg.game.battle.Battle;
+import net.site40.rodit.tinyrpg.game.battle.Team;
+import net.site40.rodit.tinyrpg.game.entity.mob.EntityMob;
 import net.site40.rodit.tinyrpg.game.gui.windows.WindowInventory;
+import net.site40.rodit.tinyrpg.game.gui.windows.WindowOptions;
+import net.site40.rodit.tinyrpg.game.gui.windows.WindowQuests;
 import net.site40.rodit.tinyrpg.game.gui.windows.WindowTextBoxComponent;
 import net.site40.rodit.tinyrpg.game.gui.windows.WindowUserInput;
 import net.site40.rodit.tinyrpg.game.gui.windows.WindowUserInput.InputCallback;
 import net.site40.rodit.tinyrpg.game.gui.windows.WindowUserInput.InputResult;
+import net.site40.rodit.tinyrpg.game.item.Item;
+import net.site40.rodit.tinyrpg.game.map.Region;
 import net.site40.rodit.tinyrpg.game.render.effects.FadeOutEffect;
 import net.site40.rodit.tinyrpg.game.render.effects.Weather.Lightning;
 import net.site40.rodit.tinyrpg.game.render.effects.Weather.Rain;
 import net.site40.rodit.util.RenderUtil;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint.Align;
-import android.graphics.RectF;
 
 public class GuiIngameMenu extends Gui{
 
@@ -38,7 +47,7 @@ public class GuiIngameMenu extends Gui{
 	public void init(){
 		Component bg = new Component(){
 			private final RectF BOUNDS_MENU = new RectF(32, 32, 32 + 384, 32 + 512);
-			private final String[] OPTIONS = new String[] { "Inventory", "Map", "Combat", "Save", "Options", "Menu", "Back", "Debug" };
+			private final String[] OPTIONS = new String[] { "Inventory", "Quests", "Map", "Combat", "Save", "Options", "Menu", "Back", "Debug" };
 			private long keyUpDown = 0L;
 			private long keyDownDown = 0L;
 
@@ -46,10 +55,17 @@ public class GuiIngameMenu extends Gui{
 				switch(selected){
 				case 0:
 					game.getGuis().hide(GuiIngameMenu.class);
-					game.getWindows().get(WindowInventory.class).show();
-					//game.getGuis().show(GuiPlayerInventory.class);
+					WindowInventory windowInv = new WindowInventory(game);
+					windowInv.show();
+					game.getWindows().register(windowInv);
 					break;
-				case 3:
+				case 1:
+					game.getGuis().hide(GuiIngameMenu.class);
+					WindowQuests questsWindow = new WindowQuests(game);
+					game.getWindows().register(questsWindow);
+					questsWindow.show();
+					break;
+				case 4:
 					boolean success = false;
 					try{
 						game.getSaves().save(game);
@@ -63,26 +79,29 @@ public class GuiIngameMenu extends Gui{
 					if(success)
 						game.getHelper().dialog("Save complete!");
 					break;
-				case 4:
-					game.getGuis().hide(GuiIngameMenu.class);
-					game.getGuis().show(GuiOptions.class);
-					break;
 				case 5:
-					game.removeObject(game.getMap());
-					game.setMap(null);
+					game.getGuis().hide(GuiIngameMenu.class);
+					WindowOptions optionsWindow = new WindowOptions(game);
+					game.getWindows().register(optionsWindow);
+					optionsWindow.show();
+					break;
+				case 6:
+					game.setPlayer(null);
+					game.releaseMap(true);
+					//game.setMap(null);
 					game.getGuis().hide(GuiIngameMenu.class);
 					game.getGuis().hide(GuiIngame.class);
 					game.getGuis().show(GuiMenu.class);
 					game.getInput().allowMovement(true);
 					break;
-				case 6:
-					game.getGuis().hide(GuiIngameMenu.class);
-					game.getInput().allowMovement(true);
-					break;
 				case 7:
 					game.getGuis().hide(GuiIngameMenu.class);
 					game.getInput().allowMovement(true);
-					game.getHelper().dialog("Choose a debug operation.", new String[] { "Fade Out", "Start Lightning", "Stop Lightning", "Start Rain", "Load Map", "Cancel" }, new DialogCallback(){
+					break;
+				case 8:
+					game.getGuis().hide(GuiIngameMenu.class);
+					game.getInput().allowMovement(true);
+					game.getHelper().dialog("Choose a debug operation.", new String[] { "Fade Out", "Start Lightning", "Stop Lightning", "Start Rain", "Load Map", "Test Battle", "Give Item", "Cancel" }, new DialogCallback(){
 						public void onSelected(int option){
 							switch(option){
 							case 0:
@@ -116,6 +135,41 @@ public class GuiIngameMenu extends Gui{
 								game.getWindows().register(input);
 								input.zIndex = 0;
 								input.show();
+								break;
+							case 5:
+								EntityMob rat0 = new EntityMob();
+								Document ratDoc = game.getResources().readDocument("config/entity/rat.xml");
+								rat0.linkConfig(ratDoc);
+								rat0.setDisplayName("Rat 0");
+								EntityMob mimic0 = new EntityMob();
+								Document mimicDoc = game.getResources().readDocument("config/entity/mimic.xml");
+								mimic0.linkConfig(mimicDoc);
+								mimic0.setDisplayName("Mimic 0");
+								EntityMob rat1 = new EntityMob();
+								rat1.linkConfig(ratDoc);
+								rat1.setDisplayName("Rat 1");
+								EntityMob mimic1 = new EntityMob();
+								mimic1.linkConfig(mimicDoc);
+								mimic1.setDisplayName("Mimic 1");
+								Battle battle = new Battle(Region.GRASS, new Team(rat0, mimic0, rat1, mimic1), new Team(game.getPlayer()));
+								game.setBattle(battle);
+								break;
+							case 6:
+								WindowUserInput inputWindow = new WindowUserInput(game, "Item Name:", "", new InputCallback(){
+									@Override
+									public boolean onResult(WindowUserInput window, Object result){
+										if(result == InputResult.CANCELLED)
+											return true;
+										Item item = Item.get(String.valueOf(result));
+										if(item == null)
+											return false;
+										game.getPlayer().getInventory().add(item, 1);
+										return true;
+									}
+								});
+								inputWindow.getInputBox().setInputType(WindowTextBoxComponent.INPUT_TYPE_ALPHA_NUMERIC);
+								inputWindow.show();
+								game.getWindows().register(inputWindow);
 								break;
 							}
 						}
