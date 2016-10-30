@@ -5,22 +5,31 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import android.content.Context;
 import net.site40.rodit.tinyrpg.game.Game;
-import net.site40.rodit.tinyrpg.game.GlobalSerializer;
 import net.site40.rodit.tinyrpg.game.map.MapState;
 import net.site40.rodit.util.TinyInputStream;
 import net.site40.rodit.util.TinyOutputStream;
-import android.content.Context;
 
 public class SaveManager {
 	
 	public static final String SAVE_DIR = "save";
 	public static final String SAVE_EXT = ".dat";
 	public static final String MAIN_SAVE = "game";
-	public static final String GLOBAL_SAVE = "global";
+	public static final String OPTIONS = "options";
+	
+	private boolean saveLoaded = false;
 	
 	public SaveManager(Game game){
 		checkDirs(game);
+	}
+	
+	public boolean isSaveLoaded(){
+		return saveLoaded;
+	}
+	
+	public void setSaveLoaded(boolean saveLoaded){
+		this.saveLoaded = saveLoaded;
 	}
 	
 	protected void checkDirs(Game game){
@@ -45,14 +54,22 @@ public class SaveManager {
 		FileInputStream fin = new FileInputStream(mainFile);
 		TinyInputStream tin = new TinyInputStream(fin);
 		game.load(tin);
-		loadGlobals(game);
 		tin.close();
+		saveLoaded = true;
 	}
 	
-	public void loadGlobals(Game game)throws IOException{
-		TinyInputStream gin = new TinyInputStream(new FileInputStream(getSaveFile(game.getContext(), GLOBAL_SAVE + SAVE_EXT)));
-		GlobalSerializer.deserialize(game.getGlobals(), gin);
-		gin.close();
+	public void loadOptions(Game game)throws IOException{
+		File optionsFile = getSaveFile(game.getContext(), OPTIONS + SAVE_EXT);
+		if(!optionsFile.exists()){
+			game.getOptions().initDefaults();
+			saveOptions(game);
+		}
+		FileInputStream fin = new FileInputStream(optionsFile);
+		TinyInputStream tin = new TinyInputStream(fin);
+		int count = tin.readInt();
+		for(int i = 0; i < count; i++)
+			game.getOptions().put(tin.readString(), tin.readString());
+		tin.close();
 	}
 	
 	public void save(Game game)throws IOException{
@@ -64,10 +81,17 @@ public class SaveManager {
 		tout.close();
 	}
 	
-	public void saveGlobals(Game game)throws IOException{
-		TinyOutputStream gout = new TinyOutputStream(new FileOutputStream(getSaveFile(game.getContext(), GLOBAL_SAVE + SAVE_EXT)));
-		GlobalSerializer.serialize(game.getGlobals(), gout);
-		gout.close();
+	public void saveOptions(Game game)throws IOException{
+		File optionsFile = getSaveFile(game.getContext(), OPTIONS + SAVE_EXT);
+		FileOutputStream fout = new FileOutputStream(optionsFile);
+		TinyOutputStream tout = new TinyOutputStream(fout);
+		int size = game.getOptions().getMap().size();
+		tout.write(size);
+		for(String key : game.getOptions().getMap().keySet()){
+			tout.writeString(key);
+			tout.writeString(game.getOptions().get(key));
+		}
+		tout.close();
 	}
 	
 	public MapState loadMap(Game game, String map)throws IOException{
@@ -84,6 +108,7 @@ public class SaveManager {
 	}
 	
 	public void saveMap(Game game, MapState state)throws IOException{
+		checkDirs(game);
 		File saveFile = getSaveFile(game.getContext(), state.getMap().getFile() + SAVE_EXT);
 		FileOutputStream fout = new FileOutputStream(saveFile);
 		TinyOutputStream tout = new TinyOutputStream(fout);
