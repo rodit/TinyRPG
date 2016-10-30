@@ -2,34 +2,33 @@ package net.site40.rodit.tinyrpg.game.entity;
 
 import java.io.IOException;
 
+import android.graphics.Canvas;
+import android.graphics.RectF;
 import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.Input;
 import net.site40.rodit.tinyrpg.game.SuperCalc;
 import net.site40.rodit.tinyrpg.game.battle.InputBattleProvider;
-import net.site40.rodit.tinyrpg.game.battle.Team;
+import net.site40.rodit.tinyrpg.game.entity.MovementProvider.TileMovementProvider;
 import net.site40.rodit.tinyrpg.game.gui.GuiIngameMenu;
-import net.site40.rodit.tinyrpg.game.map.MobSpawnRegistry.MobSpawn;
 import net.site40.rodit.util.TinyInputStream;
 import net.site40.rodit.util.TinyOutputStream;
-import android.graphics.Canvas;
-import android.graphics.RectF;
 
 public class EntityPlayer extends EntityLiving{
 
-	public static final float SPEED_MULTI = 1f;
-
 	private String username;
 
-	private boolean updateMapHolder = false;
-	
+	private boolean hasMoved;
+
+	protected MovementProvider movement = new TileMovementProvider();
+
 	public EntityPlayer(){
 		super();
 		this.name = "player";
 		this.username = "New Player";
 		this.script = "script/entity/player.js";
 		this.resource = "character/m/base/white.spr";
-		this.width = 24;
-		this.height = 24;
+		this.width = 8;
+		this.height = 8;
 		stats.setSpeed(2f);
 		stats.setStrength(2f);
 		stats.setLuck(2f);
@@ -39,56 +38,62 @@ public class EntityPlayer extends EntityLiving{
 		this.setHealth(maxHealth);
 		this.setMagika(SuperCalc.getMaxMagika(this));
 		this.battleProvider = new InputBattleProvider(this);
-		
+
 		ticker.setInterval(1000L);
 
 		setRuntimeProperty("map_origin", "respawn");
 
 		//TODO: REMOVE
 		//this.setNoclip(true);
-		stats.setForge(100f);
-		setMoney(1000000l);
+		if(Game.DEBUG){
+			stats.setForge(100f);
+			setMoney(1000000l);
+		}
 	}
-	
-//	@Override
-//	public int getMaxHealth(){
-//		return Protect.instance.get(Protect.PLAYER_MAX_HEALTH);
-//	}
-//	
-//	@Override
-//	public void setMaxHealth(int maxHealth){
-//		Protect.instance.set(Protect.PLAYER_MAX_HEALTH, maxHealth);
-//	}
-//	
-//	@Override
-//	public int getHealth(){
-//		return Protect.instance.get(Protect.PLAYER_HEALTH);
-//	}
-//	
-//	@Override
-//	public void setHealth(int health){
-//		Protect.instance.set(Protect.PLAYER_HEALTH, health);
-//	}
-//	
-//	@Override
-//	public int getMagika(){
-//		return Protect.instance.get(Protect.PLAYER_MAGIKA);
-//	}
-//	
-//	@Override
-//	public void setMagika(int magika){
-//		Protect.instance.set(Protect.PLAYER_MAGIKA, magika);
-//	}
-//	
-//	@Override
-//	public long getMoney(){
-//		return Protect.instance.getLong(Protect.PLAYER_MONEY);
-//	}
-//	
-//	@Override
-//	public void setMoney(long money){
-//		Protect.instance.setLong(Protect.PLAYER_MONEY, money);
-//	}
+
+	public TileMovementProvider getTileMovementProvider(){
+		return (TileMovementProvider)movement;
+	}
+
+	//	@Override
+	//	public int getMaxHealth(){
+	//		return Protect.instance.get(Protect.PLAYER_MAX_HEALTH);
+	//	}
+	//	
+	//	@Override
+	//	public void setMaxHealth(int maxHealth){
+	//		Protect.instance.set(Protect.PLAYER_MAX_HEALTH, maxHealth);
+	//	}
+	//	
+	//	@Override
+	//	public int getHealth(){
+	//		return Protect.instance.get(Protect.PLAYER_HEALTH);
+	//	}
+	//	
+	//	@Override
+	//	public void setHealth(int health){
+	//		Protect.instance.set(Protect.PLAYER_HEALTH, health);
+	//	}
+	//	
+	//	@Override
+	//	public int getMagika(){
+	//		return Protect.instance.get(Protect.PLAYER_MAGIKA);
+	//	}
+	//	
+	//	@Override
+	//	public void setMagika(int magika){
+	//		Protect.instance.set(Protect.PLAYER_MAGIKA, magika);
+	//	}
+	//
+	//	@Override
+	//	public long getMoney(){
+	//		return Protect.instance.getLong(Protect.PLAYER_MONEY);
+	//	}
+	//	
+	//	@Override
+	//	public void setMoney(long money){
+	//		Protect.instance.setLong(Protect.PLAYER_MONEY, money);
+	//	}
 
 	@Override
 	public boolean showName(){
@@ -108,17 +113,23 @@ public class EntityPlayer extends EntityLiving{
 		this.username = username;
 	}
 
+	public boolean hasMoved(){
+		boolean lHasMoved = hasMoved;
+		hasMoved = false;
+		return lHasMoved;
+	}
+
 	public void teleport(Game game, float x, float y){
 		this.x = x;
 		this.y = y;
 	}
-	
+
 	@Override
 	public void load(Game game, TinyInputStream in)throws IOException{
 		super.load(game, in);
 		this.username = in.readString();
 	}
-	
+
 	@Override
 	public void save(TinyOutputStream out)throws IOException{
 		super.save(out);
@@ -126,28 +137,40 @@ public class EntityPlayer extends EntityLiving{
 	}
 
 	@Override
+	public float getCenterX(){
+		return x + 8f;
+	}
+
+	@Override
+	public float getCenterY(){
+		return y + 16f;
+	}
+
+	@Override
+	public RectF getBounds(){
+		return new RectF(x, y, x + 16f, y + 32f);
+	}
+
+	@Override
 	public RectF getCollisionBounds(){
-		return new RectF(x, y + height / 2f, x + width, y + height);
+		return getCollisionBounds(x, y);
 	}
 
 	@Override
 	public RectF getCollisionBounds(float x, float y){
+		return new RectF(x + 2f, y + 2f + 18f, x + 14f, y + 30f);
+	}
+
+	public RectF getCollisionBoundsOld(float x, float y){
 		return new RectF(x, y + height / 2f, x + width, y + height);
 	}
 
 	@Override
-	public void update(Game game){
-		float deltaMulti = (float)game.getDelta() / 16.6f;
+	public void update(Game game){		
+		movement.move(game, this);
+
 		Input input = game.getInput();
 		if(input.allowMovement()){
-			if(input.isDown(Input.KEY_UP))
-				velocityY -= stats.getMoveSpeed() * SPEED_MULTI * deltaMulti;
-			if(input.isDown(Input.KEY_DOWN))
-				velocityY += stats.getMoveSpeed() * SPEED_MULTI * deltaMulti;
-			if(input.isDown(Input.KEY_LEFT))
-				velocityX -= stats.getMoveSpeed() * SPEED_MULTI * deltaMulti;
-			if(input.isDown(Input.KEY_RIGHT))
-				velocityX += stats.getMoveSpeed() * SPEED_MULTI * deltaMulti;
 			if(input.isUp(Input.KEY_ACTION)){
 				Object o = game.trace(this);
 				if(o != null && o instanceof Entity)
@@ -161,19 +184,13 @@ public class EntityPlayer extends EntityLiving{
 			}
 		}
 
-		updateMapHolder = velocityX > 0 || velocityY > 0;
+		hasMoved = velocityX > 0 || velocityY > 0;
 
 		super.update(game);
 	}
-	
-	@Override
-	public void tick(Game game){
-		super.tick(game);
-		if(updateMapHolder)
-			updateMap(game);
-	}
 
 	public void updateMap(Game game){
+		/*
 		if(game.getBattle() == null && game.getMap() != null && game.getMap().getMap() != null){
 			String areaKey = game.getMap().getMap().getMobSpawnAreaKeys(x, y);
 			for(MobSpawn spawn : game.getMobSpawns().getMobSpawns(areaKey)){
@@ -183,6 +200,7 @@ public class EntityPlayer extends EntityLiving{
 				}
 			}
 		}
+		 */
 	}
 
 	@Override
@@ -190,5 +208,10 @@ public class EntityPlayer extends EntityLiving{
 		//game.pushTranslate(canvas);
 		super.draw(game, canvas);
 		//game.popTranslate(canvas);
+	}
+
+	public void copy(EntityPlayer player){
+		super.copy(player);
+		this.username = player.username;
 	}
 }

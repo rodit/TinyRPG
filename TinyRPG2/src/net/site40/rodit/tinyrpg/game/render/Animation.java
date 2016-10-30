@@ -56,6 +56,12 @@ public class Animation {
 	public long getRunTime(){
 		return frames.length * delay;
 	}
+	
+	public void recycle(){
+		for(int i = 0; i < frames.length; i++)
+			frames[i].recycle();
+		frames = null;
+	}
 
 	public void load(String asset, ResourceManager resources){
 		String meta = new String(resources.readAsset(asset));
