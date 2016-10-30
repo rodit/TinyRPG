@@ -26,35 +26,45 @@ import net.site40.rodit.tinyrpg.game.gui.windows.WindowManager;
 import net.site40.rodit.tinyrpg.game.item.Item;
 import net.site40.rodit.tinyrpg.game.map.MapState;
 import net.site40.rodit.tinyrpg.game.map.MobSpawnRegistry;
+import net.site40.rodit.tinyrpg.game.map.RPGMap;
 import net.site40.rodit.tinyrpg.game.mod.ModManager;
 import net.site40.rodit.tinyrpg.game.mod.TinyMod;
 import net.site40.rodit.tinyrpg.game.quest.QuestManager;
 import net.site40.rodit.tinyrpg.game.render.ResourceManager;
+import net.site40.rodit.tinyrpg.game.render.ResourceStreamProvider.AssetStreamProvider;
+import net.site40.rodit.tinyrpg.game.render.ResourceStreamProvider.ModStreamProvider;
 import net.site40.rodit.tinyrpg.game.render.Sprite;
 import net.site40.rodit.tinyrpg.game.render.XmlResourceLoader;
 import net.site40.rodit.tinyrpg.game.render.effects.DayNightCycle;
 import net.site40.rodit.tinyrpg.game.render.effects.Lighting;
 import net.site40.rodit.tinyrpg.game.render.effects.PostProcessor;
 import net.site40.rodit.tinyrpg.game.render.effects.Weather;
+import net.site40.rodit.tinyrpg.game.saves.Options;
 import net.site40.rodit.tinyrpg.game.saves.SaveManager;
+import net.site40.rodit.tinyrpg.game.script.CutseneHelper;
 import net.site40.rodit.tinyrpg.game.script.ScriptEngine;
 import net.site40.rodit.tinyrpg.game.script.ScriptHelper;
 import net.site40.rodit.tinyrpg.game.util.EagleTracer;
 import net.site40.rodit.tinyrpg.game.util.Savable;
 import net.site40.rodit.tinyrpg.game.util.ScreenUtil;
+import net.site40.rodit.tinyrpg.mp.GameStatus;
+import net.site40.rodit.tinyrpg.mp.MPController;
 import net.site40.rodit.util.ExtendedRandom;
 import net.site40.rodit.util.GenericCallback;
 import net.site40.rodit.util.TinyInputStream;
 import net.site40.rodit.util.TinyOutputStream;
 import net.site40.rodit.util.Util;
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Paint.Align;
 import android.graphics.Paint.Style;
+import android.graphics.Point;
 import android.graphics.PointF;
 import android.util.Log;
+import android.view.Display;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -70,14 +80,17 @@ public class Game implements Savable{
 	}
 
 	public static final boolean DEBUG = true;
-	public static boolean DEBUG_DRAW = false;
+	public static final boolean DEBUG_DRAW = true;
 
-	public static final float SCALE_FACTOR = 3f;
+	public static final float SCALE_FACTOR = 2.5f;
 	public static final float SCALE_FACTOR_1 = 1f / SCALE_FACTOR;
+
+	private Thread gameThread;
 
 	private Context context;
 	private View view;
 	private ExtendedRandom random;
+	private Options options;
 	private Scheduler scheduler;
 	private EagleTracer tracer;
 	private ScreenUtil screen;
@@ -104,6 +117,7 @@ public class Game implements Savable{
 	private Weather weather;
 	private DayNightCycle dayNight;
 	private ModManager mods;
+	private MPController mp;
 
 	private ScriptHelper helper;
 
@@ -119,9 +133,21 @@ public class Game implements Savable{
 	private float scrollX = 0;
 	private float scrollY = 0;
 
+	private float screenScaleX = 0f;
+	private float screenScaleY = 0f;
+
 	private int objectModCount = 0;
 
 	public Game(Context context, View view){
+		gameThread = Thread.currentThread();
+		Log.i("Game", "Game is running on thread with ID: " + gameThread.getId());
+
+		Display display = ((Activity)context).getWindowManager().getDefaultDisplay();
+		Point point = new Point();
+		display.getSize(point);
+		screenScaleX = point.x / 1280f;
+		screenScaleY = point.y / 720f;
+
 		if(DEBUG){
 			Benchmark.start("init");
 			//TODO: Set log level
@@ -130,10 +156,13 @@ public class Game implements Savable{
 		this.context = context;
 		this.view = view;
 		this.random = new ExtendedRandom();
+		this.options = new Options();
 		this.scheduler = new Scheduler();
 		this.tracer = new EagleTracer();
 		this.screen = new ScreenUtil(context);
 		this.resources = new ResourceManager(context.getAssets());
+		resources.registerProvider(new AssetStreamProvider(context.getAssets()));
+		resources.registerProvider(new ModStreamProvider(this));
 		this.quests = new QuestManager();
 		this.forge = new ForgeRegistry();
 		DEFAULT_PAINT = new Paint();
@@ -155,23 +184,21 @@ public class Game implements Savable{
 		this.globals = new LinkedHashMap<String, Object>();
 		globals.put("game", this);
 		globals.put("helper", helper = new ScriptHelper(this));
+		globals.put("cutsene", new CutseneHelper());
 		globals.put("quests", quests);
 		globals.put("util", new Util());
 		globals.put("gui_quest", null);
 		globals.put("gui_quest_parent", "");
-		//OPTIONS
-		globals.put("hardware_render", "true");
-		globals.put("controls_alpha", "50");
-		globals.put("chat_bg_alpha", "35");
-		globals.put("chat_text_alpha", "75");
+		globals.put("tile_movement", "true");
 		//GAME VARS
 		globals.put("intro_done", "false");
-		globals.put("start_map", "map/debug.tmx");
+		globals.put("start_map", "map/player_home_bedroom.tmx");
 		globals.put("last_bookshelf_skill", "0");
 		globals.put("bookshelf_skill_count", "0");
 		//ENTITY VARS
 		globals.put("merek_speak_count", "0");
-
+		globals.put("test_dialog_index", "0");
+		
 		this.saves = new SaveManager(this);
 		this.chat = new Chat();
 		this.pp = new PostProcessor();
@@ -215,6 +242,15 @@ public class Game implements Savable{
 			}
 		}
 
+		this.mp = new MPController(this);
+
+		try{
+			saves.loadOptions(this);
+		}catch(IOException e){
+			Log.e("Game", "IOException while loading options:");
+			e.printStackTrace();
+		}
+
 		if(DEBUG)
 			Log.i("Benchmark", "Game initialization took " + Benchmark.stop("init") + "ms.");
 	}
@@ -231,6 +267,10 @@ public class Game implements Savable{
 		return random;
 	}
 
+	public Options getOptions(){
+		return options;
+	}
+
 	public Scheduler getScheduler(){
 		return scheduler;
 	}
@@ -242,7 +282,7 @@ public class Game implements Savable{
 	public Object trace(Entity e){
 		if(isShowingDialog())
 			return null;
-		return tracer.trace(map, e, 16f);
+		return tracer.trace(map, e, 4f);
 	}
 
 	public ScreenUtil getScreen(){
@@ -293,6 +333,8 @@ public class Game implements Savable{
 	}
 
 	public void removeObject(IGameObject object){
+		if(object == null)
+			return;
 		synchronized(objRemove){
 			objRemove.add(object);
 			objectModCount++;
@@ -362,11 +404,92 @@ public class Game implements Savable{
 		return audio;
 	}
 
-	public void setMap(MapState newMap){
-		setMap(newMap, false);
+	public MPController getMP(){
+		return mp;
 	}
 
-	public void setMap(MapState newMap, boolean fromSave){
+	public boolean isOnline(){
+		return mp.getClient().getClient().isConnected();
+	}
+
+	public boolean isRemote(){
+		return mp.getStatus() == GameStatus.REMOTE;
+	}
+
+	public void releaseMap(boolean save){
+		if(map == null)
+			return;
+		if(save){
+			try{
+				saves.saveMap(this, map);
+			}catch(IOException e){
+				Log.e("Game", "Error while saving map.");
+				e.printStackTrace();
+			}
+		}
+		removeObject(map);
+		if(map.getRotObj() != null)
+			removeObject(map.getRotObj());
+		map.dispose(resources);
+		map = null;
+	}
+
+	public void switchMap(String mapName){
+		RPGMap loadMap = (RPGMap)resources.getObject(mapName);
+		if(loadMap == null){
+			Log.e("Game", "Failed to load map: " + mapName + ". Resource was probably not found.");
+			return;
+		}
+		if(player == null)
+			player = new EntityPlayer();
+		MapState current = this.map;
+		removeObject(current);
+		if(current != null && current.getRotObj() != null)
+			removeObject(current.getRotObj());
+		if(current != null && current.getMap() != loadMap && current.getMap() != null){
+			try{
+				if(current != null)
+					saves.saveMap(this, current);
+			}catch(IOException e){
+				Log.e("Game", "Error while saving map.");
+				if(DEBUG)
+					e.printStackTrace();
+			}
+			ArrayList<Entity> despawn = new ArrayList<Entity>(current.getEntities());
+			for(Entity e : despawn){
+				if(e != player)
+					current.despawn(this, e);
+			}
+			if(current != null)
+				current.dispose(resources);
+			flushObjects();
+		}
+		MapState state = null;
+		if(saves.isSaveLoaded()){
+			try{
+				state = saves.loadMap(this, mapName);
+			}catch(IOException e){
+				Log.w("Game", "Failed to find save state for map " + mapName + ". Loading default state instead");
+			}
+		}
+		if(state == null)
+			state = new MapState(loadMap);
+		if(state != null){
+			this.map = state;
+			addObject(map);
+			if(map.getMap().hasRot() && map.getRotObj() != null)
+				addObject(map.getRotObj());
+			map.spawn(this, player);
+			if(isOnline())
+				mp.sendMapUpdate(mapName);
+		}
+	}
+
+	public void setMapOld(MapState newMap){
+		setMapOld(newMap, false);
+	}
+
+	public void setMapOld(MapState newMap, boolean fromSave){
 		if(player == null)
 			player = new EntityPlayer();
 		MapState current = this.map;
@@ -383,7 +506,7 @@ public class Game implements Savable{
 			forDespawn.addAll(current.getEntities());
 			for(Entity e : forDespawn){
 				if(e == player)
-					return;
+					continue;
 				current.despawn(this, e);
 			}
 			removeObject(current);
@@ -401,8 +524,11 @@ public class Game implements Savable{
 		this.map = newMap;
 		if(newMap != null){
 			addObject(newMap);
-			addObject(newMap.getRotObj());
+			if(newMap.getRotObj() != null)
+				addObject(newMap.getRotObj());
 			newMap.spawn(this, player);
+			if(isOnline())
+				mp.sendMapUpdate(newMap.getMap().getFile());
 		}
 		System.gc();
 	}
@@ -425,6 +551,10 @@ public class Game implements Savable{
 
 	public EntityPlayer getPlayer(){
 		return player;
+	}
+
+	public void setPlayer(EntityPlayer player){
+		this.player = player;
 	}
 
 	public LinkedHashMap<String, Object> getGlobals(){
@@ -467,7 +597,7 @@ public class Game implements Savable{
 	public void setGlobalb(String key, boolean b){
 		setGlobal(key, String.valueOf(b));
 	}
-
+	
 	public void setGlobalf(String key, float f){
 		setGlobal(key, String.valueOf(f));
 	}
@@ -525,6 +655,19 @@ public class Game implements Savable{
 	public boolean isPaused(){
 		return paused;
 	}
+	
+	public void flushObjects(){
+		synchronized(objects){
+			for(IGameObject obj : objRemove){
+				objects.remove(obj);
+				if(obj != null)
+					obj.dispose(this);
+			}
+			synchronized(objRemove){
+				objRemove.clear();
+			}
+		}
+	}
 
 	public void update(){
 		if(DEBUG)
@@ -536,16 +679,9 @@ public class Game implements Savable{
 
 		scheduler.update(this);
 		pp.update(this);
-
+		
 		synchronized(objects){
-			for(IGameObject obj : objRemove){
-				objects.remove(obj);
-				if(obj != null)
-					obj.dispose(this);
-			}
-			synchronized(objRemove){
-				objRemove.clear();
-			}
+			flushObjects();
 			ArrayList<IGameObject> copy = new ArrayList<IGameObject>(objects);
 			for(IGameObject obj : copy){
 				if(battle != null)
@@ -583,16 +719,19 @@ public class Game implements Savable{
 		if(DEBUG)
 			Benchmark.start("draw");
 
+		if(screenScaleX > 1f || screenScaleY > 1f)
+			canvas.scale(screenScaleX, screenScaleY);
+
 		canvas.drawColor(Color.BLACK);
 		if(skipFrames > 0){
 			skipFrames--;
 			return;
 		}
-
+		
 		pp.preDraw(this, canvas);
 
-		scrollX = player.getX() * SCALE_FACTOR - 1280f / 2f;
-		scrollY = player.getY() * SCALE_FACTOR - 720f / 2f;
+		scrollX = (player == null ? 0 : player.getX()) * SCALE_FACTOR - 1280f / 2f;
+		scrollY = (player == null ? 0 : player.getY()) * SCALE_FACTOR - 720f / 2f;
 
 		if(battle != null)
 			battle.draw(this, canvas);
@@ -620,20 +759,22 @@ public class Game implements Savable{
 				if(!obj.shouldScale())
 					canvas.scale(SCALE_FACTOR, SCALE_FACTOR);
 
-				if(DEBUG_DRAW && obj instanceof Sprite){
-					Sprite sprite = (Sprite)obj;
-					Style style = obj.getPaint().getStyle();
-					int color = obj.getPaint().getColor();
-					float size = sprite.getPaint().getTextSize();
-					obj.getPaint().setStyle(Style.STROKE);
-					obj.getPaint().setColor(Color.RED);
-					canvas.drawRect(sprite.getBounds(), obj.getPaint());
-					sprite.getPaint().setColor(Color.BLUE);
-					sprite.getPaint().setTextSize(8f);
-					canvas.drawText(sprite.getName(), sprite.getX(), sprite.getY() - 8f, sprite.getPaint());
-					sprite.getPaint().setTextSize(size);
-					obj.getPaint().setStyle(style);
-					obj.getPaint().setColor(color);
+				if(DEBUG_DRAW){
+					if(obj instanceof Sprite){
+						Sprite sprite = (Sprite)obj;
+						Style style = obj.getPaint().getStyle();
+						int color = obj.getPaint().getColor();
+						float size = sprite.getPaint().getTextSize();
+						obj.getPaint().setStyle(Style.STROKE);
+						obj.getPaint().setColor(Color.RED);
+						canvas.drawRect(sprite.getBounds(), obj.getPaint());
+						sprite.getPaint().setColor(Color.BLUE);
+						sprite.getPaint().setTextSize(8f);
+						canvas.drawText(sprite.getName(), sprite.getX(), sprite.getY() - 8f, sprite.getPaint());
+						sprite.getPaint().setTextSize(size);
+						obj.getPaint().setStyle(style);
+						obj.getPaint().setColor(color);
+					}
 				}
 			}
 		}
@@ -683,6 +824,9 @@ public class Game implements Savable{
 		}
 
 		frameCounter++;
+
+		if(screenScaleX > 1f || screenScaleY > 1f)
+			canvas.scale(1f / screenScaleX, 1f / screenScaleY);
 
 		if(DEBUG)
 			drawTime = Benchmark.stop("draw");
@@ -762,25 +906,29 @@ public class Game implements Savable{
 		Log.i("Load", "Save version: " + versionStr);
 		if(!versionStr.equals(VERSION))
 			Log.w("Load", "Attempting to load save with version " + versionStr + " when game version is " + VERSION + ".");
+		GlobalSerializer.deserialize(globals, in);
 		player.load(this, in);
 		String mapFileName = in.readString();
-		setMap(saves.loadMap(this, mapFileName), true);
+		switchMap(mapFileName);//, true);
 		scheduler.load(in);
-		quests.load(quests, in);
-
-		if(getGlobalb("hardware_render"))
-			view.setLayerType(View.LAYER_TYPE_HARDWARE, null);
-		else
-			view.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+		quests.load(in);
 	}
 
 	public void save(TinyOutputStream out)throws IOException{
 		out.write(FILE_SIGNATURE);
 		out.writeString(VERSION);
+		GlobalSerializer.serialize(globals, out);
 		player.save(out);
-		out.writeString(map.getMap().getFile());
+		if(map != null && map.getMap() != null)
+			out.writeString(map.getMap().getFile());
+		else
+			out.writeString("");
 		saves.saveMap(this, map);
 		scheduler.save(out);
 		quests.save(out);
+	}
+
+	public boolean isGameThread(){
+		return Thread.currentThread() == gameThread;
 	}
 }
