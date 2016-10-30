@@ -2,9 +2,6 @@ package net.site40.rodit.tinyrpg.game.gui.windows;
 
 import java.util.ArrayList;
 
-import net.site40.rodit.tinyrpg.game.Game;
-import net.site40.rodit.tinyrpg.game.GameObject;
-import net.site40.rodit.tinyrpg.game.render.ResourceWrapper;
 import android.graphics.Canvas;
 import android.graphics.Paint.Align;
 import android.graphics.RectF;
@@ -13,12 +10,17 @@ import android.text.TextUtils;
 import android.util.SparseArray;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
+import net.site40.rodit.tinyrpg.game.Game;
+import net.site40.rodit.tinyrpg.game.GameObject;
+import net.site40.rodit.tinyrpg.game.render.ResourceWrapper;
+import net.site40.rodit.util.RenderUtil;
 
 public class WindowComponent extends GameObject{
 
 	public static final int FLAG_NONE = 0;
 	public static final int FLAG_DISABLED = 1;
 	public static final int FLAG_INVISIBLE = 2;
+	public static final int FLAG_MULTILINE_TEXT = 3;
 
 	public static final int STATE_IDLE = 0;
 	public static final int STATE_DOWN = 1;
@@ -230,7 +232,7 @@ public class WindowComponent extends GameObject{
 		for(WindowListener listener : listeners)
 			listener.update(game, this);
 	}
-	
+
 	public WindowEventStatus touchInput(Game game, MotionEvent event){
 		if(state == STATE_DISABLED || getFlag(FLAG_INVISIBLE))
 			return WindowEventStatus.UNHANDLED;
@@ -246,7 +248,7 @@ public class WindowComponent extends GameObject{
 			parent.unfocusAll(game);
 			state = STATE_DOWN;
 			focus = true;
-			
+
 			onTouchDown(game);
 			break;
 		case MotionEvent.ACTION_UP:
@@ -263,12 +265,12 @@ public class WindowComponent extends GameObject{
 
 		return WindowEventStatus.HANDLED;
 	}
-	
+
 	public void onKeyInput(Game game, KeyEvent event){
 		for(WindowListener listener : listeners)
 			listener.keyInput(game, event);
 	}
-	
+
 	public void keyInput(Game game, KeyEvent event){
 		onKeyInput(game, event);
 	}
@@ -302,7 +304,10 @@ public class WindowComponent extends GameObject{
 				drawX += getWidth() / 2f;
 				drawY += getHeight() / 2f + 10f;
 			}
-			canvas.drawText(text, drawX, drawY, paint);
+			if(getFlag(FLAG_MULTILINE_TEXT))
+				RenderUtil.drawMultilineText(game, canvas, text, drawX, drawY, paint);
+			else
+				canvas.drawText(text, drawX, drawY, paint);
 		}
 
 		super.postRender(game, canvas);
