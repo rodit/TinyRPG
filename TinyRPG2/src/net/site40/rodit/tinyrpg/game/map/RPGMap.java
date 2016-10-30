@@ -10,9 +10,12 @@ import android.util.Log;
 
 public class RPGMap {
 
+	public static final byte[] MAP_SIG = "TINYMX".getBytes();
+
 	private String file;
 	private Bitmap background;
 	private Bitmap renderOnTop;
+	private boolean hasRot;
 	private MapProperties properties;
 	private ArrayList<MapObject> objects;
 	private HashMap<String, ArrayList<MapObject>> objectGroupCache;
@@ -49,6 +52,14 @@ public class RPGMap {
 		this.background = background;
 	}
 
+	public boolean hasRot(){
+		return hasRot;
+	}
+
+	public void setHasRot(boolean hasRot){
+		this.hasRot = hasRot;
+	}
+
 	public Bitmap getRenderOnTop(){
 		return renderOnTop;
 	}
@@ -61,11 +72,13 @@ public class RPGMap {
 		return properties;
 	}
 
-	public ArrayList<MapObject> getObjects(){
+	public synchronized ArrayList<MapObject> getObjects(){
 		return objects;
 	}
 
-	public ArrayList<MapObject> getObjects(String group){
+	public synchronized ArrayList<MapObject> getObjects(String group){
+		if(objects == null)
+			return new ArrayList<MapObject>();
 		if(objectGroupCache == null)
 			objectGroupCache = new HashMap<String, ArrayList<MapObject>>();
 		ArrayList<MapObject> grouped = objectGroupCache.get(group);
@@ -82,7 +95,7 @@ public class RPGMap {
 	public HashMap<Region, ArrayList<RectF>> getRegions(){
 		return regions;
 	}
-	
+
 	public Region getRegion(float x, float y){
 		for(Region region : regions.keySet()){
 			ArrayList<RectF> allBounds = regions.get(region);
@@ -103,11 +116,11 @@ public class RPGMap {
 			locations.add(location);
 		regions.put(region, locations);
 	}
-	
+
 	public ArrayList<RectF> getMobSpawnAreas(String key){
 		return mobSpawnAreaKeys.get(key);
 	}
-	
+
 	public String getMobSpawnAreaKeys(float x, float y){
 		for(String key : this.mobSpawnAreaKeys.keySet()){
 			ArrayList<RectF> allBounds = this.mobSpawnAreaKeys.get(key);
@@ -119,7 +132,7 @@ public class RPGMap {
 		}
 		return "null_mobspawn";
 	}
-	
+
 	public void addMobSpawnArea(String key, RectF area){
 		ArrayList<RectF> locations = mobSpawnAreaKeys.get(key);
 		if(locations == null)
@@ -137,7 +150,8 @@ public class RPGMap {
 		if(renderOnTop != null)
 			renderOnTop.recycle();
 		background = renderOnTop = null;
-		objects.clear();
+		if(objects != null)
+			objects.clear();
 		objects = null;
 		regions.clear();
 		regions = null;

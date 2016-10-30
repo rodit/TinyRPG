@@ -9,6 +9,7 @@ import net.site40.rodit.tinyrpg.game.forge.ForgeRegistry;
 import net.site40.rodit.tinyrpg.game.forge.ForgeRegistry.ForgeRecipy.ForgeType;
 import net.site40.rodit.tinyrpg.game.item.Item;
 import net.site40.rodit.tinyrpg.game.item.ItemStack;
+import net.site40.rodit.tinyrpg.game.map.MapLoader;
 import net.site40.rodit.tinyrpg.game.map.MapObject;
 import net.site40.rodit.tinyrpg.game.map.MobSpawnRegistry.MobSpawn;
 import net.site40.rodit.tinyrpg.game.map.RPGMap;
@@ -30,8 +31,12 @@ import davidiserovich.TMXLoader.TileMapData;
 public class XmlResourceLoader {
 	
 	public static int loadCount = 0;
+	
+	public static boolean useBinaryMap = true;
 
 	public static RPGMap loadMap(ResourceManager resources, String file){
+		if(useBinaryMap)
+			return MapLoader.loadMap(resources, file);
 		RPGMap map = new RPGMap(file, true);
 		TileMapData data = TMXLoader.readTMX(file, resources);
 		Bitmap[] bmps = TMXLoader.createBitmap(data, resources, 0, data.layers.size());
@@ -49,11 +54,11 @@ public class XmlResourceLoader {
 		resources.putObject(file, map);
 		bmps = null;
 		data = null;
-		System.gc();		
+		System.gc();
 		return map;
 	}
 
-	private static final String ITEM_PACKAGE = "net.site40.rodit.tinyrpg.game.item";
+	public static final String ITEM_PACKAGE = "net.site40.rodit.tinyrpg.game.item";
 	public static void loadItems(ResourceManager resources, String file){
 		Document doc = resources.readDocument(file);
 		NodeList inodes = doc.getElementsByTagName("item");
@@ -88,7 +93,7 @@ public class XmlResourceLoader {
 		Log.i("ItemLoader", "Loaded " + loaded + " items from " + file + ".");
 	}
 	
-	private static final String ATTACK_PACKAGE = "net.site40.rodit.tinyrpg.game.combat";
+	public static final String ATTACK_PACKAGE = "net.site40.rodit.tinyrpg.game.combat";
 	public static void loadAttacks(ResourceManager resources, String file){
 		Document doc = resources.readDocument(file);
 		NodeList inodes = doc.getElementsByTagName("attack");
@@ -123,7 +128,7 @@ public class XmlResourceLoader {
 		Log.i("AttackLoader", "Loaded " + loaded + " attacks from " + file + ".");
 	}
 
-	private static final String EFFECT_PACKAGE = "net.site40.rodit.tinyrpg.game.effect";
+	public static final String EFFECT_PACKAGE = "net.site40.rodit.tinyrpg.game.effect";
 	public static void loadEffects(ResourceManager resources, String file){
 		Document doc = resources.readDocument(file);
 		NodeList nodes = doc.getElementsByTagName("effect");
