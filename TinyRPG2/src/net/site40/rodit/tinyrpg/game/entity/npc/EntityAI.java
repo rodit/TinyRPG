@@ -42,6 +42,7 @@ public class EntityAI extends EntityLiving{
 				Class<? extends AITask> cls = (Class<? extends AITask>)Class.forName(taskCls);
 				AITask task = cls.newInstance();
 				task.setOwner(this);
+				task.load(game, in);
 				tasks.add(task);
 			}catch(Exception e){
 				e.printStackTrace();
@@ -54,7 +55,9 @@ public class EntityAI extends EntityLiving{
 	public void save(TinyOutputStream out)throws IOException{
 		super.save(out);
 		out.write(tasks.size());
-		for(AITask task : tasks)
+		for(AITask task : tasks){
 			out.writeString(task.getClass().getCanonicalName());
+			task.save(out);
+		}
 	}
 }
