@@ -1,10 +1,17 @@
 package net.site40.rodit.tinyrpg.game.battle;
 
+import static net.site40.rodit.tinyrpg.game.render.MM.EMPTY_STRING_ARRAY;
+import static net.site40.rodit.tinyrpg.game.render.Strings.DIALOG_AI_HEAL;
+import static net.site40.rodit.tinyrpg.game.render.Strings.DIALOG_AI_NOTHING;
+import static net.site40.rodit.tinyrpg.game.render.Strings.DIALOG_AI_WEAPONS;
+import static net.site40.rodit.tinyrpg.game.render.Strings.getString;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 
+import android.util.Log;
 import net.site40.rodit.tinyrpg.game.Dialog.DialogCallback;
 import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.SuperCalc;
@@ -13,7 +20,6 @@ import net.site40.rodit.tinyrpg.game.entity.mob.EntityMob;
 import net.site40.rodit.tinyrpg.game.item.InventoryUtil;
 import net.site40.rodit.tinyrpg.game.item.Item;
 import net.site40.rodit.tinyrpg.game.item.Weapon;
-import android.util.Log;
 
 public class AIBattleProvider implements IBattleProvider{
 
@@ -247,7 +253,7 @@ public class AIBattleProvider implements IBattleProvider{
 		}
 
 		public void choose(Game game, AIBattleProvider provider){
-			game.getHelper().dialog(provider.getEntity().getDisplayName() + " forgot to take their turn!", new String[0], defaultCallback);
+			game.getHelper().dialog(getString(DIALOG_AI_NOTHING, provider.getEntity().getDisplayName()), EMPTY_STRING_ARRAY, defaultCallback);
 		}
 	}
 
@@ -290,7 +296,7 @@ public class AIBattleProvider implements IBattleProvider{
 					target.attachPaintMixer(Battle.newHitMixer());
 				}
 			}
-			game.getHelper().dialog(provider.getEntity().getDisplayName() + " used their weapon(s).", new String[0], defaultCallback);
+			game.getHelper().dialog(getString(DIALOG_AI_WEAPONS, provider.getEntity().getDisplayName()), EMPTY_STRING_ARRAY, defaultCallback);
 		}
 	}
 
@@ -324,7 +330,7 @@ public class AIBattleProvider implements IBattleProvider{
 			Item bestHealing = InventoryUtil.getBestHealingItem(provider.getEntity().getInventory());
 			if(bestHealing != null){
 				bestHealing.onEquip(game, provider.getEntity());
-				game.getHelper().dialog(provider.getEntity().getDisplayName() + " used " + InventoryUtil.grammer(bestHealing) + ".", new String[0], defaultCallback);
+				game.getHelper().dialog(getString(DIALOG_AI_HEAL, provider.getEntity().getDisplayName(), InventoryUtil.grammer(bestHealing)), EMPTY_STRING_ARRAY, defaultCallback);
 			}
 		}
 	}
