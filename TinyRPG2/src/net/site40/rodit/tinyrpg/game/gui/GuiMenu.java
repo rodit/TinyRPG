@@ -126,7 +126,7 @@ public class GuiMenu extends Gui{
 				if(f0){
 					MediaPlayer bgMusic = game.getAudio().get(R.raw.menu_music);
 					bgMusic.setLooping(true);
-					bgMusic.start();
+					//bgMusic.start();
 					f0 = false;
 				}
 			}

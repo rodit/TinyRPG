@@ -2,6 +2,10 @@ package net.site40.rodit.tinyrpg.game.gui;
 
 import java.util.ArrayList;
 
+import android.graphics.Canvas;
+import android.graphics.Paint.Align;
+import android.graphics.RectF;
+import android.view.MotionEvent;
 import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.IGameObject;
 import net.site40.rodit.tinyrpg.game.IPaintMixer;
@@ -17,10 +21,6 @@ import net.site40.rodit.tinyrpg.game.item.Weapon;
 import net.site40.rodit.tinyrpg.game.item.armour.Armour;
 import net.site40.rodit.util.RenderUtil;
 import net.site40.rodit.util.Util;
-import android.graphics.Canvas;
-import android.graphics.Paint.Align;
-import android.graphics.RectF;
-import android.view.MotionEvent;
 
 
 
@@ -304,14 +304,14 @@ public class GuiPlayerInventory extends Gui{
 							if(slot > -1){
 								game.getPlayer().setEquipped(slot, null);
 								ie.onUnEquip(game, game.getPlayer());
-								game.getEvents().onEvent(game, EventType.ITEM_UNEQUIP, ie, game.getPlayer(), slot);
+								//game.getEvents().onEvent(game, EventType.ITEM_UNEQUIP, ie, game.getPlayer(), slot);
 							}else{
 								boolean wasEquipped = false;
 								for(int i = 0; i < ie.getEquipSlots().length; i++){
 									if(game.getPlayer().getEquippedItem(ie.getEquipSlots()[i]) == null){
 										game.getPlayer().setEquipped(ie.getEquipSlots()[i], ie);
 										ie.onEquip(game, game.getPlayer());
-										game.getEvents().onEvent(game, EventType.ITEM_EQUIP, ie, game.getPlayer(), ie.getEquipSlots()[i]);
+										//game.getEvents().onEvent(game, EventType.ITEM_EQUIP, ie, game.getPlayer(), ie.getEquipSlots()[i]);
 										wasEquipped = true;
 										break;
 									}
@@ -323,13 +323,13 @@ public class GuiPlayerInventory extends Gui{
 										game.getEvents().onEvent(game, EventType.ITEM_UNEQUIP, item, game.getPlayer(), ie.getEquipSlots()[0]);
 									}
 									game.getPlayer().setEquipped(ie.getEquipSlots()[0], ie);
-									game.getEvents().onEvent(game, EventType.ITEM_EQUIP, ie, game.getPlayer(), ie.getEquipSlots()[0]);
+									//game.getEvents().onEvent(game, EventType.ITEM_EQUIP, ie, game.getPlayer(), ie.getEquipSlots()[0]);
 									ie.onEquip(game, game.getPlayer());
 								}
 							}
 						}else if(selectedItem.getItem().canUse()){
 							selectedItem.getItem().onEquip(game, game.getPlayer());
-							game.getEvents().onEvent(game, EventType.ITEM_EQUIP, selectedItem.getItem(), game.getPlayer(), game.getPlayer().getSlot(selectedItem.getItem()));
+							//game.getEvents().onEvent(game, EventType.ITEM_EQUIP, selectedItem.getItem(), game.getPlayer(), game.getPlayer().getSlot(selectedItem.getItem()));
 							if(selectedItem.getItem().isConsumed())
 								selectedItem.consume();
 						}else

@@ -8,6 +8,7 @@ import net.site40.rodit.tinyrpg.game.Input;
 import net.site40.rodit.tinyrpg.game.Values;
 import net.site40.rodit.tinyrpg.game.item.ItemStack;
 import net.site40.rodit.tinyrpg.game.quest.Quest;
+import net.site40.rodit.tinyrpg.game.quest.Quest.QuestImportance;
 import net.site40.rodit.util.RenderUtil;
 import android.graphics.Canvas;
 import android.graphics.Paint.Align;
@@ -48,7 +49,7 @@ public class GuiQuest extends Gui{
 	private Quest getQuest(Game game){
 		Quest q = (Quest)game.getGlobal("gui_quest");
 		if(q == null)
-			return new Quest("null", "null", "null", 0, 0, 0);
+			return new Quest("null", "null", "null", QuestImportance.OPTIONAL, 0, 0, 0);
 		return q;
 	}
 	

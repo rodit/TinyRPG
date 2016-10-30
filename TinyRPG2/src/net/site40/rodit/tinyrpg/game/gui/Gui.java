@@ -3,15 +3,15 @@ package net.site40.rodit.tinyrpg.game.gui;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import net.site40.rodit.tinyrpg.game.Game;
-import net.site40.rodit.tinyrpg.game.GameObject;
-import net.site40.rodit.tinyrpg.game.render.Animation;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.RectF;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
+import net.site40.rodit.tinyrpg.game.Game;
+import net.site40.rodit.tinyrpg.game.GameObject;
+import net.site40.rodit.tinyrpg.game.render.Animation;
 
 public abstract class Gui extends GameObject{
 	
@@ -142,8 +142,7 @@ public abstract class Gui extends GameObject{
 			if(o instanceof Bitmap)
 				canvas.drawBitmap((Bitmap)o, null, new RectF(0, 0, 1280, 720), null);
 			else if(o instanceof Animation){
-				Animation a = (Animation)o;
-				canvas.drawBitmap(a.getFrame(game.getTime()), null, new RectF(0, 0, 1280, 720), null);
+				canvas.drawBitmap(((Animation)o).getFrame(game.getTime()), null, new RectF(0, 0, 1280, 720), null);
 			}
 		}
 		for(Component c : components)

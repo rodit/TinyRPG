@@ -100,6 +100,7 @@ public class GuiIngame extends Gui{
 				paint.setTextSize(Values.FONT_SIZE_SMALL - 4f);
 				paint.setStyle(Style.FILL);
 
+				/*
 				canvas.drawBitmap(game.getResources().getBitmap("gui/pp/icon.png"), null, new RectF(getX(), getY(), getX() + 128f, getY() + 128f), paint);
 				int state = canvas.save();
 				RectF oBounds = game.getPlayer().getBounds();
@@ -117,6 +118,7 @@ public class GuiIngame extends Gui{
 				game.getPlayer().setDirection(d);
 				game.getPlayer().setBounds(oBounds);
 				canvas.restoreToCount(state);
+				*/
 
 				float healthRatio = game.getPlayer().getHealthRatio();
 				RectF healthBounds = new RectF(getX() + 128f, getY() + 16f, getX() + 384f, getY() + 44f);
