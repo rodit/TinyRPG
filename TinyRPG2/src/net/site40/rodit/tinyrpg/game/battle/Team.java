@@ -100,6 +100,6 @@ public class Team {
 		float speed = 0;
 		for(EntityLiving member : members)
 			speed += member.getStats().getSpeed();
-		return speed;
+		return speed / members.size();
 	}
 }
