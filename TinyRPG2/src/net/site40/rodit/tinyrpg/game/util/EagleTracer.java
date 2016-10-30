@@ -20,6 +20,6 @@ public class EagleTracer {
 			nx -= distance;
 		else if(ent.getDirection() == Direction.D_RIGHT)
 			nx += distance;
-		return map.getCollisionObject(nx, ny, ent);
+		return map.getCollisionObjectD(nx, ny, true, ent);
 	}
 }

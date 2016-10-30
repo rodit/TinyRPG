@@ -4,6 +4,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 
+import android.graphics.Canvas;
+import android.graphics.RectF;
+import android.util.Log;
 import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.GameObject;
 import net.site40.rodit.tinyrpg.game.entity.Entity;
@@ -18,14 +21,11 @@ import net.site40.rodit.tinyrpg.game.render.XmlResourceLoader;
 import net.site40.rodit.util.TinyInputStream;
 import net.site40.rodit.util.TinyOutputStream;
 import net.site40.rodit.util.Util;
-import android.graphics.Canvas;
-import android.graphics.RectF;
-import android.util.Log;
 
 public class MapState extends GameObject {
-	
+
 	public static final int LOAD_STATE_SAVE = 1;
-	
+
 	private int loadState;
 
 	private RPGMap map;
@@ -36,14 +36,8 @@ public class MapState extends GameObject {
 
 	public MapState(RPGMap map){
 		this.map = map;
-		if(map != null){
-			this.rotObj = new BitmapRenderer(map.getRenderOnTop()){
-				@Override
-				public RenderLayer getRenderLayer(){
-					return RenderLayer.TOP_OVERRIDE_PLAYER;
-				}
-			};
-		}
+		if(map != null && map.hasRot())
+			this.rotObj = genRotObject();
 		this.entities = new ArrayList<Entity>();
 	}
 
@@ -73,7 +67,7 @@ public class MapState extends GameObject {
 	public void spawn(Game game, Entity e){
 		spawn(game, e, true);
 	}
-	
+
 	public void spawn(Game game, Entity e, boolean triggerEvent){
 		if(this.getEntityByName(e.getName()) != null)
 			Log.w("EntitySpawn", "Entity with name " + e.getName() + " already spawned.");
@@ -87,7 +81,7 @@ public class MapState extends GameObject {
 		}
 		Log.i("MapState", "Spawned entity " + e.getName() + ".");
 	}
-	
+
 	public void despawn(Game game, Entity e){
 		e.onDespawn(game);
 		entities.remove(e);
@@ -95,7 +89,7 @@ public class MapState extends GameObject {
 		Log.i("MapState", "Despawned entity " + e.getName() + ".");
 		game.getEvents().onEvent(game, EventType.ENTITY_DESPAWNED, e);
 	}
-	
+
 	public ArrayList<Entity> getCollidingEntities(RectF bounds, Object... exclude){
 		ArrayList<Entity> collisions = new ArrayList<Entity>();
 		for(Entity e : entities)
@@ -105,20 +99,24 @@ public class MapState extends GameObject {
 	}
 
 	public Object getCollisionObject(float x, float y, Object... exclude){
+		return getCollisionObjectD(x, y, false, exclude);
+	}
+
+	public Object getCollisionObjectD(float x, float y, boolean trace, Object... exclude){
 		if(map == null)
 			return null;
 		ArrayList<Object> excList = new ArrayList<Object>();
 		for(int i = 0; i < exclude.length; i++)
 			excList.add(exclude[i]);
 		for(Entity e : entities)
-			if(e.getCollisionBounds().contains(x, y) && !excList.contains(e))
+			if((trace ? e.getTraceBounds() : e.getCollisionBounds()).contains(x, y) && !excList.contains(e))
 				return e;
 		for(MapObject obj : map.getObjects("collisions"))
 			if(obj.getBounds().contains(x, y) && !excList.contains(obj))
 				return obj;
 		return null;
 	}
-	
+
 	public Object getCollisionObject(RectF r, Object... exclude){
 		if(map == null)
 			return null;
@@ -152,6 +150,15 @@ public class MapState extends GameObject {
 			return true;
 		return false;
 	}
+	
+	private BitmapRenderer genRotObject(){
+		return new BitmapRenderer(map.getRenderOnTop()){
+			@Override
+			public RenderLayer getRenderLayer(){
+				return RenderLayer.TOP_OVERRIDE_PLAYER;
+			}
+		};
+	}
 
 	@Override
 	public void update(Game game){
@@ -161,14 +168,12 @@ public class MapState extends GameObject {
 			return;
 		if(!spawnedEntities){
 			if(loadState == LOAD_STATE_SAVE){
-				this.rotObj = new BitmapRenderer(map.getRenderOnTop()){
-					@Override
-					public RenderLayer getRenderLayer(){
-						return RenderLayer.TOP_OVERRIDE_PLAYER;
-					}
-				};
+				if(map.hasRot()){
+					this.rotObj = genRotObject();
+					game.addObject(rotObj);;
+				}
 				for(Entity e : entities){
-					spawn(game, e, false);
+					spawn(game, e, e.getScript().endsWith("spawn_conditional.js"));
 					if(e instanceof EntityNPC)
 						((EntityNPC)e).createNametag(game);
 				}
@@ -227,13 +232,8 @@ public class MapState extends GameObject {
 		if(map == null || map.getBackground() == null || map.getBackground().isRecycled())
 			return;
 
-		if(rotObj == null){
-			this.rotObj = new BitmapRenderer(map.getRenderOnTop()){
-				@Override
-				public RenderLayer getRenderLayer(){
-					return RenderLayer.TOP_OVERRIDE_PLAYER;
-				}
-			};
+		if(rotObj == null && map.hasRot()){
+			this.rotObj = genRotObject();
 			game.addObject(rotObj);
 		}
 
@@ -279,19 +279,21 @@ public class MapState extends GameObject {
 		}
 		loadState = LOAD_STATE_SAVE;
 	}
-	
+
 	public void save(Game game, TinyOutputStream out)throws IOException{
-		out.writeString(map.getFile());
-		int entCount = entities.size();
-		if(entities.contains(game.getPlayer()))
-			entCount--;
-		out.write(entCount);
-		for(int i = 0; i < entities.size(); i++){
-			Entity e = entities.get(i);
-			if(e == game.getPlayer())
-				continue;
-			out.writeString(e.getClass().getCanonicalName());
-			e.save(out);
-		}
+		//synchronized(entities){
+			ArrayList<Entity> entCopy = new ArrayList<Entity>(entities);
+			out.writeString(map.getFile());
+			int entCount = entCopy.size();
+			if(entCopy.contains(game.getPlayer()))
+				entCount--;
+			out.write(entCount);
+			for(Entity e : entCopy){
+				if(e == game.getPlayer())
+					continue;
+				out.writeString(e.getClass().getCanonicalName());
+				e.save(out);
+			}
+		//}
 	}
 }
