@@ -2,11 +2,6 @@ package net.site40.rodit.tinyrpg.game.item;
 
 import java.util.regex.Pattern;
 
-import net.site40.rodit.tinyrpg.game.Game;
-import net.site40.rodit.tinyrpg.game.entity.EntityLiving;
-import net.site40.rodit.tinyrpg.game.render.SpriteSheet;
-import net.site40.rodit.util.Util;
-
 import org.w3c.dom.Element;
 
 import android.graphics.Bitmap;
@@ -14,6 +9,10 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.text.TextUtils;
+import net.site40.rodit.tinyrpg.game.Game;
+import net.site40.rodit.tinyrpg.game.entity.EntityLiving;
+import net.site40.rodit.tinyrpg.game.render.SpriteSheet;
+import net.site40.rodit.util.Util;
 
 public class ItemEquippable extends Item{
 	
@@ -72,6 +71,8 @@ public class ItemEquippable extends Item{
 	@Override
 	public void deserializeXmlElement(Element e){
 		super.deserializeXmlElement(e);
+		setStackable(Util.tryGetBool(e.getAttribute("stackable"), false));
+		setStackSize(Util.tryGetInt(e.getAttribute("stackSize"), 1));
 		String eSlot = e.getAttribute("equipSlot");
 		if(this.equipSlots.length == 0 && TextUtils.isEmpty(eSlot))
 			this.equipSlots = new int[] { 0 };

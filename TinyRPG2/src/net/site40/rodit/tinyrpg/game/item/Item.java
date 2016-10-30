@@ -5,6 +5,8 @@ import java.util.HashMap;
 
 import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.entity.Entity;
+import net.site40.rodit.tinyrpg.game.event.EventReceiver.EventType;
+import net.site40.rodit.util.Util;
 
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Function;
@@ -54,6 +56,23 @@ public class Item {
 			default:
 				return "Unknown";
 			}
+		}
+		
+		public static Rarity fromString(String string){
+			String compare = string.toLowerCase().trim();
+			if(compare.contains("very") && compare.contains("common"))
+				return VERY_COMMON;
+			else if(compare.contains("uncommon"))
+				return UNCOMMON;
+			else if(compare.contains("common"))
+				return COMMON;
+			else if(compare.contains("ultra") && compare.contains("rare"))
+				return ULTRA_RARE;
+			else if(compare.contains("very") && compare.contains("rare"))
+				return VERY_RARE;
+			else if(compare.contains("rare"))
+				return RARE;
+			return UNKNOWN;
 		}
 	}
 
@@ -190,12 +209,14 @@ public class Item {
 		initCallbacks(game);
 		if(jsOnEquip != null)
 			game.getScripts().executeFunction(game, jsOnEquip, this, new String[0], new Object[0], new Object[] { ent });
+		game.getEvents().onEvent(game, EventType.ITEM_EQUIP, this, ent);
 	}
 	
 	public void onUnEquip(Game game, Entity ent){
 		initCallbacks(game);
 		if(jsOnUnEquip != null)
 			game.getScripts().executeFunction(game, jsOnUnEquip, this, new String[0], new Object[0], new Object[] { ent });
+		game.getEvents().onEvent(game, EventType.ITEM_UNEQUIP, this, ent);
 	}
 	
 	public void deserializeXmlElement(Element e){
@@ -204,8 +225,10 @@ public class Item {
 		setDescription(e.getAttribute("description"));
 		setResource(e.getAttribute("resource"));
 		setScript(e.getAttribute("script"));
-		setRarity(Rarity.valueOf(e.getAttribute("rarity")));
-		setValue(Long.valueOf(e.getAttribute("value")));
+		setRarity(Rarity.fromString(e.getAttribute("rarity")));
+		setValue(Util.tryGetLong(e.getAttribute("value")));
+		setStackable(Util.tryGetBool(e.getAttribute("stackable"), true));
+		setStackSize(Util.tryGetInt(e.getAttribute("stackSize"), 99));
 		String lvlAttrib = e.getAttribute("level");
 		if(!TextUtils.isEmpty(lvlAttrib))
 			setLevel(Integer.valueOf(lvlAttrib));
