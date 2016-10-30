@@ -16,6 +16,10 @@ public class ZipUtil {
 	public ZipUtil(Context context, String fileName)throws IOException{
 		this.zipFile = new ZipFile(new File(context.getFilesDir(), fileName));
 	}
+	
+	public ZipFile getZipFile(){
+		return zipFile;
+	}
 
 	public InputStream openFile(String path)throws IOException{
 		ZipEntry entry = zipFile.getEntry(path);

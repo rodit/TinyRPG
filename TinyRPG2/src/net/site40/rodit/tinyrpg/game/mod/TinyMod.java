@@ -3,14 +3,13 @@ package net.site40.rodit.tinyrpg.game.mod;
 import java.io.File;
 import java.io.IOException;
 
-import net.site40.rodit.tinyrpg.game.Game;
-import net.site40.rodit.util.Util;
-import net.site40.rodit.util.ZipUtil;
-
 import org.xml.sax.SAXException;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import net.site40.rodit.tinyrpg.game.Game;
+import net.site40.rodit.util.Util;
+import net.site40.rodit.util.ZipUtil;
 
 
 public class TinyMod {
@@ -34,6 +33,10 @@ public class TinyMod {
 	
 	public ModInfo getInfo(){
 		return info;
+	}
+	
+	public ZipUtil getArchive(){
+		return modFile;
 	}
 	
 	public Bitmap getIcon(){

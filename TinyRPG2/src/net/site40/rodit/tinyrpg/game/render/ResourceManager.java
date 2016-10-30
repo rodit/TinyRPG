@@ -8,8 +8,6 @@ import java.util.HashMap;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import net.site40.rodit.tinyrpg.game.Game;
-
 import org.w3c.dom.Document;
 
 import android.content.res.AssetManager;
@@ -18,15 +16,27 @@ import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.text.TextUtils;
 import android.util.Log;
+import net.site40.rodit.tinyrpg.game.Game;
 
 public class ResourceManager {
 
 	private AssetManager assets;
+	private ArrayList<ResourceStreamProvider> providers;
 	private HashMap<String, Object> resources;
 
 	public ResourceManager(AssetManager assets){
 		this.assets = assets;
+		this.providers = new ArrayList<ResourceStreamProvider>();
 		this.resources = new HashMap<String, Object>();
+	}
+	
+	public void registerProvider(ResourceStreamProvider provider){
+		if(!providers.contains(provider))
+			providers.add(provider);
+	}
+	
+	public void unregisterProvider(ResourceStreamProvider provider){
+		providers.remove(provider);
 	}
 
 	public HashMap<String, Object> getResources(){
@@ -36,7 +46,7 @@ public class ResourceManager {
 	public Object getObject(String key){
 		if(key == null || TextUtils.isEmpty(key))
 			return null;
-		if((key.endsWith(".png") || key.endsWith(".spr")) || key.endsWith(".anm") && !key.startsWith("bitmap/"))
+		if((key.endsWith(".png") || key.endsWith(".spr") || key.endsWith(".anm")) && !key.startsWith("bitmap/"))
 			key = "bitmap/" + key;
 		Object value = resources.containsKey(key) ? resources.get(key) : null;
 		if(value == null){
@@ -59,7 +69,7 @@ public class ResourceManager {
 			else if(key.endsWith(".txt") || key.endsWith(".js"))
 				value = readString(key);
 			else if(key.endsWith(".tmx"))
-				return XmlResourceLoader.loadMap(this, key);//value = XmlResourceLoader.loadMap(this, key);
+				return XmlResourceLoader.loadMap(this, key);
 			else if(key.endsWith(".spr"))
 				value = new SpriteSheet(BitmapFactory.decodeByteArray(data, 0, data.length));
 			else if(key.endsWith(".anm")){
@@ -147,10 +157,25 @@ public class ResourceManager {
 		}
 		return null;
 	}
+	
+	public InputStream openFirstStream(String name)throws IOException{
+		for(ResourceStreamProvider provider : providers){
+			//if(!provider.hasResource(name))
+			//	continue;
+			InputStream in = provider.openResource(name);
+			if(in != null)
+				return in;
+		}
+		return null;
+	}
 
 	public InputStream openAsset(String name){
 		try{
-			return assets.open(name);
+			InputStream first = openFirstStream(name);
+			if(first == null)
+				throw new IOException("Failed to find asset in registered providers. (" + name + ")");
+			else
+				return first;
 		}catch(IOException e){
 			if(!notFounds.contains(name)){
 				if(name.endsWith(".png")){
@@ -164,7 +189,7 @@ public class ResourceManager {
 		}
 		return null;
 	}
-
+	
 	private ArrayList<String> notFounds = new ArrayList<String>();
 	public byte[] readAsset(String name){
 		try{
