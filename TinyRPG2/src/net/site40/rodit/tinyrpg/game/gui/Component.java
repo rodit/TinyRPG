@@ -2,9 +2,6 @@ package net.site40.rodit.tinyrpg.game.gui;
 
 import java.util.ArrayList;
 
-import net.site40.rodit.tinyrpg.game.Game;
-import net.site40.rodit.tinyrpg.game.GameObject;
-import net.site40.rodit.tinyrpg.game.render.Animation;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -14,6 +11,9 @@ import android.graphics.RectF;
 import android.os.SystemClock;
 import android.text.TextUtils;
 import android.view.MotionEvent;
+import net.site40.rodit.tinyrpg.game.Game;
+import net.site40.rodit.tinyrpg.game.GameObject;
+import net.site40.rodit.tinyrpg.game.render.Animation;
 
 public class Component extends GameObject{
 
@@ -248,12 +248,11 @@ public class Component extends GameObject{
 		
 		String toUse = (selected && !TextUtils.isEmpty(backgroundSelected)) ? backgroundSelected : background;
 		if(toUse != null && !TextUtils.isEmpty(toUse)){
-			Object res = game.getResources().getObject(toUse);
-			if(res instanceof Bitmap)
-				canvas.drawBitmap((Bitmap)res, null, new RectF(x, y, x + width, y + height), paint);
-			else if(res instanceof Animation){
-				Animation a = (Animation)res;
-				canvas.drawBitmap(a.getFrame(game.getTime()), null, new RectF(x, y, x + width, y + height), paint);
+			Object o = game.getResources().getObject(toUse);
+			if(o instanceof Bitmap)
+				canvas.drawBitmap((Bitmap)o, null, new RectF(x, y, x + width, y + height), paint);
+			else if(o instanceof Animation){
+				canvas.drawBitmap(((Animation)o).getFrame(game.getTime()), null, new RectF(x, y, x + width, y + height), paint);
 			}
 		}
 		if(!TextUtils.isEmpty(text)){
