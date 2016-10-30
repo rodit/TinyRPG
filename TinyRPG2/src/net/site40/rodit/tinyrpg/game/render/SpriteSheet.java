@@ -18,7 +18,7 @@ public class SpriteSheet {
 
 	public static final int DEFAULT_WIDTH = 32;
 	public static final int DEFAULT_HEIGHT = 32;
-	public static final int DEFAULT_DELAY = 100;
+	public static final int DEFAULT_DELAY = 106;
 
 	private Bitmap sheet;
 	private HashMap<MovementState, HashMap<Direction, Animation>> animations;
@@ -41,6 +41,10 @@ public class SpriteSheet {
 		this.delay = delay;
 		this.animations = new HashMap<MovementState, HashMap<Direction, Animation>>();
 		init();
+	}
+	
+	public void setDelay(int delay){
+		this.delay = delay;
 	}
 
 	private void init(){
