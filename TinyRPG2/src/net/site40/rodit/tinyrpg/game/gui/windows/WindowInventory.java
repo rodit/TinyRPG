@@ -2,6 +2,7 @@ package net.site40.rodit.tinyrpg.game.gui.windows;
 
 import static net.site40.rodit.tinyrpg.game.gui.windows.WindowSlot.SLOT_HEIGHT;
 import static net.site40.rodit.tinyrpg.game.gui.windows.WindowSlot.SLOT_WIDTH;
+
 import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.Values;
 import net.site40.rodit.tinyrpg.game.item.Inventory.InventoryProvider;

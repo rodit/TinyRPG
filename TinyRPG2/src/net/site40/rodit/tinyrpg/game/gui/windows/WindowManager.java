@@ -5,12 +5,12 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 
-import net.site40.rodit.tinyrpg.game.Game;
-import net.site40.rodit.tinyrpg.game.Input;
-import net.site40.rodit.util.Util;
 import android.graphics.Canvas;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
+import net.site40.rodit.tinyrpg.game.Game;
+import net.site40.rodit.tinyrpg.game.Input;
+import net.site40.rodit.util.Util;
 
 public class WindowManager {
 
@@ -34,8 +34,7 @@ public class WindowManager {
 	}
 
 	public void initialize(Game game){
-		register(new WindowInventory(game));
-		register(new WindowIngame(game));
+		
 	}
 
 	public Window get(Class<? extends Window> cls){
@@ -78,10 +77,10 @@ public class WindowManager {
 		game.getInput().allowMovement(allowInput);
 
 		if(game.getInput().isUp(Input.KEY_MENU)){
-			ArrayList<Window> reversed = new ArrayList<Window>(windows.values());
-			Collections.reverse(reversed);
-			reversed.remove(get(WindowIngame.class));
-			for(Window window : reversed){
+			ArrayList<Window> reveresed = new ArrayList<Window>(windows.values());
+			Collections.reverse(reveresed);
+			reveresed.remove(get(WindowIngame.class));
+			for(Window window : reveresed){
 				if(window.isVisible()){
 					window.setVisible(false);
 					break;

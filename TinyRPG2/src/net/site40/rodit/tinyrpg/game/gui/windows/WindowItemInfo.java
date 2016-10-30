@@ -1,11 +1,19 @@
 package net.site40.rodit.tinyrpg.game.gui.windows;
 
+import static net.site40.rodit.tinyrpg.game.render.MM.EMPTY_STRING_ARRAY;
+import static net.site40.rodit.tinyrpg.game.render.Strings.DIALOG_DROP_EQUIPPED;
+
 import java.util.ArrayList;
 
+import android.graphics.Canvas;
+import android.graphics.Paint.Align;
+import android.view.MotionEvent;
+import net.site40.rodit.tinyrpg.game.Dialog.DialogCallback;
 import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.Values;
 import net.site40.rodit.tinyrpg.game.entity.Entity;
 import net.site40.rodit.tinyrpg.game.entity.EntityItemDrop;
+import net.site40.rodit.tinyrpg.game.entity.EntityLiving;
 import net.site40.rodit.tinyrpg.game.event.EventReceiver.EventType;
 import net.site40.rodit.tinyrpg.game.gui.windows.WindowSlotted.ProviderInfo;
 import net.site40.rodit.tinyrpg.game.gui.windows.WindowUserInput.InputCallback;
@@ -18,10 +26,6 @@ import net.site40.rodit.tinyrpg.game.item.Weapon;
 import net.site40.rodit.tinyrpg.game.item.armour.Armour;
 import net.site40.rodit.util.RenderUtil;
 import net.site40.rodit.util.Util;
-import android.graphics.Canvas;
-import android.graphics.Paint.Align;
-import android.util.Log;
-import android.view.MotionEvent;
 
 public class WindowItemInfo extends Window{
 
@@ -48,7 +52,6 @@ public class WindowItemInfo extends Window{
 	@Override
 	public void update(Game game){
 		super.update(game);
-
 		initAfterInit(game);
 	}
 
@@ -167,8 +170,23 @@ public class WindowItemInfo extends Window{
 							game.getWindows().register(input);
 							input.zIndex = 0;
 							input.show();
-						}else
-							info.provider.getInventory().getItems().remove(stack);
+						}else{
+							if(info.provider.getOwner() instanceof EntityLiving && info.provider.getOwnerLiving().isEquipped(stack.getItem())){
+								if(info.provider.getInventory().getCount(stack.getItem()) == 1){
+									WindowItemInfo.this.hide();
+									game.getWindows().get(WindowInventory.class).hide();
+									game.getHelper().dialog(DIALOG_DROP_EQUIPPED, EMPTY_STRING_ARRAY, new DialogCallback(){
+										@Override
+										public void onSelected(int option){
+											WindowItemInfo.this.show();
+											game.getWindows().get(WindowInventory.class).show();
+										}
+									});
+									return;
+								}
+							}else
+								info.provider.getInventory().getItems().remove(stack);
+						}
 
 						EntityItemDrop drop = null;
 						ArrayList<Entity> ents = game.getMap().getCollidingEntities(game.getPlayer().getBounds(), game.getPlayer());
@@ -215,7 +233,7 @@ public class WindowItemInfo extends Window{
 									if(game.getPlayer().getEquippedItem(ie.getEquipSlots()[i]) == null){
 										game.getPlayer().setEquipped(ie.getEquipSlots()[i], ie);
 										ie.onEquip(game, game.getPlayer());
-										game.getEvents().onEvent(game, EventType.ITEM_EQUIP, ie, game.getPlayer(), ie.getEquipSlots()[i]);
+										//game.getEvents().onEvent(game, EventType.ITEM_EQUIP, ie, game.getPlayer(), ie.getEquipSlots()[i]);
 										wasEquipped = true;
 										break;
 									}
@@ -224,16 +242,16 @@ public class WindowItemInfo extends Window{
 									Item item = game.getPlayer().getEquipped(ie.getEquipSlots()[0]);
 									if(item != null){
 										item.onUnEquip(game, game.getPlayer());
-										game.getEvents().onEvent(game, EventType.ITEM_UNEQUIP, item, game.getPlayer(), ie.getEquipSlots()[0]);
+										//game.getEvents().onEvent(game, EventType.ITEM_UNEQUIP, item, game.getPlayer(), ie.getEquipSlots()[0]);
 									}
 									game.getPlayer().setEquipped(ie.getEquipSlots()[0], ie);
-									game.getEvents().onEvent(game, EventType.ITEM_EQUIP, ie, game.getPlayer(), ie.getEquipSlots()[0]);
+									//game.getEvents().onEvent(game, EventType.ITEM_EQUIP, ie, game.getPlayer(), ie.getEquipSlots()[0]);
 									ie.onEquip(game, game.getPlayer());
 								}
 							}
 						}else if(stack.getItem().canUse()){
 							stack.getItem().onEquip(game, game.getPlayer());
-							game.getEvents().onEvent(game, EventType.ITEM_EQUIP, stack.getItem(), game.getPlayer(), game.getPlayer().getSlot(stack.getItem()));
+							//game.getEvents().onEvent(game, EventType.ITEM_EQUIP, stack.getItem(), game.getPlayer(), game.getPlayer().getSlot(stack.getItem()));
 							if(stack.getItem().isConsumed())
 								stack.consume();
 						}else
@@ -244,13 +262,13 @@ public class WindowItemInfo extends Window{
 			add(btnEquipUse);
 		}
 	}
-	
+
 	public boolean isVanillaWindow(){
 		return true;
 	}
 
 	public void initAfterInit(Game game){
-		if(stack == null)
+		if(stack == null || stack.getItem() == null)
 			return;
 		
 		imgItemPreview.setBackgroundDefault(stack.getItem().getResource());

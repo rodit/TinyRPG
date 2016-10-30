@@ -7,6 +7,13 @@ import net.site40.rodit.tinyrpg.game.forge.ForgeRegistry.ForgeRecipy;
 import net.site40.rodit.tinyrpg.game.forge.ForgeRegistry.ForgeStatus;
 import net.site40.rodit.tinyrpg.game.gui.windows.WindowSlotted.ProviderInfo;
 import net.site40.rodit.tinyrpg.game.item.ItemStack;
+
+import static net.site40.rodit.tinyrpg.game.render.Strings.DIALOG_FORGE_NO_GOLD;
+import static net.site40.rodit.tinyrpg.game.render.Strings.DIALOG_FORGE_NO_MATERIALS;
+import static net.site40.rodit.tinyrpg.game.render.Strings.DIALOG_FORGE_NO_SKILL;
+import static net.site40.rodit.tinyrpg.game.render.Strings.DIALOG_FORGE_SUCCESSFUL;
+import static net.site40.rodit.tinyrpg.game.render.Strings.DIALOG_FORGE_UNKNOWN;
+
 import android.util.Log;
 
 public class WindowItemForgeInfo extends WindowItemInfo{
@@ -50,19 +57,19 @@ public class WindowItemForgeInfo extends WindowItemInfo{
 						game.getPlayer().getInventory().remove(inStack.getItem(), inStack.getAmount());
 					for(ItemStack outStack : current.getOutput())
 						game.getPlayer().getInventory().add(outStack);
-					game.getHelper().dialog("Forge was successful!", new String[0], callback);
+					game.getHelper().dialog(DIALOG_FORGE_SUCCESSFUL, new String[0], callback);
 					break;
 				case FORGE_STAT_LOW:
-					game.getHelper().dialog("You do not meet the skill requirements to forge this item.", new String[0], callback);
+					game.getHelper().dialog(DIALOG_FORGE_NO_SKILL, new String[0], callback);
 					break;
 				case MONEY_LOW:
-					game.getHelper().dialog("You do not have enough gold to forge this item.", new String[0], callback);
+					game.getHelper().dialog(DIALOG_FORGE_NO_GOLD, new String[0], callback);
 					break;
 				case MATERIALS_LOW:
-					game.getHelper().dialog("You do not have the required materials to forge this item.", new String[0], callback);
+					game.getHelper().dialog(DIALOG_FORGE_NO_MATERIALS, new String[0], callback);
 					break;
 				default:
-					game.getHelper().dialog("An unknown error occured while processing your forge request.~Please try again later.", new String[0], callback);
+					game.getHelper().dialog(DIALOG_FORGE_UNKNOWN, new String[0], callback);
 					break;
 				}
 			}
