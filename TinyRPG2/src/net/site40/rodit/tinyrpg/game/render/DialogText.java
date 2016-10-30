@@ -5,35 +5,70 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 
+import net.site40.rodit.rlib.util.CollectionsUtil;
 import net.site40.rodit.tinyrpg.game.Game;
 
 public class DialogText {
 
 	public static class DialogPart{
 
-		protected ArrayList<String> globalNames;
-		protected ArrayList<String> globalValues;
+		protected LinkedHashMap<String, String> globalReqs;
 		protected String text;
 
 		public DialogPart(){
-			this.globalNames = new ArrayList<String>();
-			this.globalValues = new ArrayList<String>();
+			this.globalReqs = new LinkedHashMap<String, String>();
 			this.text = "";
+		}
+		
+		public String getGlobalRequirement(String key){
+			return globalReqs.get(key);
+		}
+		
+		public void updateGlobalRequirement(int index, String key, String value){
+			removeGlobalRequirement(index);
+			setGlobalRequirement(key, value);
+		}
+		
+		public void setGlobalRequirement(int index, String value){
+			setGlobalRequirement(CollectionsUtil.getMapKeyByIndex(globalReqs, index), value);
+		}
+		
+		public void setGlobalRequirement(String key, String value){
+			globalReqs.put(key, value);
+		}
+		
+		public void removeGlobalRequirement(String name){
+			globalReqs.remove(name);
+		}
+		
+		public void removeGlobalRequirement(int index){
+			removeGlobalRequirement(CollectionsUtil.getMapKeyByIndex(globalReqs, index));
+		}
+
+		public LinkedHashMap<String, String> getGlobalRequirements(){
+			return globalReqs;
+		}
+
+		public String getText(){
+			return text;
+		}
+		
+		public void setText(String text){
+			this.text = text;
 		}
 
 		public boolean isCorrectDialog(Game game){
-			for(int i = 0; i < globalNames.size() && i < globalValues.size(); i++){
-				String var = globalNames.get(i);
-				String val = globalValues.get(i);
-				String globalVal = game.getGlobals(var);
-				if(!globalVal.equals(val))
+			for(String key : globalReqs.keySet()){
+				String globalVal = game.getGlobals(key);
+				if(!globalVal.equals(globalReqs.get(key)))
 					return false;
 			}
 			return true;
 		}
 	}
-	
+
 	protected ArrayList<DialogPart> parts;
 
 	public DialogText(InputStream in)throws IOException{
@@ -51,14 +86,17 @@ public class DialogText {
 			}else if(tokens[0].equals("global")){
 				if(tokens.length < 3)
 					continue;
-				part.globalNames.add(tokens[1]);
-				part.globalValues.add(tokens[2]);
+				part.setGlobalRequirement(tokens[1], tokens[2]);
 			}else
 				part.text += (part.text.length() == 0 ? "" : "~") + line;
 		}
 		if(!parts.contains(part))
 			parts.add(part);
 		reader.close();
+	}
+
+	public ArrayList<DialogPart> getParts(){
+		return parts;
 	}
 
 	public String getDialog(Game game){
@@ -68,14 +106,14 @@ public class DialogText {
 		}
 		return "";
 	}
-	
+
 	public void run(Game game){
 		String dialog = getDialog(game);
 		String[] parts = dialog.split("~");
 		for(String part : parts){
 			String[] tokens = part.split("\\s+");
 			if(tokens[0].equals("set")){
-				if(parts.length < 3)
+				if(tokens.length < 3)
 					game.getHelper().dialog("The creators of the game messed up and my dialog is pretty darn broken.~Please contact the developers immediately!");
 				else
 					game.setGlobal(tokens[1], tokens[2]);
