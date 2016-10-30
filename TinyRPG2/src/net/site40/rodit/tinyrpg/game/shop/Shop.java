@@ -48,7 +48,7 @@ public class Shop {
 	public Shop(){
 		this(new Inventory(), 1f, 1f);
 	}
-
+	
 	public Shop(Entity owner){
 		this(owner.getInventory(), 1f, 1f);
 		this.owner = owner;
