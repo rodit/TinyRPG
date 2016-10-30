@@ -76,7 +76,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,7039,7040,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,7164,7165,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7043,7044,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7168,7169,0,
+0,0,0,0,0,0,0,0,0,3389,3389,3389,3389,3389,0,0,0,0,0,7168,7169,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -84,7 +84,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup name="entities" width="22" height="23">
+ <objectgroup name="entities" width="0" height="0">
   <object name="furnace" x="224" y="80" width="64" height="32">
    <properties>
     <property name="script" value="script/entity/furnace.js"/>
@@ -104,7 +104,7 @@
     <property name="script" value="script/entity/loot_barrel.js"/>
    </properties>
   </object>
-  <object name="barrel_2" x="48" y="336" width="32" height="16">
+  <object name="barrel_2" x="48" y="336" width="28" height="16">
    <properties>
     <property name="loot_id" value="merek_living_room_barrel_2"/>
     <property name="rarity" value="food"/>
@@ -135,7 +135,7 @@
     <property name="script" value="script/entity/entity_spawn.js"/>
    </properties>
   </object>
-  <object name="spawn_living_room" x="168" y="330" width="16" height="16">
+  <object name="spawn_living_room" x="160" y="320" width="16" height="16">
    <properties>
     <property name="condition" value="door_enter_merek_home"/>
     <property name="noclip" value="true"/>
@@ -155,13 +155,13 @@
    </properties>
   </object>
  </objectgroup>
- <objectgroup name="collisions" width="22" height="23">
+ <objectgroup name="collisions" width="0" height="0">
   <object x="0" y="0" width="352" height="80"/>
   <object x="0" y="80" width="16" height="288"/>
   <object x="16" y="352" width="144" height="16"/>
   <object x="192" y="352" width="144" height="16"/>
   <object x="336" y="80" width="16" height="288"/>
-  <object x="195" y="80" width="24" height="29"/>
+  <object x="192" y="80" width="32" height="32"/>
   <object x="128" y="80" width="32" height="32"/>
   <object x="112" y="80" width="16" height="16"/>
   <object x="16" y="80" width="32" height="16"/>

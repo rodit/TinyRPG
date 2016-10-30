@@ -1,0 +1,14 @@
+#
+global test_dialog_index 0
+This is a test dialog created by TinyEngine.
+set test_dialog_index 1
+#
+global test_dialog_index 1
+This is the second stage of a test dialog.
+This is the second line of the second stage.
+set test_dialog_index 2
+#
+global test_dialog_index 2
+This is the third and final stage.
+After this stage, the dialog will loop back to the beginning.
+set test_dialog_index 0

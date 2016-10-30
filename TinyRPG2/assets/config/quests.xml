@@ -1,7 +1,7 @@
 <quests>
-	<quest name="test" showName="Test Quest" description="This is a test quest..." stages="3">
+	<quest name="test" showName="Test Quest" description="This is a test quest..." importance="optional" stages="3">
 		<reward type="xp" amount="100"/>
 		<reward type="gold" amount="2750"/>
-		<reward type="item" name="dagger_steel" amount="1"/>
+		<reward type="item" name="dagger_steel_0" amount="1"/>
 	</quest>
 </quests>

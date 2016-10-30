@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" width="18" height="11" tilewidth="16" tileheight="16">
- <tileset firstgid="1" name="Master" tilewidth="16" tileheight="16">
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="18" height="11" tilewidth="16" tileheight="16" nextobjectid="18">
+ <tileset firstgid="1" name="Master" tilewidth="16" tileheight="16" tilecount="11625">
   <image source="master.png" width="2000" height="1500"/>
  </tileset>
  <layer name="Floor" width="18" height="11">
@@ -48,26 +48,26 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup name="entities" width="18" height="11">
-  <object name="sink_0" x="59" y="64" width="16" height="16">
+ <objectgroup name="entities">
+  <object id="1" name="sink_0" x="48" y="64" width="32" height="16">
    <properties>
     <property name="script" value="script/entity/sink.js"/>
     <property name="type" value="0"/>
    </properties>
   </object>
-  <object name="sink_1" x="134" y="64" width="16" height="16">
+  <object id="2" name="sink_1" x="128" y="64" width="32" height="16">
    <properties>
     <property name="script" value="script/entity/sink.js"/>
     <property name="type" value="0"/>
    </properties>
   </object>
-  <object name="wardrobe" x="240" y="64" width="32" height="16">
+  <object id="3" name="wardrobe" x="240" y="64" width="32" height="16">
    <properties>
     <property name="script" value="script/entity/generic_container.js"/>
     <property name="type" value="0"/>
    </properties>
   </object>
-  <object name="spawn_living_room" x="199" y="134" width="16" height="16">
+  <object id="4" name="spawn_living_room" x="192" y="128" width="16" height="16">
    <properties>
     <property name="condition" value="door_enter_kitchen"/>
     <property name="noclip" value="true"/>
@@ -75,20 +75,20 @@
     <property name="type" value="0"/>
    </properties>
   </object>
-  <object name="exit_kitchen" x="192" y="160" width="32" height="16">
+  <object id="5" name="exit_kitchen" x="192" y="160" width="32" height="16">
    <properties>
     <property name="map" value="map/player_home_living_room.tmx"/>
     <property name="script" value="script/entity/generic_door.js"/>
     <property name="type" value="0"/>
    </properties>
   </object>
-  <object name="cooker" x="80" y="64" width="32" height="16">
+  <object id="6" name="cooker" x="80" y="64" width="32" height="16">
    <properties>
     <property name="script" value="script/entity/cooker.js"/>
     <property name="type" value="0"/>
    </properties>
   </object>
-  <object name="door_locked" x="192" y="48" width="32" height="16">
+  <object id="7" name="door_locked" x="192" y="48" width="32" height="16">
    <properties>
     <property name="msg" value="The door is locked."/>
     <property name="script" value="script/entity/generic_sign.js"/>
@@ -96,16 +96,16 @@
    </properties>
   </object>
  </objectgroup>
- <objectgroup name="collisions" width="18" height="11">
-  <object x="0" y="0" width="288" height="64"/>
-  <object x="0" y="64" width="16" height="112"/>
-  <object x="16" y="160" width="176" height="16"/>
-  <object x="272" y="64" width="16" height="112"/>
-  <object x="32" y="112" width="64" height="32"/>
-  <object x="104" y="115" width="16" height="24"/>
-  <object x="160" y="64" width="16" height="16"/>
-  <object x="112" y="64" width="16" height="16"/>
-  <object x="16" y="64" width="32" height="16"/>
-  <object x="224" y="160" width="48" height="16"/>
+ <objectgroup name="collisions">
+  <object id="8" x="0" y="0" width="288" height="64"/>
+  <object id="9" x="0" y="64" width="16" height="112"/>
+  <object id="10" x="16" y="160" width="176" height="16"/>
+  <object id="11" x="272" y="64" width="16" height="112"/>
+  <object id="12" x="32" y="112" width="64" height="32"/>
+  <object id="13" x="96" y="112" width="32" height="32"/>
+  <object id="14" x="160" y="64" width="16" height="16"/>
+  <object id="15" x="112" y="64" width="16" height="16"/>
+  <object id="16" x="16" y="64" width="32" height="16"/>
+  <object id="17" x="224" y="160" width="48" height="16"/>
  </objectgroup>
 </map>

@@ -1,3 +1,4 @@
 <mobs>
 	<mobspawn spawnAreaKey="testarea_mobspawn_0" encounterChance="50" minSpawnCount="1" maxSpawnCount="4" spawnConfig="config/entity/mimic.xml" difficulty="medium"/>
+	<mobspawn spawnAreaKey="testarea_mobspawn_1" encounterChance="50" minSpawnCount="1" maxSpawnCount="4" spawnConfig="config/entity/rat.xml" difficulty="medium"/>
 </mobs>
