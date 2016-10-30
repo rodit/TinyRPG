@@ -1,6 +1,8 @@
 package net.site40.rodit.tinyrpg.game.entity.npc;
 
 import net.site40.rodit.tinyrpg.game.Game;
+import net.site40.rodit.util.TinyInputStream;
+import net.site40.rodit.util.TinyOutputStream;
 
 public abstract class AITask {
 
@@ -20,4 +22,7 @@ public abstract class AITask {
 	
 	public abstract void update(Game game);
 	public abstract boolean isDone(Game game);
+	
+	public void load(Game game, TinyInputStream in){}
+	public void save(TinyOutputStream out){}
 }
