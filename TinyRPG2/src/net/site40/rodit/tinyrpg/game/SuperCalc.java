@@ -95,11 +95,11 @@ public class SuperCalc {
 	
 	public static long getItemValue(Item item, EntityLiving seller){
 		float luckVal = seller == null ? 0f : seller.getStats().getLuck();
-		float value = (float)item.getValue();
+		float itemVal = (float)item.getValue();
 		if(seller != null)
-			value /= 8 * (1 + luckVal);	
-		value = Math.min(value, item.getValue());
-		return (long)value;
+			itemVal /= 8 * (1 + luckVal);
+		itemVal = Math.min(itemVal, item.getValue());
+		return (long)itemVal;
 	}
 	
 	public static long getStackValue(ItemStack stack, EntityLiving seller){

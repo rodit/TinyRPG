@@ -15,6 +15,10 @@ public class TinyInputStream {
 		this.in = in;
 	}
 	
+	public InputStream getStream(){
+		return in;
+	}
+	
 	public void close()throws IOException{
 		in.close();
 	}

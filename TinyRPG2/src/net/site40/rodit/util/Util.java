@@ -20,6 +20,7 @@ import net.site40.rodit.tinyrpg.game.Values;
 import net.site40.rodit.tinyrpg.game.battle.AIBattleProvider.AIDifficulty;
 import net.site40.rodit.tinyrpg.game.forge.ForgeRegistry.ForgeRecipy.ForgeType;
 import net.site40.rodit.tinyrpg.game.item.ItemEquippable;
+import net.site40.rodit.tinyrpg.game.quest.Quest.QuestImportance;
 import net.site40.rodit.tinyrpg.game.render.SpriteSheet.MovementState;
 import net.site40.rodit.tinyrpg.game.util.Direction;
 import android.annotation.SuppressLint;
@@ -146,6 +147,18 @@ public class Util {
 	public static MovementState tryGetMoveState(String key, MovementState ret){
 		try{
 			return MovementState.valueOf(key.toUpperCase());
+		}catch(Exception e){}
+		return ret;
+	}
+	
+	public static QuestImportance tryGetQuestImportance(String key){
+		return tryGetQuestImportance(key, QuestImportance.OPTIONAL);
+	}
+
+	@SuppressLint("DefaultLocale")
+	public static QuestImportance tryGetQuestImportance(String key, QuestImportance ret){
+		try{
+			return QuestImportance.valueOf(key.toUpperCase());
 		}catch(Exception e){}
 		return ret;
 	}

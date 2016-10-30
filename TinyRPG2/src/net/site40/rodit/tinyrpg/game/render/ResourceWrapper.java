@@ -1,16 +1,20 @@
 package net.site40.rodit.tinyrpg.game.render;
 
-import net.site40.rodit.tinyrpg.game.Game;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import net.site40.rodit.tinyrpg.game.Game;
 
 public class ResourceWrapper {
 
 	private Object resource;
 	
 	public ResourceWrapper(Object resource){
+		this.resource = resource;
+	}
+	
+	public void setResource(Object resource){
 		this.resource = resource;
 	}
 	
