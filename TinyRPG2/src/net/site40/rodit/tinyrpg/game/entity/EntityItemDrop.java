@@ -1,5 +1,6 @@
 package net.site40.rodit.tinyrpg.game.entity;
 
+import android.graphics.RectF;
 import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.gui.windows.WindowContainer;
 import net.site40.rodit.tinyrpg.game.item.ItemStack;
@@ -20,6 +21,21 @@ public class EntityItemDrop extends Entity{
 			inventory.add(stack);
 		
 		ticker.setInterval(500L);
+	}
+	
+	@Override
+	public RectF getCollisionBounds(){
+		return getCollisionBounds(0f, 0f);
+	}
+	
+	@Override
+	public RectF getCollisionBounds(float x, float y){
+		return new RectF(0f, 0f, 0f, 0f);
+	}
+	
+	@Override
+	public RectF getTraceBounds(){
+		return new RectF(x, y, x + width, y + height);
 	}
 	
 	@Override
