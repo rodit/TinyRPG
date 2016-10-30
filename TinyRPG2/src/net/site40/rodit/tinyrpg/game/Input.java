@@ -1,7 +1,7 @@
 package net.site40.rodit.tinyrpg.game;
 
-import net.site40.rodit.tinyrpg.game.event.EventReceiver.EventType;
 import android.util.SparseArray;
+import net.site40.rodit.tinyrpg.game.event.EventReceiver.EventType;
 
 public class Input {
 
