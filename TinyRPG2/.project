@@ -34,7 +34,7 @@
 		<link>
 			<name>android</name>
 			<type>2</type>
-			<location>/home/rodit/android-sdk-linux/sources/android-19/android</location>
+			<location>F:/Users/Rodit/AppData/Local/Android/sdk/sources/android-21/android</location>
 		</link>
 	</linkedResources>
 </projectDescription>
