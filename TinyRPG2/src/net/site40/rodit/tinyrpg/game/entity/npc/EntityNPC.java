@@ -1,10 +1,10 @@
 package net.site40.rodit.tinyrpg.game.entity.npc;
 
+import android.graphics.Canvas;
 import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.entity.Entity;
 import net.site40.rodit.tinyrpg.game.util.Direction;
 import net.site40.rodit.util.Util;
-import android.graphics.Canvas;
 
 public class EntityNPC extends EntityAI{
 
