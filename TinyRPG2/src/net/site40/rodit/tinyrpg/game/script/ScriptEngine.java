@@ -23,6 +23,28 @@ public class ScriptEngine {
 	private ArrayList<Thread> threads = new ArrayList<Thread>();
 	private HashMap<String, Script> scriptCache = new HashMap<String, Script>();
 
+	public Object executeFunction(Game game, String scriptPath, String functionName, Object thisObj, String[] varNames, Object[] varVals, Object[] argVals){
+		Context cx = ContextFactory.getGlobal().enterContext();
+		cx.setOptimizationLevel(-1);
+		try{
+			Scriptable scope = cx.initStandardObjects();
+
+			for(int i = 0; i < varNames.length; i++)
+				ScriptableObject.putProperty(scope, varNames[i], Context.javaToJS(varVals[i], scope));
+			for(String key : game.getGlobals().keySet())
+				ScriptableObject.putProperty(scope, key, game.getGlobal(key));
+			
+			cx.evaluateString(scope, game.getResources().getString(scriptPath), "script", 1, null);
+			Function func = (Function)scope.get(functionName, scope);
+			return func.call(cx, scope, (Scriptable)Context.javaToJS(thisObj, scope), argVals);
+		}catch(Exception e){
+			e.printStackTrace();
+		}finally{
+			Context.exit();
+		}
+		return null;
+	}
+
 	public Object executeFunction(Game game, Function function, Object thisObj, String[] varNames, Object[] varVals, Object[] vars){
 		Benchmark.start("sf_" + function);
 
@@ -108,7 +130,7 @@ public class ScriptEngine {
 		Thread t = new Thread(){
 			@Override
 			public void run(){
-				if(delay != 0){
+				if(delay > 0){
 					try{
 						Thread.sleep(delay);
 					}catch(InterruptedException e){
@@ -119,6 +141,26 @@ public class ScriptEngine {
 				if(callback != null)
 					callback.callback(result);
 				threads.remove(this);
+			}
+		};
+		threads.add(t);
+		t.start();
+	}
+	
+	public void executeFunctionAsyncJS(final Game game, final Function function, final Object thisObj, final String[] varNames, final Object[] varVals, final Object[] args, final int delay, final Function onComplete){
+		Thread t = new Thread(){
+			@Override
+			public void run(){
+				if(delay > 0){
+					try{
+						Thread.sleep(delay);
+					}catch(InterruptedException e){
+						e.printStackTrace();
+					}
+				}
+				executeFunction(game, function, thisObj, varNames, varVals, args);
+				if(onComplete != null)
+					executeFunction(game, onComplete, thisObj, varNames, varVals, args);
 			}
 		};
 		threads.add(t);

@@ -18,8 +18,6 @@ import net.site40.rodit.tinyrpg.game.gui.GuiLoading;
 import net.site40.rodit.tinyrpg.game.gui.windows.Window;
 import net.site40.rodit.tinyrpg.game.gui.windows.WindowIngame;
 import net.site40.rodit.tinyrpg.game.item.Item;
-import net.site40.rodit.tinyrpg.game.map.MapState;
-import net.site40.rodit.tinyrpg.game.map.RPGMap;
 import net.site40.rodit.tinyrpg.game.map.Region;
 import net.site40.rodit.tinyrpg.game.render.DialogText;
 import net.site40.rodit.tinyrpg.game.render.Sprite;
@@ -128,6 +126,14 @@ public class ScriptHelper {
 		else
 			dialog("My dialog is broken for some reason. I can't talk right now.~Sorry about that. Contact the developers immediately for a fix.");
 	}
+	
+	public boolean checkGlobal(String name, String defaultValue){
+		if(game.getGlobal(name) == null){
+			game.setGlobal(name, defaultValue);
+			return false;
+		}
+		return true;
+	}
 
 	public Dialog dialog(String body){
 		return dialog(body, new String[0]);
@@ -207,23 +213,33 @@ public class ScriptHelper {
 		}
 		return game.getGuis().get(cls);
 	}
-	
+
 	public void setMap(final String name){
 		setMap(name, false);
 	}
 
+	private boolean asyncMapLoading = false;
 	public void setMap(final String name, final boolean fromSave){
-		game.getGuis().show(GuiLoading.class);
-		game.runAsyncTask(new Runnable(){
-			public void run(){
-				game.setMap(null);
-				game.setMap(new MapState((RPGMap)game.getResources().getObject(name)), fromSave);
-			}
-		}, new GenericCallback(){
-			public void callback(){
-				game.getGuis().hide(GuiLoading.class);
-			}
-		});
+		if(asyncMapLoading){
+			game.runAsyncTask(new Runnable(){
+				public void run(){
+					game.switchMap(name);
+					//game.setMap(null);
+					//game.setMap(new MapState((RPGMap)game.getResources().getObject(name)), fromSave);
+				}
+			}, new GenericCallback(){
+				public void callback(){
+					game.getGuis().hide(GuiLoading.class);
+					game.getInput().allowMovement(true);
+				}
+			});
+		}else{
+			game.getGuis().show(GuiLoading.class);
+			game.getInput().allowMovement(false);
+			game.switchMap(name);
+			game.getGuis().hide(GuiLoading.class);
+			game.getInput().allowMovement(true);
+		}
 	}
 
 	public void log(String msg){
@@ -237,7 +253,7 @@ public class ScriptHelper {
 	public Sprite createObject(String resource, float x, float y, float width, float height, boolean scale){
 		return scale ? new Sprite(x, y, width, height, resource, "script_obj_" + game.getRandom().nextString(4)) : new SpriteNonScale(x, y, width, height, resource, "script_obj_" + game.getRandom().nextString(4));
 	}
-	
+
 	public TextRenderer createText(String text, float x, float y, float size){
 		Paint paint = Game.getDefaultPaint();
 		paint.setTextAlign(Align.CENTER);
@@ -382,7 +398,7 @@ public class ScriptHelper {
 		game.setGlobal(entity.getName() + "_talk_count", 0);
 		return entity;
 	}
-	
+
 	@SuppressLint("DefaultLocale")
 	public Region getRegion(String region){
 		return Region.valueOf(region.toUpperCase());
@@ -391,7 +407,7 @@ public class ScriptHelper {
 	public Team createTeam(EntityLiving... members){
 		return new Team(members);
 	}
-	
+
 	public Battle battle(String region, EntityLiving attack, EntityLiving defence){
 		return battle(region, createTeam(attack), createTeam(defence));
 	}
@@ -399,7 +415,7 @@ public class ScriptHelper {
 	public Battle battle(String region, Team attack, Team defence){
 		return battle(getRegion(region), attack, defence);
 	}
-	
+
 	public Battle battle(Region region, Team attack, Team defence){
 		Battle b = new Battle(region, attack, defence);
 		game.setBattle(b);
