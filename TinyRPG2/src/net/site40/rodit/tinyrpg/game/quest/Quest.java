@@ -3,6 +3,7 @@ package net.site40.rodit.tinyrpg.game.quest;
 import net.site40.rodit.tinyrpg.game.entity.EntityPlayer;
 import net.site40.rodit.tinyrpg.game.item.Inventory;
 import net.site40.rodit.tinyrpg.game.item.Item;
+import net.site40.rodit.util.Util;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -11,24 +12,29 @@ import org.w3c.dom.NodeList;
 import android.text.TextUtils;
 
 public class Quest {
+	
+	public static enum QuestImportance{
+		STORY, OPTIONAL;
+	}
 
 	private String name;
 	private String showName;
 	private String description;
+	private QuestImportance importance;
 	private int stages;
 	private int rewardXp;
 	private long rewardGold;
 	private Inventory rewardItems;
 
 	public Quest(){
-		this("", "", "", 0, 0, 0);
+		this("", "", "", QuestImportance.OPTIONAL, 0, 0, 0);
 	}
 
-	public Quest(String name, String showName, String description, int stages, int rewardXp, long rewardGold){
-		this(name, showName, description, stages, rewardXp, rewardGold, new Inventory());
+	public Quest(String name, String showName, String description, QuestImportance importance, int stages, int rewardXp, long rewardGold){
+		this(name, showName, description, QuestImportance.OPTIONAL, stages, rewardXp, rewardGold, new Inventory());
 	}
 
-	public Quest(String name, String showName, String description, int stages, int rewardXp, long rewardGold, Inventory rewardItems){
+	public Quest(String name, String showName, String description, QuestImportance importance, int stages, int rewardXp, long rewardGold, Inventory rewardItems){
 		this.name = name;
 		this.showName = showName;
 		this.description = description;
@@ -60,6 +66,14 @@ public class Quest {
 
 	public void setDescription(String description){
 		this.description = description;
+	}
+	
+	public QuestImportance getImportance(){
+		return importance;
+	}
+	
+	public void setImportance(QuestImportance importance){
+		this.importance = importance;
 	}
 
 	public int getStages(){
@@ -104,6 +118,7 @@ public class Quest {
 		name = e.getAttribute("name");
 		showName = e.getAttribute("showName");
 		description = e.getAttribute("description");
+		importance = Util.tryGetQuestImportance(e.getAttribute("importance"));
 		String sStages = e.getAttribute("stages");
 		if(!TextUtils.isEmpty(sStages) && TextUtils.isDigitsOnly(sStages))
 			stages = Integer.valueOf(sStages);
