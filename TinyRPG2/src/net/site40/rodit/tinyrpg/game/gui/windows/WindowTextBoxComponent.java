@@ -1,6 +1,6 @@
 package net.site40.rodit.tinyrpg.game.gui.windows;
 
-import net.site40.rodit.tinyrpg.game.Game;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -8,10 +8,12 @@ import android.graphics.Paint.Align;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.inputmethod.InputMethodManager;
+import net.site40.rodit.tinyrpg.game.Game;
 
 public class WindowTextBoxComponent extends WindowComponent{
 
 	public static final String CHARS_NUMERIC = "1234567890";
+	public static final String CHARS_ALPHA_NUMERIC = CHARS_NUMERIC + "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVXYZ_#~'@/?.>,<[{]}=+-_)(*&^%$£\"\\!|\\ ";
 
 	public static final int INPUT_TYPE_ALPHA_NUMERIC = 0;
 	public static final int INPUT_TYPE_NUMERIC = 1;
@@ -103,6 +105,9 @@ public class WindowTextBoxComponent extends WindowComponent{
 		}
 	}
 
+	boolean caps = false;
+	
+	@SuppressLint("DefaultLocale")
 	@Override
 	public void onKeyInput(Game game, KeyEvent event){
 		super.onKeyInput(game, event);
@@ -115,9 +120,13 @@ public class WindowTextBoxComponent extends WindowComponent{
 			return;
 		}
 
-		if(inputType == INPUT_TYPE_NUMERIC)
+		if(inputType == INPUT_TYPE_NUMERIC){
 			if(!CHARS_NUMERIC.contains(String.valueOf((char)event.getUnicodeChar())))
 				return;
+		}else if(inputType == INPUT_TYPE_ALPHA_NUMERIC)
+			if(!CHARS_ALPHA_NUMERIC.contains(String.valueOf((char)event.getUnicodeChar())))
+				return;
+
 
 		if(getText().length() >= maxLength)
 			return;
