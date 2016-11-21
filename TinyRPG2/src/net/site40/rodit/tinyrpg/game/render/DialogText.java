@@ -11,7 +11,7 @@ import net.site40.rodit.rlib.util.CollectionsUtil;
 import net.site40.rodit.tinyrpg.game.Game;
 
 public class DialogText {
-
+	
 	public static class DialogPart{
 
 		protected LinkedHashMap<String, String> globalReqs;

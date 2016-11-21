@@ -3,16 +3,6 @@ package net.site40.rodit.tinyrpg.game.entity;
 import java.io.IOException;
 import java.util.HashMap;
 
-import org.mozilla.javascript.Context;
-import org.mozilla.javascript.Function;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
-import android.graphics.RectF;
-import android.text.TextUtils;
-import android.util.Log;
 import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.Ticker;
 import net.site40.rodit.tinyrpg.game.chat.IChatSender;
@@ -23,6 +13,17 @@ import net.site40.rodit.tinyrpg.game.shop.Shop;
 import net.site40.rodit.util.TinyInputStream;
 import net.site40.rodit.util.TinyOutputStream;
 import net.site40.rodit.util.Util;
+
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.Function;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import android.graphics.RectF;
+import android.text.TextUtils;
+import android.util.Log;
 
 public class Entity extends Sprite implements IChatSender{
 	
@@ -111,6 +112,10 @@ public class Entity extends Sprite implements IChatSender{
 	public HashMap<String, String> getRuntimeProperties(){
 		return runtimeProperties;
 	}
+	
+	public void setRuntimeProperties(HashMap<String, String> runtimeProperties){
+		this.runtimeProperties = runtimeProperties;
+	}
 
 	public String getRuntimeProperty(String key){
 		return runtimeProperties.get(key);
@@ -173,7 +178,7 @@ public class Entity extends Sprite implements IChatSender{
 	public RectF getTraceBounds(){
 		return getCollisionBounds();
 	}
-
+	
 	public void linkConfig(Document document){
 		Element root = (Element)document.getElementsByTagName("entity").item(0);
 		this.x = Util.tryGetFloat(root.getAttribute("x"), this.x);

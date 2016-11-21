@@ -3,15 +3,6 @@ package net.site40.rodit.tinyrpg.game.entity;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
-import android.graphics.Bitmap;
-import android.graphics.Bitmap.Config;
-import android.graphics.Canvas;
-import android.text.TextUtils;
 import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.SuperCalc;
 import net.site40.rodit.tinyrpg.game.battle.AIBattleProvider;
@@ -29,6 +20,16 @@ import net.site40.rodit.tinyrpg.game.util.Direction;
 import net.site40.rodit.util.TinyInputStream;
 import net.site40.rodit.util.TinyOutputStream;
 import net.site40.rodit.util.Util;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import android.graphics.Bitmap;
+import android.graphics.Bitmap.Config;
+import android.graphics.Canvas;
+import android.text.TextUtils;
 
 public class EntityLiving extends Entity{
 
@@ -214,6 +215,10 @@ public class EntityLiving extends Entity{
 
 	public EntityStats getStats(){
 		return stats;
+	}
+	
+	public void setStats(EntityStats stats){
+		this.stats = stats;
 	}
 
 	public Item[] getEquipped(){
