@@ -5,17 +5,17 @@
 - Add infusion system.
 
 #####Shops
-- Fix shop system:
-  - Fix money checks for client and vendor.
-  - Actually change money when buying/selling goods.
-  - Disallow dropping of items in shop window.
-- Add entity info to shop windows.
+- ~~Fix shop system:~~
+  - ~~Fix money checks for client and vendor.~~
+  - ~~Actually change money when buying/selling goods.~~
+  - ~~Disallow dropping of items in shop window.~~
+- ~~Add entity info to shop windows.~~
 
 #####Inventory
-- Disallow dropping of items which are equipped.
-- Fix item dupe glitch where player unequips and drops item.
-- Fix bug where items do not merge into one bag when dropped on same tile (trace bounds vs collision bounds).
-- Fix bug where second ring replaces first when there is an open slot.
+- ~~Disallow dropping of items which are equipped.~~
+- ~~Fix item dupe glitch where player unequips and drops item.~~
+- ~~Fix bug where items do not merge into one bag when dropped on same tile (trace bounds vs collision bounds).~~
+- ~~Fix bug where second ring replaces first when there is an open slot.~~
 
 #####Battles
 - Fix bug where multiple dialogs appear when returning from inventory window without taking action.
