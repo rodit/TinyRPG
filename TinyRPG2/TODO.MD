@@ -1,58 +1,39 @@
-**Bug Fixes/Minor Additions**
+#TinyRPG TODO
 
-- Menu GUI:
-	- Play button position and size.
-	- Saves button position and size.
-	- Add continue from last save button.
-	- Change play button to new game button.
-	- Add background picture.
+#####Forge System
+- Fix forge registry so upgrade window shows possible upgrades.
+- Add infusion system.
 
-- Saves GUI:
-	- Fix scrolling so entire page does not scroll.
-	- Increase number of saves per screen to 15.
-	- Fix size of box around save names to prevent overlapping adjacent buttons.
-	- Show loading GUI when loading save.
-	- Hide saves GUI and show ingame GUI after loading save.
-	- Add working confirmation when deleting save (not dialog with no controls).
-	- **Fix crash when scrolling with no saves.**
+#####Shops
+- Fix shop system:
+  - Fix money checks for client and vendor.
+  - Actually change money when buying/selling goods.
+  - Disallow dropping of items in shop window.
+- Add entity info to shop windows.
 
-- Dialogues:
-	- Fix option and selectd marker positioning.
+#####Inventory
+- Disallow dropping of items which are equipped.
+- Fix item dupe glitch where player unequips and drops item.
+- Fix bug where items do not merge into one bag when dropped on same tile (trace bounds vs collision bounds).
+- Fix bug where second ring replaces first when there is an open slot.
 
-- Set Name GUI:
-	- Fix textbox text size.
-	- Fix confirm button size.
+#####Battles
+- Fix bug where multiple dialogs appear when returning from inventory window without taking action.
+- Fix poor performance (low fps) in battles.
+- Fix position of health units over participants.
+- Fix player drawing size.
+- Introduce battle with dialog before it starts.
+- Make enemies fade rather than disappear.
+- Make enemies flash when hit.
 
-- Inventory GUI:
-	- Fix only text disappearing when unequipping item from equipped slot.
-	- MORE BUGS - NEED TO BE FOUND.
+#####Menu
+- Fix crash when returning to title screen from in game menu.
+- Ensure game does not reset (return to menu) when activity is paused/resumed.
 
-- Ingame GUI:
-	- Fix health/magika bar lengths/positions.
-	- Add text to show gold.
-	- Add text to show level.
-	- Add XP bar (purple).
+#####Features
+- Implement world map and local map.
 
-- World:
-	- Fix entity retention/duplicate entity spawn when switching between maps.
-	- Fix RenderOnTop layer bad positioning.
-	- Scripts:
-		- Fix barrels/predefined loot spawns to support all types of random spawning (food, items etc.).
-
-**Major/Content Additions**
-- NPCS:
-	- Blacksmith Merek:
-		- Add upgrade GUI.
-		- Add infuse GUI.
-		- Add shop GUI (purchase/sell items).
-
-- General:
-	- Containers:
-		- Add container GUI (add/remove items).
-	- Equipment:
-		- Add support for ItemStack in inventory to allow multiple equipment of same item.
-
--Add more items/content...
-
-**Misc**
-- Pixel precise collision detection - ignoring transparency.
+#####Sound
+- Add sounds for:
+  - Battles (weapons/special attacks/hits etc)
+  - GUIs/windows.
