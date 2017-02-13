@@ -18,11 +18,11 @@ import org.mozilla.javascript.ScriptableObject;
 
 import android.util.Log;
 
-public class ScriptEngine {
-
+public class ScriptEngine_old {
+	
 	private ArrayList<Thread> threads = new ArrayList<Thread>();
 	private HashMap<String, Script> scriptCache = new HashMap<String, Script>();
-
+	
 	public Object executeFunction(Game game, String scriptPath, String functionName, Object thisObj, String[] varNames, Object[] varVals, Object[] argVals){
 		Context cx = ContextFactory.getGlobal().enterContext();
 		cx.setOptimizationLevel(-1);
@@ -34,6 +34,7 @@ public class ScriptEngine {
 			for(String key : game.getGlobals().keySet())
 				ScriptableObject.putProperty(scope, key, game.getGlobal(key));
 			
+			ScriptableObject.putProperty(scope, "self", thisObj);
 			cx.evaluateString(scope, game.getResources().getString(scriptPath), "script", 1, null);
 			Function func = (Function)scope.get(functionName, scope);
 			return func.call(cx, scope, (Scriptable)Context.javaToJS(thisObj, scope), argVals);
@@ -82,7 +83,7 @@ public class ScriptEngine {
 	public Object execute(Game game, String scriptPath, String[] varNames, Object[] varVals){
 		return execute(game, scriptPath, varNames, varVals, false);
 	}
-
+	
 	public Object execute(Game game, String scriptPath, String[] varNames, Object[] varVals, boolean localFile){
 		if(Game.DEBUG)
 			Benchmark.start("se_" + scriptPath);

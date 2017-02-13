@@ -8,21 +8,27 @@ import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.Scheduler.ScheduledEvent;
 import net.site40.rodit.tinyrpg.game.battle.Battle;
 import net.site40.rodit.tinyrpg.game.battle.Team;
+import net.site40.rodit.tinyrpg.game.entity.Damage;
+import net.site40.rodit.tinyrpg.game.entity.Damage.SourceStack;
 import net.site40.rodit.tinyrpg.game.entity.Entity;
 import net.site40.rodit.tinyrpg.game.entity.EntityLiving;
 import net.site40.rodit.tinyrpg.game.entity.EntityStats;
 import net.site40.rodit.tinyrpg.game.event.EventReceiver;
 import net.site40.rodit.tinyrpg.game.event.EventReceiver.EventType;
+import net.site40.rodit.tinyrpg.game.faction.Faction;
 import net.site40.rodit.tinyrpg.game.gui.Gui;
 import net.site40.rodit.tinyrpg.game.gui.GuiLoading;
 import net.site40.rodit.tinyrpg.game.gui.windows.Window;
-import net.site40.rodit.tinyrpg.game.gui.windows.WindowIngame;
 import net.site40.rodit.tinyrpg.game.item.Item;
 import net.site40.rodit.tinyrpg.game.map.Region;
+import net.site40.rodit.tinyrpg.game.object.GameObject;
 import net.site40.rodit.tinyrpg.game.render.DialogText;
-import net.site40.rodit.tinyrpg.game.render.Sprite;
-import net.site40.rodit.tinyrpg.game.render.SpriteNonScale;
+import net.site40.rodit.tinyrpg.game.render.Strings;
 import net.site40.rodit.tinyrpg.game.render.TextRenderer;
+import net.site40.rodit.tinyrpg.game.render.effects.EffectCompletionHolder;
+import net.site40.rodit.tinyrpg.game.render.effects.FadeInEffect;
+import net.site40.rodit.tinyrpg.game.render.effects.FadeOutEffect;
+import net.site40.rodit.tinyrpg.game.script.ScriptManager.KVP;
 import net.site40.rodit.tinyrpg.game.shop.Shop;
 import net.site40.rodit.util.GenericCallback;
 import net.site40.rodit.util.Util;
@@ -41,6 +47,8 @@ import android.util.Log;
 
 public class ScriptHelper {
 
+	public static Entity fakeEntity = new Entity();
+
 	private Game game;
 
 	public ScriptHelper(Game game){
@@ -49,6 +57,18 @@ public class ScriptHelper {
 
 	public Item getItem(String name){
 		return Item.get(name);
+	}
+
+	public Faction getFaction(String name){
+		return Faction.get(name);
+	}
+
+	public String[] genArray(int capacity){
+		return new String[capacity];
+	}
+
+	public void writeArray(String[] array, int index, String value){
+		array[index] = value;
 	}
 
 	public String[] safeSplit(String in, String del){
@@ -124,9 +144,9 @@ public class ScriptHelper {
 		if(dialog != null)
 			dialog.run(game);
 		else
-			dialog("My dialog is broken for some reason. I can't talk right now.~Sorry about that. Contact the developers immediately for a fix.");
+			dialog(Strings.Dialog.TALK_BROKEN);
 	}
-	
+
 	public boolean checkGlobal(String name, String defaultValue){
 		if(game.getGlobal(name) == null){
 			game.setGlobal(name, defaultValue);
@@ -169,13 +189,14 @@ public class ScriptHelper {
 	}
 
 	public Object runScript(String file, String[] varNames, Object[] varVals){
-		return game.getScripts().execute(game, file, varNames, varVals);
+		return game.getScript().runScript(game, file, KVP.get(varNames, varVals));
 	}
 
+	public static final String GUI_PACKAGE = "net.site40.rodit.tinyrpg.game.gui.";
 	@SuppressWarnings("unchecked")
 	public void showGui(String className){
-		if(!className.startsWith("net.site40.rodit.tinyrpg.game.gui."))
-			className = "net.site40.rodit.tinyrpg.game.gui." + className;
+		if(!className.startsWith(GUI_PACKAGE))
+			className = GUI_PACKAGE + className;
 		Class<? extends Gui> cls = null;
 		try{
 			cls = (Class<? extends Gui>)Class.forName(className);
@@ -188,8 +209,8 @@ public class ScriptHelper {
 
 	@SuppressWarnings("unchecked")
 	public void hideGui(String className){
-		if(!className.startsWith("net.site40.rodit.tinyrpg.game.gui."))
-			className = "net.site40.rodit.tinyrpg.game.gui." + className;
+		if(!className.startsWith(GUI_PACKAGE))
+			className = GUI_PACKAGE + className;
 		Class<? extends Gui> cls = null;
 		try{
 			cls = (Class<? extends Gui>)Class.forName(className);
@@ -202,8 +223,8 @@ public class ScriptHelper {
 
 	@SuppressWarnings("unchecked")
 	public Gui getGui(String className){
-		if(!className.startsWith("net.site40.rodit.tinyrpg.game.gui."))
-			className = "net.site40.rodit.tinyrpg.game.gui." + className;
+		if(!className.startsWith(GUI_PACKAGE))
+			className = GUI_PACKAGE + className;
 		Class<? extends Gui> cls = null;
 		try{
 			cls = (Class<? extends Gui>)Class.forName(className);
@@ -220,7 +241,10 @@ public class ScriptHelper {
 
 	private boolean asyncMapLoading = false;
 	public void setMap(final String name, final boolean fromSave){
+		game.setGlobalb("transitioning", true);
 		if(asyncMapLoading){
+			game.getInput().allowMovement(false);
+			game.getGuis().show(GuiLoading.class);
 			game.runAsyncTask(new Runnable(){
 				public void run(){
 					game.switchMap(name);
@@ -234,11 +258,26 @@ public class ScriptHelper {
 				}
 			});
 		}else{
-			game.getGuis().show(GuiLoading.class);
 			game.getInput().allowMovement(false);
-			game.switchMap(name);
-			game.getGuis().hide(GuiLoading.class);
-			game.getInput().allowMovement(true);
+			FadeOutEffect effect = new FadeOutEffect(250L);
+			EffectCompletionHolder holder = new EffectCompletionHolder(effect, new Runnable(){
+				public void run(){
+					game.switchMap(name);
+
+					FadeInEffect fadeIn = new FadeInEffect(250L);
+					EffectCompletionHolder holder2 = new EffectCompletionHolder(fadeIn, new Runnable(){
+						@Override
+						public void run(){
+							game.getInput().allowMovement(true);
+						}
+					});
+					game.getPostProcessor().add(fadeIn);
+					game.getPostProcessor().add(holder2);
+					game.skipFrames(1);
+				}
+			});
+			game.getPostProcessor().add(effect);
+			game.getPostProcessor().add(holder);
 		}
 	}
 
@@ -246,12 +285,19 @@ public class ScriptHelper {
 		Log.d("Script", msg);
 	}
 
-	public Sprite createObject(String resource, float x, float y, float width, float height){
+	public GameObject createObject(String resource, float x, float y, float width, float height){
 		return createObject(resource, x, y, width, height, true);
 	}
 
-	public Sprite createObject(String resource, float x, float y, float width, float height, boolean scale){
-		return scale ? new Sprite(x, y, width, height, resource, "script_obj_" + game.getRandom().nextString(4)) : new SpriteNonScale(x, y, width, height, resource, "script_obj_" + game.getRandom().nextString(4));
+	public GameObject createObject(String resource, float x, float y, float width, float height, boolean scale){
+		GameObject obj = new GameObject(){
+			@Override
+			public boolean shouldScale(){ return false; }
+		};
+		obj.setBounds(x, y, width, height);
+		obj.setResource(resource);
+		obj.setName("script_obj_" + game.getRandom().nextString(4));
+		return obj;
 	}
 
 	public TextRenderer createText(String text, float x, float y, float size){
@@ -276,7 +322,7 @@ public class ScriptHelper {
 		Runnable runnable = new Runnable(){
 			@Override
 			public void run(){
-				game.getScripts().executeFunction(game, fnc, self, new String[0], new Object[0], args);
+				game.getScript().runFunction(game, fnc, self, KVP.EMPTY, args);
 			}
 		};
 		return game.getScheduler().schedule(runnable, game.getTime(), delay);
@@ -340,12 +386,16 @@ public class ScriptHelper {
 		windowObj.show();
 	}
 
-	public void showIngameWindow(){
-		game.getWindows().get(WindowIngame.class).show();
-	}
-
-	public void hideIngameWindow(){
-		game.getWindows().get(WindowIngame.class).hide();
+	@SuppressWarnings("unchecked")
+	public void closeWindow(String windowName){
+		try{
+			Window win = game.getWindows().get((Class<? extends Window>)Class.forName(windowName));
+			if(win != null)
+				win.close();
+		}catch(Exception e){
+			Log.e("ScriptHelper", "Error while closing window " + windowName + " - " + e.getMessage());
+			e.printStackTrace();
+		}
 	}
 
 	@SuppressWarnings("unchecked")
@@ -358,7 +408,6 @@ public class ScriptHelper {
 		}catch(Exception e){
 			Log.e("ScriptHelper", "Error while hiding window " + windowName + " - " + e.getMessage());
 			e.printStackTrace();
-			return;
 		}
 	}
 
@@ -381,13 +430,13 @@ public class ScriptHelper {
 		return ent;
 	}
 
-	public static final String ENTITY_PACKAGE = "net.site40.rodit.tinyrpg.game.entity";
+	public static final String ENTITY_PACKAGE = "net.site40.rodit.tinyrpg.game.entity.";
 	@SuppressWarnings("unchecked")
 	public Entity createEntity(String config){
 		Document document = game.getResources().readDocument(config);
 		String className = ((Element)document.getElementsByTagName("entity").item(0)).getAttribute("class");
 		if(!className.startsWith(ENTITY_PACKAGE))
-			className = ENTITY_PACKAGE + "." + className;
+			className = ENTITY_PACKAGE + className;
 		Entity entity = null;
 		try{
 			Class<? extends Entity> cls = (Class<? extends Entity>)Class.forName(className);
@@ -404,6 +453,10 @@ public class ScriptHelper {
 		return Region.valueOf(region.toUpperCase());
 	}
 
+	public Damage damage(Object[] source, String type, float damage){
+		return new Damage(new SourceStack(source), Util.tryGetDamageType(type), damage);
+	}
+
 	public Team createTeam(EntityLiving... members){
 		return new Team(members);
 	}
@@ -415,11 +468,19 @@ public class ScriptHelper {
 	public Battle battle(String region, Team attack, Team defence){
 		return battle(getRegion(region), attack, defence);
 	}
-
+	
 	public Battle battle(Region region, Team attack, Team defence){
 		Battle b = new Battle(region, attack, defence);
 		game.setBattle(b);
 		return b;
+	}
+
+	public void queueFunction(Function func, Object self, Object[] args){
+		queueFunction(func, self, KVP.EMPTY, args);
+	}
+	
+	public void queueFunction(Function func, final Object self, final KVP<?>[] kvps, final Object[] args){
+		game.getScript().runFunction(game, func, self, kvps, args);
 	}
 
 	private Util util;
