@@ -3,7 +3,7 @@ function start(user){
 }
 
 function poison(entity){
-	entity.hurt(self.level * 3);
+	entity.hit(game, helper.fakeEntity, helper.damage(helper.arrayo(entity, self), "EFFECT", self.level * 3);
 }
 
 function stop(user){}

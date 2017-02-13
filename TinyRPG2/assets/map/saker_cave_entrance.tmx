@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" width="10" height="14" tilewidth="16" tileheight="16">
+ <tileset firstgid="1" name="Master" tilewidth="16" tileheight="16">
+  <image source="master.png" width="2000" height="1500"/>
+ </tileset>
+ <layer name="Ground_bg" width="10" height="14">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+1533,1534,1533,1534,1533,1534,1533,1534,1533,1534,
+1658,1659,1658,1659,1658,1659,1658,1659,1658,1659,
+1533,1534,1533,1534,1533,1534,1533,1534,1533,1534,
+1658,1659,1658,1659,1658,1659,1658,1659,1658,1659,
+1533,1534,1533,1534,1533,1534,1533,1534,1533,1534,
+1658,1659,1658,1659,1658,1659,1658,1659,1658,1659,
+1533,1534,1533,1534,1533,1534,1533,1534,1533,1534,
+1658,1659,1658,1659,1658,1659,1658,1659,1658,1659,
+0,1534,1533,1534,1533,1534,1533,1534,1533,0,
+0,1659,1658,1659,1658,1659,1658,1659,1658,0,
+0,1534,1533,1534,1533,1534,1533,1534,1533,0,
+0,1659,1658,1659,1658,1659,1658,1659,1658,0
+</data>
+ </layer>
+ <layer name="Ground" width="10" height="14">
+  <data encoding="csv">
+3324,3327,3328,3327,3328,3327,3328,3327,3328,3321,
+3449,3452,3453,3452,3453,3452,3453,3452,3453,3446,
+3080,3317,3318,3317,3318,3317,3318,3317,3318,3075,
+3205,3442,3443,3442,3443,3442,3443,3442,3443,3200,
+3080,0,0,0,0,0,0,0,0,3075,
+3205,0,0,0,0,0,0,0,0,3200,
+3080,0,0,0,0,0,0,0,0,3075,
+3205,0,0,0,0,0,0,0,0,3200,
+3080,0,0,0,0,0,0,0,0,3075,
+3205,0,0,0,0,0,0,0,0,3200,
+3080,0,0,0,0,0,0,0,0,3075,
+3205,0,0,0,0,0,0,0,0,3200,
+3080,0,0,0,0,0,0,0,0,3075,
+3074,2827,2828,2827,0,0,2828,2827,2828,3071
+</data>
+ </layer>
+ <layer name="Hole" width="10" height="14">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+0,3197,3197,3197,3197,3197,3197,3197,3197,0,
+0,3197,3197,3197,3197,3197,3197,3197,3197,0,
+0,3197,3197,3197,3197,3197,3197,3197,3197,0,
+0,3197,3197,3197,3197,3197,3197,3197,3197,0,
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <objectgroup name="collisions" width="10" height="14">
+  <object x="0" y="0" width="160" height="64"/>
+  <object x="0" y="64" width="16" height="160"/>
+  <object x="16" y="208" width="48" height="16"/>
+  <object x="96" y="208" width="48" height="16"/>
+  <object x="144" y="64" width="16" height="160"/>
+ </objectgroup>
+ <objectgroup name="entities" width="10" height="14">
+  <object name="trap_enter_saker_cave" x="16" y="64" width="128" height="80">
+   <properties>
+    <property name="map" value="map/saker_cave.tmx"/>
+    <property name="resource" value="bitmap/map/trap_cover_saker_cave_entrance.png"/>
+    <property name="script" value="script/entity/trap.js"/>
+   </properties>
+  </object>
+  <object name="exit_saker_cave_lake" x="64" y="208" width="32" height="16">
+   <properties>
+    <property name="map" value="map/saker_lake.tmx"/>
+    <property name="script" value="script/entity/generic_door.js"/>
+   </properties>
+  </object>
+  <object name="spawn_enter_cave" x="64" y="176" width="16" height="16">
+   <properties>
+    <property name="condition" value="door_exit_saker_lake_cave"/>
+    <property name="noclip" value="true"/>
+    <property name="script" value="script/entity/spawn_conditional.js"/>
+    <property name="type" value="0"/>
+   </properties>
+  </object>
+  <object name="map_info" x="144" y="16">
+   <properties>
+    <property name="darkness" value="0.6"/>
+    <property name="script" value="script/world/map.js"/>
+   </properties>
+  </object>
+ </objectgroup>
+</map>

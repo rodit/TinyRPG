@@ -154,6 +154,12 @@
     <property name="script" value="script/entity/anvil.js"/>
    </properties>
   </object>
+  <object name="map_info" x="-32" y="-16">
+   <properties>
+    <property name="darkness" value="0.35"/>
+    <property name="script" value="script/world/map.js"/>
+   </properties>
+  </object>
  </objectgroup>
  <objectgroup name="collisions" width="0" height="0">
   <object x="0" y="0" width="352" height="80"/>
@@ -167,5 +173,25 @@
   <object x="16" y="80" width="32" height="16"/>
   <object x="288" y="80" width="32" height="32"/>
   <object x="304" y="160" width="32" height="80"/>
+ </objectgroup>
+ <objectgroup name="lights" width="22" height="23">
+  <object name="light_00" x="168" y="48" width="16" height="16">
+   <properties>
+    <property name="brightness" value="0.65"/>
+    <property name="radius" value="60"/>
+   </properties>
+  </object>
+  <object name="light_01" x="24" y="56" width="16" height="16">
+   <properties>
+    <property name="brightness" value="0.65"/>
+    <property name="radius" value="40"/>
+   </properties>
+  </object>
+  <object name="light_02" x="248" y="72" width="16" height="16">
+   <properties>
+    <property name="brightness" value="0.2"/>
+    <property name="radius" value="30"/>
+   </properties>
+  </object>
  </objectgroup>
 </map>

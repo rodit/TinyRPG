@@ -1,0 +1,1 @@
+<entity class="DirectionalCollision" name="dc_default" displayName="Directional Collision" health="1" maxHealth="1" drawEquipment="false"/>

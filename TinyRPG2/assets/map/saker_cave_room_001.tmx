@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" width="14" height="20" tilewidth="16" tileheight="16">
+ <tileset firstgid="1" name="Master" tilewidth="16" tileheight="16">
+  <image source="master.png" width="2000" height="1500"/>
+ </tileset>
+ <layer name="Ground" width="14" height="20">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,1534,1533,1534,1533,1534,1533,1534,1533,1534,1533,1534,1533,0,
+0,1659,1658,1659,1658,1659,1658,1659,1658,1659,1658,1659,1658,0,
+0,1534,1533,1534,1533,1534,1533,1534,1533,1534,1533,1534,1533,0,
+0,1659,1658,1659,1658,1659,1658,1659,1658,1659,1658,1659,1658,0,
+1533,1534,1533,1534,1533,1534,1533,1534,1533,1534,1533,1534,1533,1534,
+1658,1659,1658,1659,1658,1659,1658,1659,1658,1659,1658,1659,1658,1659,
+1533,1534,1533,1534,1533,1534,1533,1534,1533,1534,1533,1534,1533,1534,
+1658,1659,1658,1659,1658,1659,1658,1659,1658,1659,1658,1659,1658,1659,
+1533,1534,1533,1534,1533,1534,1533,1534,1533,1534,1533,1534,1533,1534,
+1658,1659,1658,1659,1658,1659,1658,1659,1658,1659,1658,1659,1658,1659,
+1533,1534,1533,1534,1533,1534,1533,1534,1533,1534,1533,1534,1533,1534,
+1658,1659,1658,1659,1658,1659,1658,1659,1658,1659,1658,1659,1658,1659,
+1533,1534,1533,1534,1533,1534,1533,1534,1533,1534,1533,1534,1533,1534,
+1533,1534,1533,1534,1533,1534,1533,1534,1533,1534,1533,1534,1533,1534,
+1658,1659,1658,1659,1658,1659,1658,1659,1658,1659,1658,1659,1658,1659,
+1533,1534,1533,1534,1533,1534,1533,1534,1533,1534,1533,1534,1533,1534,
+1658,1659,1658,1659,1658,1659,1658,1659,1658,1659,1658,1659,1658,1659
+</data>
+ </layer>
+ <layer name="Walls" width="14" height="20">
+  <data encoding="csv">
+3324,3327,3328,3327,3328,3327,3328,3327,3328,3327,3328,3327,3328,3321,
+3449,3452,3453,3452,3453,3452,3453,3452,3453,3452,3453,3452,3453,3446,
+3080,3317,3318,3317,3318,3317,3318,3317,3318,3317,3318,3317,3318,3075,
+3205,3442,3443,3442,3443,3442,3443,3442,3443,3442,3443,3442,3443,3200,
+3205,0,0,0,0,0,0,0,0,0,0,0,0,3075,
+3080,0,0,0,0,0,0,0,0,0,0,0,0,3075,
+3205,0,0,0,0,0,0,0,0,0,0,0,0,3200,
+3080,0,0,0,0,0,0,0,0,0,0,0,0,3075,
+3205,0,0,0,0,0,0,0,0,0,0,0,0,3200,
+3080,0,0,0,0,0,0,0,0,0,0,0,0,3075,
+3205,0,0,0,0,0,0,0,0,0,0,0,0,3200,
+3080,0,0,0,0,0,0,0,0,0,0,0,0,3075,
+3205,0,0,0,0,0,0,0,0,0,0,0,0,3200,
+3080,0,0,0,0,0,0,0,0,0,0,0,0,3075,
+3205,0,0,0,0,0,0,0,0,0,0,0,0,3200,
+3080,0,0,0,0,0,0,0,0,0,0,0,0,3075,
+3205,0,0,0,0,0,0,0,0,0,0,0,0,3200,
+3080,0,0,0,0,0,0,0,0,0,0,0,0,3075,
+3205,0,0,0,0,0,0,0,0,0,0,0,0,3200,
+3074,2827,2828,2827,2828,2827,3202,3203,2828,2827,2828,2827,2828,3071
+</data>
+ </layer>
+ <layer name="Features" width="14" height="20">
+  <data encoding="csv">
+0,0,0,0,0,0,10545,10546,0,0,0,0,0,0,
+0,0,0,0,0,0,10670,10671,0,0,0,0,0,0,
+0,0,0,0,0,0,10795,10796,0,0,0,0,0,0,
+0,0,0,0,0,0,10920,10921,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,1787,1788,1789,1790,0,0,0,0,0,
+0,0,0,0,0,1912,1913,1914,1915,0,0,0,0,0,
+0,0,0,0,0,2037,2038,2039,2040,0,0,0,0,0,
+0,0,0,0,0,2162,2163,2164,2165,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <layer name="Features_1" width="14" height="20">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,2095,2096,0,0,0,0,0,0,
+0,0,0,0,0,0,2220,2221,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <objectgroup name="entities" width="14" height="20">
+  <object name="saker_cave_001_rock_loot_0" x="96" y="224" width="32" height="32">
+   <properties>
+    <property name="count" value="2"/>
+    <property name="item" value="ingot_silver"/>
+    <property name="script" value="script/entity/loot_rock.js"/>
+   </properties>
+  </object>
+  <object name="spawn_saker_cave" x="96" y="272" width="16" height="16">
+   <properties>
+    <property name="condition" value="door_enter_saker_cave_001"/>
+    <property name="noclip" value="true"/>
+    <property name="script" value="script/entity/spawn_conditional.js"/>
+   </properties>
+  </object>
+  <object name="exit_saker_cave_001_main" x="96" y="304" width="32" height="16">
+   <properties>
+    <property name="map" value="map/saker_cave.tmx"/>
+    <property name="script" value="script/entity/generic_door.js"/>
+   </properties>
+  </object>
+  <object name="spawn_ironforge_basement" x="96" y="80" width="16" height="16">
+   <properties>
+    <property name="condition" value="door_exit_ironforge_basement_lower_cave"/>
+    <property name="noclip" value="true"/>
+    <property name="script" value="script/entity/spawn_conditional.js"/>
+   </properties>
+  </object>
+  <object name="exit_saker_cave_001_ironforge_basement_lower" x="96" y="48" width="32" height="16">
+   <properties>
+    <property name="map" value="map/ironforge_basement_lower.tmx"/>
+    <property name="script" value="script/entity/generic_door.js"/>
+   </properties>
+  </object>
+  <object name="map_info" x="32" y="16">
+   <properties>
+    <property name="darkness" value="0.6"/>
+    <property name="script" value="script/world/map.js"/>
+   </properties>
+  </object>
+ </objectgroup>
+ <objectgroup name="collisions" width="14" height="20">
+  <object x="0" y="0" width="16" height="320"/>
+  <object x="16" y="304" width="80" height="16"/>
+  <object x="208" y="0" width="16" height="320"/>
+  <object x="128" y="304" width="80" height="16"/>
+  <object x="16" y="0" width="192" height="64"/>
+ </objectgroup>
+ <objectgroup name="lights" width="14" height="20">
+  <object name="light_00" x="104" y="232" width="16" height="16">
+   <properties>
+    <property name="brightness" value="0.7"/>
+    <property name="radius" value="40"/>
+   </properties>
+  </object>
+  <object name="light_01" x="104" y="0" width="16" height="16">
+   <properties>
+    <property name="brightness" value="0.7"/>
+    <property name="radius" value="25"/>
+   </properties>
+  </object>
+  <object name="light_01" x="104" y="8" width="16" height="16">
+   <properties>
+    <property name="brightness" value="0.7"/>
+    <property name="radius" value="25"/>
+   </properties>
+  </object>
+  <object name="light_01" x="104" y="24" width="16" height="16">
+   <properties>
+    <property name="brightness" value="0.7"/>
+    <property name="radius" value="25"/>
+   </properties>
+  </object>
+  <object name="light_01" x="104" y="32" width="16" height="16">
+   <properties>
+    <property name="brightness" value="0.7"/>
+    <property name="radius" value="25"/>
+   </properties>
+  </object>
+  <object name="light_01" x="104" y="48" width="16" height="16">
+   <properties>
+    <property name="brightness" value="0.7"/>
+    <property name="radius" value="25"/>
+   </properties>
+  </object>
+  <object name="light_01" x="104" y="40" width="16" height="16">
+   <properties>
+    <property name="brightness" value="0.7"/>
+    <property name="radius" value="25"/>
+   </properties>
+  </object>
+ </objectgroup>
+</map>

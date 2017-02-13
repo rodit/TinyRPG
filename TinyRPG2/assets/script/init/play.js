@@ -8,7 +8,8 @@ if(game.getGlobal("intro_done") == "false"){
 	game.addObject(bgSprite);
 
 	function dialogCallback1(option){
-		helper.showWindow("WindowSetname");
+		helper.showWindow("WindowPlayerEditor");
+		//helper.showWindow("WindowSetname");
 	}
 
 	function dialogCallback0(option){

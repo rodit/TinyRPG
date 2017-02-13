@@ -11,27 +11,27 @@
 		<item name="hard_leather_chestplate_1" amount="1"/>
 		<item name="hard_leather_shoulders_1" amount="1"/>
 	</class>
-	<class name="assassin" showName="Assassin" description="A fast, agile assassin with high luck and low defence." level="5" speed="1.2" strength="0.7" defence="0.6" luck="0.9" magika="0.5" forge="0.6" abilityDescription="2% chance to parry physical attacks (+0.1%/character level, +0.05%/luck level > 0.9).">
+	<class name="assassin" showName="Assassin" description="A fast, agile assassin with high luck and low defence." level="5" speed="1.2" strength="0.7" defence="0.6" luck="0.9" magika="0.5" forge="0.6" abilityDescription="2% chance to parry physical attacks in battle (take no damage and deal a critical hit next turn) (+0.1%/character level, +0.05%/luck level > 9).">
 		<item name="dagger_iron_1" amount="1"/>
 		<item name="dagger_iron_1" amount="1"/>
 		<item name="assassin_hood_1" amount="1"/>
 		<item name="assassin_robe_1" amount="1"/>
 		<item name="assassin_shoulders_1" amount="1"/>
 	</class>
-	<class name="hunter" showName="Hunter" description="A skilled, dexterous hunter with high speed." level="5" speed="1.1" strength="0.8" defence="0.7" luck="0.8" magika="0.5" forge="0.6" abilityDescription="5% chance to fire two arrows/turn against enemies slower than the hunter (+0.5%/character level, +0.25%/speed level > 1.1).">
+	<class name="hunter" showName="Hunter" description="A skilled, dexterous hunter with high speed." level="5" speed="1.1" strength="0.8" defence="0.7" luck="0.8" magika="0.5" forge="0.6" abilityDescription="5% chance to fire two arrows and 5% chance to make enemies slower than the hunter in battle (+0.5%/character level, +0.25%/speed level > 11).">
 		<item name="hunting_bow_1" amount="1"/>
 		<item name="dagger_bone_1" amount="1"/>
 		<item name="leather_helmet_1" amount="1"/>
 		<item name="leather_chestplate_1" amount="1"/>
 		<item name="leather_shoulders_1" amount="1"/>
 	</class>
-	<class name="mage" showName="Mage" description="An apprentice mage equipped with advanced magic capabilites." level="5" speed="0.5" strength="0.6" defence="0.6" luck="0.7" magika="1.6" forge="0.5" abilityDescription="Damage taken from magic attacks is reduced by 10% (+0.5%/character level).">
+	<class name="mage" showName="Mage" description="An apprentice mage equipped with advanced magic capabilites." level="5" speed="0.5" strength="0.6" defence="0.6" luck="0.7" magika="1.6" forge="0.5" abilityDescription="Damage taken from magic attacks is reduced by 10% everywhere (+0.5%/character level).">
 		<item name="wooden_staff_1" amount="1"/>
 		<item name="mage_hood_1" amount="1"/>
 		<item name="mage_robes_1" amount="1"/>
 		<item name="mage_cape_1" amount="1"/>
 	</class>
-	<class name="thief" showName="Thief" description="A cunning thief with high speed and luck." level="5" speed="1.2" strength="0.5" defence="0.5" luck="1.3" magika="0.5" forge="0.5" abilityDescription="Gains 10% extra gold from winning battles (+0.5%/character level).">
+	<class name="thief" showName="Thief" description="A cunning thief with high speed and luck." level="5" speed="1.2" strength="0.5" defence="0.5" luck="1.3" magika="0.5" forge="0.5" abilityDescription="Lose 50% less gold from losing battles. Gain 10% extra gold from winning battles (+0.5%/character level, +0.25%/luck level > 9).">
 		<item name="dagger_stone" amount="1"/>
 		<item name="dagger_stone" amount="1"/>
 		<item name="theif_mask_1" amount="1"/>

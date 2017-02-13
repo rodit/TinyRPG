@@ -1,6 +1,6 @@
 function transport(actor){
 	actor.setRuntimeProperty("map_origin", "door_" + self.getName());
-	if(actor.isPlayer())
+	if(actor.isPlayer() && !game.getGlobalb("transitioning"))
 		helper.setMap(self.getRuntimeProperty("map"));
 }
 

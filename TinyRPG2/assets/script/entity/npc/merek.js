@@ -4,7 +4,7 @@ function onCollide(collision){}
 
 function dialog_callback(option){
 	if(option == 0)
-		helper.showWindow("WindowUpgradeItem");//helper.dialog("Sorry friend. I cannot upgrade any items at the moment.");
+		helper.showWindow("WindowUpgradeItem");
 	else if(option == 1)
 		helper.dialog("I do not have the required resources to infuse items right now.");
 	else if(option == 2)

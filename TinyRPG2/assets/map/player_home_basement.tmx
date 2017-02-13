@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" renderorder="right-down" width="16" height="10" tilewidth="16" tileheight="16" nextobjectid="20">
- <tileset firstgid="1" name="Master" tilewidth="16" tileheight="16" tilecount="11625">
+<map version="1.0" orientation="orthogonal" width="16" height="10" tilewidth="16" tileheight="16">
+ <tileset firstgid="1" name="Master" tilewidth="16" tileheight="16">
   <image source="master.png" width="2000" height="1500"/>
  </tileset>
  <layer name="Floor" width="16" height="10">
@@ -101,22 +101,22 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup name="entities">
-  <object id="1" name="shelf_potions" x="144" y="64" width="32" height="16">
+ <objectgroup name="entities" width="0" height="0">
+  <object name="shelf_potions" x="144" y="64" width="32" height="16">
    <properties>
     <property name="msg" value="A shelf of out-of-date potions.~Better not drink any of those..."/>
     <property name="script" value="script/entity/generic_sign.js"/>
     <property name="type" value="0"/>
    </properties>
   </object>
-  <object id="2" name="draw_stuck" x="80" y="64" width="64" height="16">
+  <object name="draw_stuck" x="80" y="64" width="64" height="16">
    <properties>
     <property name="msg" value="The draw is jammed and cannot be opened."/>
     <property name="script" value="script/entity/generic_sign.js"/>
     <property name="type" value="0"/>
    </properties>
   </object>
-  <object id="3" name="loot_bottle_water" x="48" y="64" width="32" height="16">
+  <object name="loot_bottle_water" x="48" y="64" width="32" height="16">
    <properties>
     <property name="loot_id" value="bottle_water_player_basement"/>
     <property name="loot_items" value="water_bottle:1"/>
@@ -124,7 +124,7 @@
     <property name="type" value="0"/>
    </properties>
   </object>
-  <object id="4" name="barrel_0" x="16" y="80" width="32" height="32">
+  <object name="barrel_0" x="16" y="80" width="32" height="32">
    <properties>
     <property name="loot_id" value="player_basement_barrel_0"/>
     <property name="rarity" value="food"/>
@@ -132,7 +132,7 @@
     <property name="type" value="0"/>
    </properties>
   </object>
-  <object id="5" name="barrel_1" x="64" y="112" width="32" height="16">
+  <object name="barrel_1" x="64" y="112" width="32" height="16">
    <properties>
     <property name="loot_id" value="player_basement_barrel_1"/>
     <property name="rarity" value="gold_small"/>
@@ -140,7 +140,7 @@
     <property name="type" value="0"/>
    </properties>
   </object>
-  <object id="6" name="barrel_2" x="96" y="112" width="32" height="16">
+  <object name="barrel_2" x="96" y="112" width="32" height="16">
    <properties>
     <property name="loot_id" value="player_basement_barrel_2"/>
     <property name="rarity" value="food"/>
@@ -148,7 +148,7 @@
     <property name="type" value="0"/>
    </properties>
   </object>
-  <object id="7" name="barrel_3" x="128" y="112" width="32" height="16">
+  <object name="barrel_3" x="128" y="112" width="32" height="16">
    <properties>
     <property name="loot_id" value="player_basement_barrel_3"/>
     <property name="rarity" value="potion"/>
@@ -156,7 +156,7 @@
     <property name="type" value="0"/>
    </properties>
   </object>
-  <object id="8" name="barrel_4" x="176" y="112" width="16" height="16">
+  <object name="barrel_4" x="176" y="112" width="16" height="16">
    <properties>
     <property name="loot_id" value="player_basement_barrel_4"/>
     <property name="rarity" value="gold_small"/>
@@ -164,7 +164,7 @@
     <property name="type" value="0"/>
    </properties>
   </object>
-  <object id="9" name="barrel_5" x="208" y="112" width="32" height="16">
+  <object name="barrel_5" x="208" y="112" width="32" height="16">
    <properties>
     <property name="loot_id" value="player_basement_barrel_5"/>
     <property name="rarity" value="gold"/>
@@ -172,7 +172,7 @@
     <property name="type" value="0"/>
    </properties>
   </object>
-  <object id="10" name="barrel_6" x="48" y="112" width="16" height="16">
+  <object name="barrel_6" x="48" y="112" width="16" height="16">
    <properties>
     <property name="loot_id" value="player_basement_barrel_6"/>
     <property name="rarity" value="empty"/>
@@ -180,7 +180,7 @@
     <property name="type" value="0"/>
    </properties>
   </object>
-  <object id="11" name="spawn_living_room" x="208" y="80" width="16" height="16">
+  <object name="spawn_living_room" x="208" y="48" width="16" height="16">
    <properties>
     <property name="condition" value="door_enter_basement"/>
     <property name="noclip" value="true"/>
@@ -188,14 +188,14 @@
     <property name="type" value="0"/>
    </properties>
   </object>
-  <object id="12" name="exit_basement" x="208" y="0" width="32" height="64">
+  <object name="exit_basement" x="208" y="0" width="32" height="64">
    <properties>
     <property name="map" value="map/player_home_living_room.tmx"/>
     <property name="script" value="script/entity/generic_door.js"/>
     <property name="type" value="0"/>
    </properties>
   </object>
-  <object id="13" name="urn_ashes" x="184" y="64" width="14" height="13">
+  <object name="urn_ashes" x="184" y="64" width="14" height="13">
    <properties>
     <property name="msg" value="An urn full of ancient ashes.~Probably from a deceased relative..."/>
     <property name="script" value="script/entity/generic_sign.js"/>
@@ -203,11 +203,11 @@
    </properties>
   </object>
  </objectgroup>
- <objectgroup name="collisions">
-  <object id="14" x="0" y="0" width="208" height="64"/>
-  <object id="15" x="240" y="0" width="16" height="160"/>
-  <object id="16" x="16" y="144" width="224" height="16"/>
-  <object id="17" x="0" y="64" width="16" height="96"/>
-  <object id="19" x="160" y="128" width="48" height="16"/>
+ <objectgroup name="collisions" width="0" height="0">
+  <object x="0" y="0" width="208" height="64"/>
+  <object x="240" y="0" width="16" height="160"/>
+  <object x="16" y="144" width="224" height="16"/>
+  <object x="0" y="64" width="16" height="96"/>
+  <object x="160" y="128" width="48" height="16"/>
  </objectgroup>
 </map>

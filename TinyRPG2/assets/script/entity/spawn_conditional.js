@@ -1,8 +1,9 @@
 function onSpawn(){
+	self.setNoclip(true);
 	var origin = game.getPlayer().getRuntimeProperty("map_origin");
 	var condition = self.getRuntimeProperty("condition");
 	if(origin.equals(condition)){
-		game.getPlayer().teleport(game, self.getX(), self.getY());
+		game.getPlayer().teleport(game, self.getBounds().getX(), self.getBounds().getY());
 		if(game.getGlobalb("tile_movement"))
 			game.getPlayer().getTileMovementProvider().alignToTile(game.getPlayer());
 	}else

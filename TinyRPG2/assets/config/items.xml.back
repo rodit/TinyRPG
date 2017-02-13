@@ -67,4 +67,6 @@
 	<item type="net.site40.rodit.tinyrpg.game.item.ItemMaterial" name="ingot_gold" showName="Gold Ingot" description="A smooth bar of pure gold. This can be used for forging or sold for a high price." resource="item/ingot_gold.png" script="" rarity="Uncommon" value="1000" level="1"/>
 	<item type="net.site40.rodit.tinyrpg.game.item.ItemMaterial" name="wood_stick" showName="Wood Stick" description="A long stick of wood for crafting." resource="item/wood_stick.png" script="" rarity="Very Common" value="5" level="1"/>
 	<item type="net.site40.rodit.tinyrpg.game.item.Item" name="test_item_0" showName="Test Item" description="This item is a test item created with TinyEngine." resource="bitmap/item/iron_ring.png" script="script/item/test_item_0.js" rarity="Unknown" value="10000" level="1"/>
+	<item type="net.site40.rodit.tinyrpg.game.item.ItemMaterial" name="test_material_0" showName="Test Material" description="A test material created by TinyEngine." resource="black.png" script="" rarity="Very Common" value="0" level="1"/>
+	<item type="net.site40.rodit.tinyrpg.game.item.ItemBerry" name="berry_bittersweet_0" showName="Bittersweet Berry I" description="A highly toxic berry which will damage anybody who consumes it." resource="" script="script/item/berry_bittersweet.js" rarity="Very Common" value="0" level="1"/>
 </items>
