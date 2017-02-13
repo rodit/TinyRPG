@@ -3,10 +3,10 @@ package net.site40.rodit.tinyrpg.game.render;
 import java.io.IOException;
 import java.io.InputStream;
 
-import android.content.res.AssetManager;
 import net.site40.rodit.rlib.util.io.StreamUtils;
 import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.mod.TinyMod;
+import android.content.res.AssetManager;
 
 public abstract class ResourceStreamProvider {
 
@@ -29,7 +29,7 @@ public abstract class ResourceStreamProvider {
 		public AssetStreamProvider(AssetManager assets){
 			this.assets = assets;
 		}
-
+		
 		@Override
 		public boolean hasResource(String path){
 			InputStream testIn = openResource(path);

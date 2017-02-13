@@ -5,6 +5,7 @@ import java.io.IOException;
 import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.Scheduler.ScheduledEvent;
 import net.site40.rodit.tinyrpg.game.entity.EntityLiving;
+import net.site40.rodit.tinyrpg.game.script.ScriptManager.KVP;
 import net.site40.rodit.util.TinyInputStream;
 import net.site40.rodit.util.TinyOutputStream;
 import net.site40.rodit.util.Util;
@@ -66,7 +67,7 @@ public class TimedEffect extends Effect{
 	public void effect(Game game, EntityLiving entity){
 		initCallbacks(game);
 		if(jsEffect != null)
-			game.getScripts().executeFunction(game, jsEffect, this, new String[0], new Object[0], new Object[] { entity });
+			game.getScript().runFunction(game, jsEffect, this, KVP.EMPTY, entity);
 		if(run <= count)
 			run(game, entity);
 		else

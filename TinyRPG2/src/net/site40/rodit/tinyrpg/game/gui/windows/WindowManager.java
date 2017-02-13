@@ -5,12 +5,13 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 
+import net.site40.rodit.tinyrpg.game.Game;
+import net.site40.rodit.tinyrpg.game.Input;
+import net.site40.rodit.tinyrpg.game.event.EventReceiver.EventType;
+import net.site40.rodit.util.Util;
 import android.graphics.Canvas;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
-import net.site40.rodit.tinyrpg.game.Game;
-import net.site40.rodit.tinyrpg.game.Input;
-import net.site40.rodit.util.Util;
 
 public class WindowManager {
 
@@ -34,7 +35,7 @@ public class WindowManager {
 	}
 
 	public void initialize(Game game){
-		
+
 	}
 
 	public Window get(Class<? extends Window> cls){
@@ -48,48 +49,64 @@ public class WindowManager {
 		return false;
 	}
 
+	private ArrayList<Window> tWindowList = new ArrayList<Window>();
 	public void touchInput(Game game, MotionEvent event){
-		ArrayList<Window> windowList = new ArrayList<Window>(windows.values());
-		Collections.reverse(windowList);
-		for(Window window : windowList)
+		tWindowList.clear();
+		tWindowList.addAll(windows.values());
+		Collections.reverse(tWindowList);
+		for(Window window : tWindowList)
 			if(window.touchInput(game, event) == WindowEventStatus.HANDLED)
 				break;
 	}
 
+	private ArrayList<Window> kWindowList = new ArrayList<Window>();
 	public void keyInput(Game game, KeyEvent event){
-		ArrayList<Window> windowList = new ArrayList<Window>(windows.values());
-		Collections.reverse(windowList);
-		for(Window window : windowList)
+		kWindowList.clear();
+		kWindowList.addAll(windows.values());
+		Collections.reverse(kWindowList);
+		for(Window window : kWindowList)
 			window.keyInput(game, event);
 	}
 
+	private boolean uAllowInput;
+	private ArrayList<Window> uReversed = new ArrayList<Window>();
+	private ArrayList<Window> uCopy = new ArrayList<Window>();
 	public void update(Game game){
-		if(modCount > 0){
+		if(modCount > 0)
 			Util.sortValuesInMap(windows, windowComparator);
-			modCount = 0;
-		}
 
-		boolean allowInput = true;
-		for(Window window : windows.values()){
-			if(window.isVisible() && window.swallowsInput() && !(window instanceof WindowIngame))
-				allowInput = false;
+		if(!game.getGlobalb("transitioning")){
+			uAllowInput = true;
+			for(Window window : windows.values()){
+				if(window.isVisible() && window.swallowsInput())
+					uAllowInput = false;
+			}
+			game.getInput().allowMovement(uAllowInput && !game.isShowingDialog());
 		}
-		game.getInput().allowMovement(allowInput);
 
 		if(game.getInput().isUp(Input.KEY_MENU)){
-			ArrayList<Window> reveresed = new ArrayList<Window>(windows.values());
-			Collections.reverse(reveresed);
-			reveresed.remove(get(WindowIngame.class));
-			for(Window window : reveresed){
-				if(window.isVisible()){
-					window.setVisible(false);
+			uReversed.clear();
+			uReversed.addAll(windows.values());
+			Collections.reverse(uReversed);
+			for(Window window : uReversed){
+				if(window.canClose() && window.isVisible()){
+					window.close();
+					game.getEvents().onEvent(game, EventType.WINDOW_CLOSED_BACK, window);
 					break;
 				}
 			}
 		}
 
+		uCopy.clear();
+		uCopy.addAll(windows.values());
+		for(Window window : uCopy)
+			if(window.isClosed())
+				windows.remove(window.getClass());
+
 		for(Window window : windows.values())
 			window.update(game);
+
+		modCount = 0;
 	}
 
 	public void draw(Game game, Canvas canvas){

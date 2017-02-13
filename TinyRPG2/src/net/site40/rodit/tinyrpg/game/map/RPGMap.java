@@ -15,7 +15,9 @@ public class RPGMap {
 	private String file;
 	private Bitmap background;
 	private Bitmap renderOnTop;
+	private Bitmap lightMap;
 	private boolean hasRot;
+	private boolean hasLightMap;
 	private MapProperties properties;
 	private ArrayList<MapObject> objects;
 	private HashMap<String, ArrayList<MapObject>> objectGroupCache;
@@ -29,6 +31,7 @@ public class RPGMap {
 		this.loaded = loaded;
 		this.background = null;
 		this.renderOnTop = null;
+		this.lightMap = null;
 		this.properties = new MapProperties();
 		this.objects = new ArrayList<MapObject>();
 		this.objectGroupCache = new HashMap<String, ArrayList<MapObject>>();
@@ -51,7 +54,7 @@ public class RPGMap {
 	public void setBackground(Bitmap background){
 		this.background = background;
 	}
-
+	
 	public boolean hasRot(){
 		return hasRot;
 	}
@@ -66,6 +69,22 @@ public class RPGMap {
 
 	public void setRenderOnTop(Bitmap renderOnTop){
 		this.renderOnTop = renderOnTop;
+	}
+	
+	public boolean hasLightMap(){
+		return hasLightMap;
+	}
+	
+	public void setHasLightMap(boolean hasLightMap){
+		this.hasLightMap = hasLightMap;
+	}
+	
+	public Bitmap getLightMap(){
+		return lightMap;
+	}
+	
+	public void setLightMap(Bitmap lightMap){
+		this.lightMap = lightMap;
 	}
 
 	public MapProperties getProperties(){
@@ -142,14 +161,16 @@ public class RPGMap {
 		mobSpawnAreaKeys.put(key, locations);
 		Log.i("RPGMap", "Registered mob spawn area key=" + key + " area=" + area.toString());
 	}
-
+	
 	public void dispose(ResourceManager resources){
 		Log.i("RPGMap", "Disposing of map " + file + ".");
 		if(background != null)
 			background.recycle();
 		if(renderOnTop != null)
 			renderOnTop.recycle();
-		background = renderOnTop = null;
+		if(lightMap != null)
+			lightMap.recycle();
+		background = renderOnTop = lightMap = null;
 		if(objects != null)
 			objects.clear();
 		objects = null;

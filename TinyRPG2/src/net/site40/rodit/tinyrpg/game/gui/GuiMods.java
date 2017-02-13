@@ -14,7 +14,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint.Align;
 import android.graphics.Paint.Style;
-import android.graphics.RectF;
 import android.util.Log;
 
 public class GuiMods extends Gui{
@@ -47,6 +46,7 @@ public class GuiMods extends Gui{
 		add(txtTitle);
 
 		Component modsRenderer = new Component("modsRenderer"){
+			float dX, dY;
 			@Override
 			public void draw(Game game, Canvas canvas){
 				if(mods == null || mods.size() == 0 || game.getMods().modListUpdated()){
@@ -61,16 +61,17 @@ public class GuiMods extends Gui{
 					game.getMods().handledUpdate();
 				}
 				paint.setAlpha(255);
-				canvas.drawRect(getBoundsF(), paint);
+				canvas.drawRect(bounds.get(), paint);
 				for(int i = scrollIndex; i < mods.size(); i++){
 					TinyMod mod = mods.get(i);
-					float x = getX();
-					float y = getY() + 4f + (i - scrollIndex) * 156f;
+					dX = bounds.getX();
+					dY = bounds.getY() + 4f + (i - scrollIndex) * 156f;
 					if(i == selectedIndex){
 						paint.setColor(0xF2F2F2);
 						paint.setAlpha(170);
 						paint.setStyle(Style.FILL);
-						canvas.drawRect(new RectF(x, y, x + getWidth(), y + (getHeight() / MODS_PER_PAGE)), paint);
+						bounds.getPooled0().set(dX, dY, dX + bounds.getWidth(), dY + (bounds.getHeight() / MODS_PER_PAGE));
+						canvas.drawRect(bounds.getPooled0(), paint);
 						paint.setStyle(Style.STROKE);
 						paint.setColor(Color.WHITE);
 					}
@@ -78,13 +79,14 @@ public class GuiMods extends Gui{
 						paint.setAlpha(255);
 					else
 						paint.setAlpha(160);
-					canvas.drawBitmap(mod.getIcon(), null, new RectF(x, y, x + 146f, y + 146f), paint);
+					bounds.getPooled0().set(dX, dY, dX + 146f, dY + 146f);
+					canvas.drawBitmap(mod.getIcon(), null, bounds.getPooled0(), paint);
 					paint.setTextSize(Values.FONT_SIZE_SMALL);
-					canvas.drawText(mod.getInfo().getShowName(), x + 164f, y + 32f, paint);
+					canvas.drawText(mod.getInfo().getShowName(), dX + 164f, dY + 32f, paint);
 					int save = canvas.save();
-					canvas.translate(getX() + 164f, y + paint.getTextSize());
+					canvas.translate(bounds.getX() + 164f, dY + paint.getTextSize());
 					paint.setTextSize(Values.FONT_SIZE_TINY);
-					RenderUtil.drawWrappedText(game, mod.getInfo().getDescription(), (int)(getWidth() - 164f - 32f), paint, canvas);
+					RenderUtil.drawWrappedText(game, mod.getInfo().getDescription(), (int)(bounds.getWidth() - 164f - 32f), paint, canvas);
 					canvas.restoreToCount(save);
 				}
 			}
@@ -105,7 +107,7 @@ public class GuiMods extends Gui{
 		btnBack.setWidth(256f);
 		btnBack.setHeight(92f);
 		btnBack.setX(16f);
-		btnBack.setY(720f - btnBack.getHeight());
+		btnBack.setY(720f - btnBack.getBounds().getHeight());
 		btnBack.addListener(new ComponentListenerImpl(){
 			public void touchUp(Component component, Game game){
 				game.getGuis().hide(GuiMods.class);
@@ -122,8 +124,8 @@ public class GuiMods extends Gui{
 		btnLoad.setBackgroundSelected("gui/button_selected.png");
 		btnLoad.setWidth(256f);
 		btnLoad.setHeight(92f);
-		btnLoad.setX(1280f - btnLoad.getWidth() - 16f);
-		btnLoad.setY(btnBack.getY());
+		btnLoad.setX(1280f - btnLoad.getBounds().getWidth() - 16f);
+		btnLoad.setY(btnBack.getBounds().getY());
 		btnLoad.addListener(new ComponentListenerImpl(){
 			public void touchUp(Component component, Game game){
 				TinyMod mod = mods.get(selectedIndex);
@@ -148,8 +150,8 @@ public class GuiMods extends Gui{
 		btnDelete.setBackgroundSelected("gui/button_selected.png");
 		btnDelete.setWidth(256f);
 		btnDelete.setHeight(92f);
-		btnDelete.setX(1280f - btnDelete.getWidth() - 16f);
-		btnDelete.setY(btnLoad.getY() - btnLoad.getHeight() - 16f);
+		btnDelete.setX(1280f - btnDelete.getBounds().getWidth() - 16f);
+		btnDelete.setY(btnLoad.getBounds().getY() - btnLoad.getBounds().getHeight() - 16f);
 		btnDelete.addListener(new ComponentListenerImpl(){
 			public void touchUp(Component component, final Game game){
 				DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
@@ -180,8 +182,8 @@ public class GuiMods extends Gui{
 		Component btnUp = new Component("btnUp");
 		btnUp.setBackground("gui/scroll_up.png");
 		btnUp.setBackgroundSelected("gui/scroll_up_selected.png");
-		btnUp.setX(modsRenderer.getX() + modsRenderer.getWidth() + 16f);
-		btnUp.setY(modsRenderer.getY() + 64f);
+		btnUp.setX(modsRenderer.getBounds().getX() + modsRenderer.getBounds().getWidth() + 16f);
+		btnUp.setY(modsRenderer.getBounds().getY() + 64f);
 		btnUp.setWidth(64f);
 		btnUp.setHeight(64f);
 		btnUp.addListener(new ComponentListenerImpl(){
@@ -199,8 +201,8 @@ public class GuiMods extends Gui{
 		Component btnDown = new Component("btnDown");
 		btnDown.setBackground("gui/scroll_down.png");
 		btnDown.setBackgroundSelected("gui/scroll_down_selected.png");
-		btnDown.setX(modsRenderer.getX() + modsRenderer.getWidth() + 16f);
-		btnDown.setY(modsRenderer.getY() + 192f);
+		btnDown.setX(modsRenderer.getBounds().getX() + modsRenderer.getBounds().getWidth() + 16f);
+		btnDown.setY(modsRenderer.getBounds().getY() + 192f);
 		btnDown.setWidth(64f);
 		btnDown.setHeight(64f);
 		btnDown.addListener(new ComponentListenerImpl(){

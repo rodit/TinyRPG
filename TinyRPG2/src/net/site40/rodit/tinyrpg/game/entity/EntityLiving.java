@@ -2,6 +2,7 @@ package net.site40.rodit.tinyrpg.game.entity;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.SuperCalc;
@@ -10,11 +11,16 @@ import net.site40.rodit.tinyrpg.game.battle.AIBattleProvider.AIDifficulty;
 import net.site40.rodit.tinyrpg.game.battle.IBattleProvider;
 import net.site40.rodit.tinyrpg.game.combat.Attack;
 import net.site40.rodit.tinyrpg.game.effect.Effect;
+import net.site40.rodit.tinyrpg.game.faction.Faction;
+import net.site40.rodit.tinyrpg.game.faction.FactionStats;
 import net.site40.rodit.tinyrpg.game.item.Hair;
 import net.site40.rodit.tinyrpg.game.item.Item;
 import net.site40.rodit.tinyrpg.game.item.ItemEquippable;
+import net.site40.rodit.tinyrpg.game.item.ItemStack;
 import net.site40.rodit.tinyrpg.game.item.Weapon;
 import net.site40.rodit.tinyrpg.game.item.armour.Armour;
+import net.site40.rodit.tinyrpg.game.render.Animation;
+import net.site40.rodit.tinyrpg.game.render.SpriteSheet;
 import net.site40.rodit.tinyrpg.game.render.SpriteSheet.MovementState;
 import net.site40.rodit.tinyrpg.game.util.Direction;
 import net.site40.rodit.util.TinyInputStream;
@@ -26,8 +32,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import android.graphics.Bitmap;
-import android.graphics.Bitmap.Config;
 import android.graphics.Canvas;
 import android.text.TextUtils;
 
@@ -39,15 +43,16 @@ public class EntityLiving extends Entity{
 	protected float velocityX;
 	protected float velocityY;
 	protected EntityStats stats;
-	protected Item[] equipped;
+	protected ItemStack[] equipped;
 	protected ArrayList<Attack> attacks;
 	protected IBattleProvider battleProvider;
 	protected ArrayList<Effect> effects;
 	public boolean drawEquipmentOverlay;
 	protected String displayName;
+	protected int humanity;
+	protected FactionStats faction;
 
-	protected float lastX;
-	protected float lastY;
+	public boolean parryCritFlag = false;
 
 	public EntityLiving(){
 		this(10, 10);
@@ -64,12 +69,14 @@ public class EntityLiving extends Entity{
 		this.magika = 0;
 		this.velocityX = this.velocityY = 0f;
 		this.stats = new EntityStats();
-		this.equipped = new Item[10];
-		equipped[ItemEquippable.SLOT_HAIR] = new Hair();
+		this.equipped = new ItemStack[10];
+		equipped[ItemEquippable.SLOT_HAIR] = new ItemStack(new Hair(), 1);
 		this.attacks = new ArrayList<Attack>();
 		this.battleProvider = new AIBattleProvider(this, AIDifficulty.MEDIUM);
 		this.effects = new ArrayList<Effect>();
 		this.drawEquipmentOverlay = true;
+		this.humanity = 0;
+		this.faction = new FactionStats();
 
 		getHair().setId(0);
 		getHair().setColor("black");
@@ -83,9 +90,41 @@ public class EntityLiving extends Entity{
 	public void setDisplayName(String displayName){
 		this.displayName = displayName;
 	}
+	
+	public int getHumanity(){
+		return humanity;
+	}
+	
+	public void setHumanity(int humanity){
+		this.humanity = humanity;
+	}
+	
+	public void addHumanity(int add){
+		humanity += add;
+	}
+	
+	public void subHumanity(int sub){
+		humanity -= sub;
+	}
+	
+	public FactionStats getFaction(){
+		return faction;
+	}
+	
+	public void setFaction(FactionStats faction){
+		this.faction = faction;
+	}
+	
+	public void setFaction(Faction faction){
+		setFaction(faction, 0);
+	}
+	
+	public void setFaction(Faction faction, int level){
+		this.faction = new FactionStats(faction, level);
+	}
 
 	public Hair getHair(){
-		return (Hair)equipped[ItemEquippable.SLOT_HAIR];
+		return (Hair)equipped[ItemEquippable.SLOT_HAIR].getItem();
 	}
 
 	public int getHealth(){
@@ -99,7 +138,7 @@ public class EntityLiving extends Entity{
 	public int getMaxHealth(){
 		return stats.getMaxHealth(maxHealth);
 	}
-	
+
 	public int getMaxHealthUnmodified(){
 		return maxHealth;
 	}
@@ -123,30 +162,36 @@ public class EntityLiving extends Entity{
 	public float getTotalDefence(){
 		float defence = 0f;
 		for(int i = 0; i < equipped.length; i++){
-			Item it = equipped[i];
+			ItemStack stack = equipped[i];
+			Item it = stack == null ? null : stack.getItem();
 			if(it instanceof Armour)
 				defence += ((Armour)it).getArmourValue();
 		}
 		return defence * EntityStats.fPointF(1f, stats.getDefence() * 10);
 	}
 
-	public void hurt(int amount){
+	public void hit(Game game, Entity user, Damage damage){
+		Object source0 = damage.getSource().pop();
+		if(source0 instanceof Weapon)
+			((Weapon)source0).onHit(game, user, this);
+		hurt((int)damage.getDamage());
+		for(int i = 0; i < equipped.length; i++){
+			ItemStack stack = equipped[i];
+			Item item = stack == null ? null : stack.getItem();
+			if(item instanceof Armour)
+				((Armour)item).onHit(game, user, this);
+		}
+	}
+
+	protected void hurt(int amount){
 		amount = (int)Math.abs(amount);
 		health -= amount;
 		if(health < 0)
 			health = 0;
 	}
 
-	public void hurt(Game game, EntityLiving user, Weapon weapon){
-		SuperCalc.attack(game, user, this, weapon);
-	}
-
 	public void addHealth(float amount){
 		health += amount;
-	}
-
-	public void removeHealth(float amount){
-		health -= amount;
 	}
 
 	public int getMagika(){
@@ -183,27 +228,27 @@ public class EntityLiving extends Entity{
 		velocityX += x;
 		velocityY += y;
 	}
-	
+
 	public float getVelocityX(){
 		return velocityX;
 	}
-	
+
 	public float getVelocityY(){
 		return velocityY;
 	}
-	
+
 	public void incVelocityX(float x){
 		this.velocityX += x;
 	}
-	
+
 	public void incVelocityY(float y){
 		this.velocityY += y;
 	}
-	
+
 	public void setVelocityX(float x){
 		this.velocityX = x;
 	}
-	
+
 	public void setVelocityY(float y){
 		this.velocityY = y;
 	}
@@ -216,37 +261,39 @@ public class EntityLiving extends Entity{
 	public EntityStats getStats(){
 		return stats;
 	}
-	
-	public void setStats(EntityStats stats){
+
+	public void setStats(EntityStats stats){ 
 		this.stats = stats;
 	}
 
-	public Item[] getEquipped(){
+	public ItemStack[] getEquipped(){
 		return equipped;
 	}
 
-	public Item getEquipped(int slot){
+	public ItemStack getEquipped(int slot){
 		return slot < 0 || slot >= equipped.length ? null : equipped[slot];
 	}
 
-	public void setEquipped(int slot, Item item){
-		if(equipped[slot] != item)
-			equippedCache = null;
+	public void setEquipped(int slot, ItemStack item){
+		ItemStack cEquip = equipped[slot];
+		if((cEquip != null && item == null) || (cEquip == null && item != null) || (cEquip != null && item != null && item.getItem() != cEquip.getItem())){
+			resetCache();
+		}
 		equipped[slot] = item;
 	}
 
-	public int getSlot(Item item){
+	public int getSlot(ItemStack item){
 		for(int i = 0; i < equipped.length; i++)
 			if(equipped[i] == item)
 				return i;
 		return -1;
 	}
 
-	public Item getEquippedItem(int slot){
+	public ItemStack getEquippedItem(int slot){
 		return getEquipped(slot);
 	}
 
-	public boolean isEquipped(Item item){
+	public boolean isEquipped(ItemStack item){
 		return getSlot(item) > -1;
 	}
 
@@ -314,14 +361,6 @@ public class EntityLiving extends Entity{
 		effects.add(nEffect);
 	}
 
-	public float getLastX(){
-		return lastX;
-	}
-
-	public float getlastY(){
-		return lastY;
-	}
-
 	public static final String BATTLE_PACKAGE = "net.site40.rodit.tinyrpg.game.battle";
 	@SuppressWarnings("unchecked")
 	@Override
@@ -351,7 +390,7 @@ public class EntityLiving extends Entity{
 			String itemName = equip.getAttribute("item");
 			int slot = Util.tryGetSlot(equip.getAttribute("slot"), -1);
 			if(slot >= 0 && slot < this.equipped.length)
-				this.equipped[slot] = Item.get(itemName);
+				this.equipped[slot] = inventory.getExistingStack(Item.get(itemName));
 		}
 
 		NodeList attackNodes = root.getElementsByTagName("attack");
@@ -388,17 +427,18 @@ public class EntityLiving extends Entity{
 		this.magika = in.readInt();
 		this.stats = new EntityStats();
 		stats.load(in);
-		this.equipped = new Item[10];
+		this.equipped = new ItemStack[10];
 		for(int i = 0; i < ItemEquippable.SLOT_HAIR; i++){
-			Item item = Item.get(in.readString());
-			setEquipped(i, item);
-			if(item != null)
-				item.onEquip(game, this);
+			int stackIndex = in.readInt();
+			ItemStack stack = stackIndex > -1 ? inventory.getItemStackByIndex(stackIndex) : null;
+			setEquipped(i, stack);
+			if(stack != null)
+				stack.getItem().onEquip(game, this);
 		}
 		Hair hair = new Hair();
 		hair.setId(in.readInt());
 		hair.setColor(in.readString());
-		this.equipped[ItemEquippable.SLOT_HAIR] = hair;
+		this.equipped[ItemEquippable.SLOT_HAIR] = new ItemStack(hair, 1);
 		this.attacks = new ArrayList<Attack>();
 		int attackCount = in.readInt();
 		int attackRead = 0;
@@ -422,8 +462,10 @@ public class EntityLiving extends Entity{
 		}
 		this.drawEquipmentOverlay = in.readBoolean();
 		this.displayName = in.readString();
+		this.humanity = in.readInt();
+		this.faction.load(in);
 	}
-	
+
 	@Override
 	public void save(TinyOutputStream out)throws IOException{
 		super.save(out);
@@ -432,8 +474,8 @@ public class EntityLiving extends Entity{
 		out.write(magika);
 		stats.save(out);
 		for(int i = 0; i < ItemEquippable.SLOT_HAIR; i++)
-			out.writeString(equipped[i] == null ? "null" : equipped[i].getName());
-		Hair hair = (Hair)equipped[ItemEquippable.SLOT_HAIR];
+			out.write(equipped[i] == null ? -1 : inventory.getIndexByItemStack(equipped[i]));
+		Hair hair = (Hair)equipped[ItemEquippable.SLOT_HAIR].getItem();
 		out.write(hair.getId());
 		out.writeString(hair.getColor());
 		out.write(attacks.size());
@@ -446,97 +488,114 @@ public class EntityLiving extends Entity{
 		}
 		out.write(drawEquipmentOverlay);
 		out.writeString(displayName);
+		out.write(humanity);
+		faction.save(out);
 	}
 
+	private ArrayList<Effect> uEffRemove = new ArrayList<Effect>();
+	private float uNx, uNy;
 	@Override
 	public void update(Game game){
 		super.update(game);
 
-		ArrayList<Effect> effRemove = new ArrayList<Effect>();
+		uEffRemove.clear();
 		for(Effect effect : effects){
 			if(!effect.isStarted())
 				effect.start(game, this);
 			if(effect.isStopped())
-				effRemove.add(effect);
+				uEffRemove.add(effect);
 		}
-		effects.removeAll(effRemove);
+		effects.removeAll(uEffRemove);
 
 		if(health > getMaxHealth())
 			health = getMaxHealth();
 
 		if(velocityX != 0 || velocityY != 0){
 			moveState = MovementState.WALK;
-			resetCache();
 		}else{
 			moveState = MovementState.IDLE;
-			resetCache();
 		}
 
 		if(velocityX > 0){
 			direction = Direction.D_RIGHT;
-			resetCache();
 		}else if(velocityX < 0){
 			direction = Direction.D_LEFT;
-			resetCache();
-		}
-		
-		if(velocityY > 0){
-			direction = Direction.D_DOWN;
-			resetCache();
-		}else if(velocityY < 0){
-			direction = Direction.D_UP;
-			resetCache();
 		}
 
-		float nx = x + velocityX;
-		float ny = y + velocityY;
-		if(!isDead() && game.getMap() != null && game.getMap().checkMove(game, this, nx, ny)){
-			x = nx;
-			y = ny;
+		if(velocityY > 0){
+			direction = Direction.D_DOWN;
+		}else if(velocityY < 0){
+			direction = Direction.D_UP;
+		}
+
+		uNx = bounds.getX() + velocityX;
+		uNy = bounds.getY() + velocityY;
+		if(!isDead() && game.getMap() != null && game.getMap().checkMove(game, this, uNx, uNy)){
+			bounds.setX(uNx);
+			bounds.setY(uNy);
 		}
 
 		velocityX = velocityY = 0f;
-
-		lastX = x;
-		lastY = y;
 	}
 
-	@Override
 	public void resetCache(){
-		super.resetCache();
-		if(equippedCache != null){
-			synchronized(equippedCache){
-				equippedCache.recycle();
-				this.equippedCache = null;
+		if(equipCache != null){
+			synchronized(equipCache){
+				equipCache.clear();
 			}
 		}
 	}
-	
-	private Bitmap equippedCache;
+
+	private Animation equippedCache;
+	private HashMap<MovementState, HashMap<Direction, Animation>> equipCache = new HashMap<MovementState, HashMap<Direction, Animation>>();
 	@Override
 	public void draw(Game game, Canvas canvas){
-		super.draw(game, canvas);
-		if(equippedCache == null){
-			equippedCache = Bitmap.createBitmap((int)this.width, (int)this.height, Config.ARGB_8888);
-			
-			Canvas equippedCanvas = new Canvas(equippedCache);
-			((Hair)equipped[ItemEquippable.SLOT_HAIR]).drawSpriteOverlay(equippedCanvas, game, this, this.paint);
-			if(drawEquipmentOverlay){
-				for(int i = 0; i < equipped.length; i++){
-					Item item = equipped[i];
-					if(item instanceof ItemEquippable && i != ItemEquippable.SLOT_HAIR)
-						((ItemEquippable)item).drawSpriteOverlay(equippedCanvas, game, this, this.paint);
+		Object res = game.getResources().getObject(resource);
+		if(res instanceof SpriteSheet){
+			SpriteSheet sheet = (SpriteSheet)res;
+			equippedCache = null;
+			HashMap<Direction, Animation> bmpCache = equipCache.get(moveState);
+			if(bmpCache == null){
+				equipCache.put(moveState, bmpCache = new HashMap<Direction, Animation>());
+			}
+			equippedCache = bmpCache.get(direction);
+
+			if(equippedCache == null){
+				//equippedCache = Bitmap.createBitmap((int)this.width, (int)this.height, Config.ARGB_8888);
+
+				//Canvas equippedCanvas = new Canvas(equippedCache);
+				//((Hair)equipped[ItemEquippable.SLOT_HAIR]).drawSpriteOverlay(equippedCanvas, game, this, this.paint);
+				ArrayList<Animation> animations = new ArrayList<Animation>();
+				animations.add(sheet.getAnimation(moveState, direction));
+				animations.add(((SpriteSheet)game.getResources().getObject(((Hair)equipped[ItemEquippable.SLOT_HAIR].getItem()).getDefaultSpriteSheet())).getAnimation(moveState, direction));
+				if(drawEquipmentOverlay){
+					for(int i = 0; i < equipped.length; i++){
+						ItemStack stack = equipped[i];
+						Item item = stack == null ? null : stack.getItem();
+						if(item instanceof ItemEquippable && i != ItemEquippable.SLOT_HAIR){
+							SpriteSheet itemSheet = (SpriteSheet)game.getResources().getObject(((ItemEquippable)item).getDefaultSpriteSheet());
+							if(itemSheet != null)
+								animations.add(itemSheet.getAnimation(moveState, direction));
+							//((ItemEquippable)item).drawSpriteOverlay(equippedCanvas, game, this, this.paint);
+						}
+					}
+					if(moveState == MovementState.IDLE)
+						equippedCache = Animation.mergeSpriteIdleAnimations(animations.toArray(new Animation[0]));
+					else
+						equippedCache = Animation.mergeSpriteMoveAnimations(animations.toArray(new Animation[0]));
+				}
+				bmpCache.put(direction, equippedCache);
+			}
+
+			if(equippedCache != null){
+				synchronized(equippedCache){
+					canvas.drawBitmap(equippedCache.getFrame(game.getTime()), null, getBounds().get(), this.paint);
 				}
 			}
-		}
-
-		if(equippedCache != null){
-			synchronized(equippedCache){
-				canvas.drawBitmap(equippedCache, null, getBounds(), this.paint);
-			}
-		}
+		}else
+			super.draw(game, canvas);
 	}
-	
+
 	public void copy(EntityLiving entity){
 		super.copy(entity);
 		this.health = entity.health;
@@ -549,5 +608,6 @@ public class EntityLiving extends Entity{
 		this.effects = entity.effects;
 		this.drawEquipmentOverlay = entity.drawEquipmentOverlay;
 		this.displayName = entity.displayName;
+		this.humanity = entity.humanity;
 	}
 }

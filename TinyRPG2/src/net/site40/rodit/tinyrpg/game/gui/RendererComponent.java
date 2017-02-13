@@ -1,7 +1,7 @@
 package net.site40.rodit.tinyrpg.game.gui;
 
 import net.site40.rodit.tinyrpg.game.Game;
-import net.site40.rodit.tinyrpg.game.GameObject;
+import net.site40.rodit.tinyrpg.game.object.GameObject;
 import android.graphics.Canvas;
 
 public class RendererComponent extends Component{

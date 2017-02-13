@@ -1,9 +1,10 @@
 package net.site40.rodit.tinyrpg.game.entity;
 
-import android.graphics.RectF;
 import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.gui.windows.WindowContainer;
 import net.site40.rodit.tinyrpg.game.item.ItemStack;
+import net.site40.rodit.tinyrpg.game.render.Strings.GameData;
+import android.graphics.RectF;
 
 public class EntityItemDrop extends Entity{
 
@@ -25,17 +26,12 @@ public class EntityItemDrop extends Entity{
 	
 	@Override
 	public RectF getCollisionBounds(){
-		return getCollisionBounds(0f, 0f);
+		return GameData.EMPTY_RECT_F;
 	}
 	
 	@Override
 	public RectF getCollisionBounds(float x, float y){
-		return new RectF(0f, 0f, 0f, 0f);
-	}
-	
-	@Override
-	public RectF getTraceBounds(){
-		return new RectF(x, y, x + width, y + height);
+		return GameData.EMPTY_RECT_F;
 	}
 	
 	@Override

@@ -10,8 +10,8 @@ public class EagleTracer {
 	public Object trace(MapState map, Entity ent, float distance){
 		if(map == null)
 			return null;
-		float nx = ent.getCenterX();
-		float ny = ent.getCenterY();
+		float nx = ent.getBounds().getCenterX();
+		float ny = ent.getBounds().getCenterY();
 		if(ent.getDirection() == Direction.D_UP)
 			ny -= distance;
 		else if(ent.getDirection() == Direction.D_DOWN)

@@ -5,6 +5,7 @@ import java.util.regex.Pattern;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
+import android.graphics.RectF;
 
 public class Animation {
 
@@ -62,9 +63,8 @@ public class Animation {
 			frames[i].recycle();
 		frames = null;
 	}
-
-	public void load(String asset, ResourceManager resources){
-		String meta = new String(resources.readAsset(asset));
+	
+	public void loadDirect(String meta, ResourceManager resources){
 		String sheet = "";
 		int rows = 0;
 		int columns = 0;
@@ -94,7 +94,7 @@ public class Animation {
 		Bitmap sBmp = resources.readBitmap(sheet);
 		int width = sBmp.getWidth() / columns;
 		int height = sBmp.getHeight() / rows;
-		frames = new Bitmap[rows * columns];
+		frames = new Bitmap[length];
 		int k = 0;
 		int done = 0;
 		for(int y = 0; y < rows * height; y += height){
@@ -109,5 +109,30 @@ public class Animation {
 			}
 		}
 		this.delay = delay;
+	}
+
+	public void load(String asset, ResourceManager resources){
+		loadDirect(new String(resources.readAsset(asset)), resources);
+	}
+	
+	public static Animation mergeSpriteIdleAnimations(Animation... anims){
+		Bitmap merged = Bitmap.createBitmap(SpriteSheet.DEFAULT_WIDTH, SpriteSheet.DEFAULT_HEIGHT, Bitmap.Config.ARGB_8888);
+		Canvas canvas = new Canvas(merged);
+		for(int i = 0; i < anims.length; i++){
+			canvas.drawBitmap(anims[i].frames[0], null, SpriteSheet.DEFAULT_BOUNDS, null);
+		}
+		return new Animation(new Bitmap[] { merged }, true, Integer.MAX_VALUE);
+	}
+	
+	public static Animation mergeSpriteMoveAnimations(Animation... anims){
+		Bitmap[] merged = new Bitmap[3];
+		for(int i = 0; i < merged.length; i++){
+			merged[i] = Bitmap.createBitmap(SpriteSheet.DEFAULT_WIDTH, SpriteSheet.DEFAULT_HEIGHT, Bitmap.Config.ARGB_8888);
+			Canvas canvas = new Canvas(merged[i]);
+			for(int j = 0; j < anims.length; j++){
+				canvas.drawBitmap(anims[j].frames[i], null, SpriteSheet.DEFAULT_BOUNDS, null);
+			}
+		}
+		return new Animation(merged, true, SpriteSheet.DEFAULT_DELAY);
 	}
 }

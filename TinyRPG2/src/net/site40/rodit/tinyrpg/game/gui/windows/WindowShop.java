@@ -1,17 +1,22 @@
 package net.site40.rodit.tinyrpg.game.gui.windows;
 
 import net.site40.rodit.tinyrpg.game.Game;
-import net.site40.rodit.tinyrpg.game.entity.npc.TempShopOwner;
+import net.site40.rodit.tinyrpg.game.Values;
+import net.site40.rodit.tinyrpg.game.entity.Entity;
+import net.site40.rodit.tinyrpg.game.entity.EntityLiving;
 import net.site40.rodit.tinyrpg.game.item.Inventory.InventoryProvider;
 import net.site40.rodit.tinyrpg.game.item.ItemStack;
 import net.site40.rodit.tinyrpg.game.shop.Shop;
+import android.graphics.Paint.Align;
 
 public class WindowShop extends WindowContainer {
 	
 	private Shop shop;
+	private WindowComponent txtBuyerInfo;
+	private WindowComponent txtSellerInfo;
 	
-	public WindowShop(Game game, TempShopOwner owner, Shop shop){
-		super(game, owner);
+	public WindowShop(Game game, Shop shop){
+		super(game, shop.getInventoryOwner());
 		this.shop = shop;
 		initialize(game);
 	}
@@ -24,6 +29,32 @@ public class WindowShop extends WindowContainer {
 		super.initialize(game);
 		
 		txtTitle.setText("Shop");
+		
+		this.txtBuyerInfo = new WindowComponent("txtBuyerInfo");
+		txtBuyerInfo.setX(136);
+		txtBuyerInfo.setY(128);
+		txtBuyerInfo.getPaint().setTextAlign(Align.LEFT);
+		txtBuyerInfo.getPaint().setTextSize(Values.FONT_SIZE_SMALL);
+		txtBuyerInfo.setFlag(WindowComponent.FLAG_MULTILINE_TEXT, true);
+		add(txtBuyerInfo);
+		
+		this.txtSellerInfo = new WindowComponent("txtSellerInfo");
+		txtSellerInfo.setX(bounds.getWidth() - txtBuyerInfo.getBounds().getX());
+		txtSellerInfo.setY(txtBuyerInfo.getBounds().getY());
+		txtSellerInfo.getPaint().setTextAlign(Align.RIGHT);
+		txtSellerInfo.getPaint().setTextSize(Values.FONT_SIZE_SMALL);
+		txtSellerInfo.setFlag(WindowComponent.FLAG_MULTILINE_TEXT, true);
+		add(txtSellerInfo);
+	}
+	
+	@Override
+	public void update(Game game){
+		super.update(game);
+		
+		EntityLiving buyer = getProvider(PLAYER_KEY).getOwnerLiving();
+		Entity seller = shop.getOwner();
+		txtBuyerInfo.setText(buyer.getDisplayName() + "\n" + "Gold: " + buyer.getMoney());
+		txtSellerInfo.setText(seller.getDisplayName() + "\n" + "Gold: " + seller.getMoney());
 	}
 	
 	@Override
@@ -34,7 +65,7 @@ public class WindowShop extends WindowContainer {
 		ItemStack stack = info.provider.provide(InventoryProvider.TAB_ALL, info.page[info.selectedTab] * getItemsPerPage(slot.getProviderKey()) + slot.getIndex());
 		if(stack == null)
 			return;
-		WindowShopItemInfo itemWindow = new WindowShopItemInfo(game, stack, info);
+		WindowShopItemInfo itemWindow = new WindowShopItemInfo(game, shop, stack, info);
 		itemWindow.zIndex = 1;
 		game.getWindows().register(itemWindow);
 		itemWindow.show();

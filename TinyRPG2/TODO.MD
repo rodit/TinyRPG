@@ -1,8 +1,13 @@
 #TinyRPG TODO
 
+#####VITAL
+- Identify and fix memory leaks!
+  - These lead to crashes after a few minutes of the game being open.
+
 #####Forge System
 - Fix forge registry so upgrade window shows possible upgrades.
 - Add infusion system.
+- Change individual forge window to be bigger/appropriate size.
 
 #####Shops
 - ~~Fix shop system:~~

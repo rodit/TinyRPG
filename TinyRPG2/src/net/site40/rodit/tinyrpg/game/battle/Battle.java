@@ -1,28 +1,29 @@
 package net.site40.rodit.tinyrpg.game.battle;
 
-import static net.site40.rodit.tinyrpg.game.render.Strings.DIALOG_BATTLE_LOSE;
-import static net.site40.rodit.tinyrpg.game.render.Strings.DIALOG_BATTLE_WIN;
 import static net.site40.rodit.tinyrpg.game.render.Strings.getString;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
+import net.site40.rodit.tinyrpg.game.Game;
+import net.site40.rodit.tinyrpg.game.SuperCalc;
+import net.site40.rodit.tinyrpg.game.Values;
+import net.site40.rodit.tinyrpg.game.entity.EntityLiving;
+import net.site40.rodit.tinyrpg.game.entity.EntityPlayer;
+import net.site40.rodit.tinyrpg.game.event.EventReceiver.EventType;
+import net.site40.rodit.tinyrpg.game.map.Region;
+import net.site40.rodit.tinyrpg.game.map.Region.RegionLocale;
+import net.site40.rodit.tinyrpg.game.object.GameObject;
+import net.site40.rodit.tinyrpg.game.render.FlashMixer;
+import net.site40.rodit.tinyrpg.game.render.SpriteSheet.MovementState;
+import net.site40.rodit.tinyrpg.game.render.Strings;
+import net.site40.rodit.tinyrpg.game.util.Direction;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint.Align;
 import android.graphics.Paint.Style;
 import android.graphics.RectF;
-import net.site40.rodit.tinyrpg.game.Game;
-import net.site40.rodit.tinyrpg.game.GameObject;
-import net.site40.rodit.tinyrpg.game.Values;
-import net.site40.rodit.tinyrpg.game.entity.EntityLiving;
-import net.site40.rodit.tinyrpg.game.event.EventReceiver.EventType;
-import net.site40.rodit.tinyrpg.game.map.Region;
-import net.site40.rodit.tinyrpg.game.map.Region.RegionLocale;
-import net.site40.rodit.tinyrpg.game.render.FlashMixer;
-import net.site40.rodit.tinyrpg.game.render.SpriteSheet.MovementState;
-import net.site40.rodit.tinyrpg.game.util.Direction;
 
 public class Battle extends GameObject{
 
@@ -53,8 +54,11 @@ public class Battle extends GameObject{
 	private boolean ended;
 
 	private int[] memberIndexes;
+	
+	private boolean started = false;
 
 	public Battle(Region region, Team attack, Team defence){
+		setBounds(0, 0, 1280, 720);
 		this.region = region;
 		this.attack = attack;
 		this.defence = defence;
@@ -68,6 +72,8 @@ public class Battle extends GameObject{
 		this.turnTaken = false;
 
 		this.memberIndexes = new int[2];
+		
+		this.paint = null;
 	}
 
 	public int getStartingTurn(){
@@ -83,21 +89,28 @@ public class Battle extends GameObject{
 		deciding = false;
 	}
 
+	private long reward = 0l;
+	private boolean uIsThief = false;
 	protected void win(Game game, Team winner){
 		Team loser = getOpposition(winner);
-		long reward = 0l;
 		if(winner.getLeader().isPlayer()){
-			reward = loser.getLeader().getMoney() / 2L;
+			reward = loser.getLeader().getMoney() / 5l;
 			if(reward == 0)
 				reward = 1;
+			uIsThief = ((EntityPlayer)winner.getLeader()).getStartClass().equals("thief");
+			if(uIsThief)
+				reward *= SuperCalc.getThiefGoldBonusMulti(winner.getLeader().getStats());
 			winner.getLeader().addMoney(reward);
 			loser.getLeader().subtractMoney(reward);
-			game.getHelper().dialog(getString(DIALOG_BATTLE_WIN, reward));
+			game.getHelper().dialog(getString(Strings.Dialog.BATTLE_WIN, reward));
 		}else if(loser.getLeader().isPlayer()){
-			reward = loser.getLeader().getMoney() / 7L;
+			reward = loser.getLeader().getMoney() / 7l;
+			uIsThief = ((EntityPlayer)loser.getLeader()).getStartClass().equals("thief");
+			if(uIsThief)
+				reward /= 2l;
 			winner.getLeader().addMoney(reward);
 			loser.getLeader().subtractMoney(reward);
-			game.getHelper().dialog(getString(DIALOG_BATTLE_LOSE, reward));
+			game.getHelper().dialog(getString(Strings.Dialog.BATTLE_LOSE, reward));
 		}
 		game.getEvents().onEvent(game, EventType.BATTLE_END, this, winner);
 		ended = true;
@@ -178,9 +191,19 @@ public class Battle extends GameObject{
 		return alive;
 	}
 
+	public void start(){
+		this.started = true;
+	}
+	
 	private boolean firstUpdate = true;
+	private int uCIndex;
+	private int uMaxIndex;
+	private IBattleProvider uBattleProvider;
 	@Override
 	public void update(Game game){
+		if(!started)
+			return;
+		
 		if(firstUpdate){
 			game.getEvents().onEvent(game, EventType.BATTLE_START, this);
 			firstUpdate = false;
@@ -197,9 +220,9 @@ public class Battle extends GameObject{
 		}
 
 		if(turnTaken){
-			int cIndex = memberIndexes[turn];
-			int maxIndex = getMembers(turn).size() - 1;
-			if(cIndex >= maxIndex){
+			uCIndex = memberIndexes[turn];
+			uMaxIndex = getMembers(turn).size() - 1;
+			if(uCIndex >= uMaxIndex){
 				memberIndexes[turn] = 0;
 				turn = turn == ATTACK ? DEFENCE : ATTACK;
 			}else
@@ -207,15 +230,15 @@ public class Battle extends GameObject{
 			turnTaken = false;
 		}
 
-		IBattleProvider provider = getMembers(turn).get(memberIndexes[turn]).getBattleProvider();
-		if(provider == null)
+		uBattleProvider = getMembers(turn).get(memberIndexes[turn]).getBattleProvider();
+		if(uBattleProvider == null)
 			turnTaken = true;
 		else if(!deciding){
 			deciding = true;
-			if(provider.getEntity().isDead())
-				madeDecision(game, provider);
+			if(uBattleProvider.getEntity().isDead())
+				madeDecision(game, uBattleProvider);
 			else
-				provider.makeDecision(game, this);
+				uBattleProvider.makeDecision(game, this);
 		}
 	}
 
@@ -231,7 +254,9 @@ public class Battle extends GameObject{
 			new RectF(1280 - 256 - 64, 128, 1280 - 256, 128 + 64),
 			new RectF(1280 - 256 - 64, 512, 1280 - 256, 512 + 64)
 	};
-
+	
+	private Direction uDirection;
+	private MovementState uMoveState;
 	@Override
 	public void draw(Game game, Canvas canvas){
 		super.preRender(game, canvas);
@@ -239,86 +264,75 @@ public class Battle extends GameObject{
 		if(paint == null){
 			paint = Game.getDefaultPaint();
 			paint.setTextSize(14f);
+			resourceCache.setResource(resource = RegionLocale.getResource(region));
 		}
-
-		canvas.drawBitmap(game.getResources().getBitmap(RegionLocale.getResource(region)), null, new RectF(0, 0, 1280, 720), null);
-
+		
+		resourceCache.draw(game, canvas, this);
+		
 		for(int i = 0; i < defenceMembers.size(); i++){
 			EntityLiving ent = defenceMembers.get(i);
 			if(ent.isDead())
 				continue;
-			float ox = ent.getX();
-			float oy = ent.getY();
-			float ow = ent.getWidth();
-			float oh = ent.getHeight();
-			Direction od = ent.getDirection();
-			MovementState oms = ent.getMoveState();
-			RectF bounds = BOUNDS_DEFENCE[i];
-			ent.setX(bounds.left);
-			ent.setY(bounds.top);
-			ent.setWidth(bounds.width());
-			ent.setHeight(bounds.height());
+			bounds.getPooled0().set(ent.getBounds().get());
+			uDirection = ent.getDirection();
+			uMoveState = ent.getMoveState();
+			bounds.getPooled1().set(BOUNDS_DEFENCE[i]);
+			ent.getBounds().set(bounds.getPooled1());
 			ent.setDirection(Direction.D_RIGHT);
 			ent.setMoveState(MovementState.IDLE);
+			ent.invalidate();
 			ent.draw(game, canvas);
-			ent.setX(ox);
-			ent.setY(oy);
-			ent.setWidth(ow);
-			ent.setHeight(oh);
-			ent.setDirection(od);
-			ent.setMoveState(oms);
+			ent.getBounds().set(bounds.getPooled0());
+			ent.setDirection(uDirection);
+			ent.setMoveState(uMoveState);
 			paint.setColor(Color.RED);
 			paint.setStyle(Style.FILL);
-			canvas.drawRect(new RectF(bounds.left - 16, bounds.top - 32, bounds.right + 16, bounds.top - 16), paint);
+			bounds.getPooled0().set(bounds.getPooled1().left - 16, bounds.getPooled1().top - 32, bounds.getPooled1().right + 16, bounds.getPooled1().top - 16);
+			canvas.drawRect(bounds.getPooled0(), paint);
 			paint.setColor(Color.GREEN);
-			canvas.drawRect(new RectF(bounds.left - 16, bounds.top - 32, bounds.left - 16 + (bounds.width() + 32) * ent.getHealthRatio(), bounds.top - 16), paint);
+			bounds.getPooled0().set(bounds.getPooled1().left - 16, bounds.getPooled1().top - 32, bounds.getPooled1().left - 16 + (bounds.getPooled1().width() + 32) * ent.getHealthRatio(), bounds.getPooled1().top - 16);
+			canvas.drawRect(bounds.getPooled0(), paint);
 			paint.setColor(Color.WHITE);
 			paint.setTextSize(Values.FONT_SIZE_TINY);
 			paint.setTextAlign(Align.CENTER);
-			canvas.drawText(ent.getHealth() + "/" + ent.getMaxHealth(), bounds.left + bounds.width() / 2f, bounds.top - 8f, paint);
+			canvas.drawText(ent.getHealth() + "/" + ent.getMaxHealth(), bounds.getPooled1().centerX(), bounds.getPooled1().top - 48f, paint);
 		}
-
+		
 		for(int i = 0; i < attackMembers.size(); i++){
 			EntityLiving ent = attackMembers.get(i);
 			if(ent.isDead())
 				continue;
-			float ox = ent.getX();
-			float oy = ent.getY();
-			float ow = ent.getWidth();
-			float oh = ent.getHeight();
-			Direction od = ent.getDirection();
-			MovementState oms = ent.getMoveState();
-			RectF bounds = BOUNDS_ATTACK[i];
-			ent.setX(bounds.left);
-			ent.setY(bounds.top);
-			ent.setWidth(bounds.width());
-			ent.setHeight(bounds.height());
+			bounds.getPooled0().set(ent.getBounds().get());
+			uDirection = ent.getDirection();
+			uMoveState = ent.getMoveState();
+			bounds.getPooled1().set(BOUNDS_ATTACK[i]);
+			ent.getBounds().set(bounds.getPooled1());
 			ent.setDirection(Direction.D_LEFT);
 			ent.setMoveState(MovementState.IDLE);
+			ent.invalidate();
 			ent.draw(game, canvas);
-			ent.setX(ox);
-			ent.setY(oy);
-			ent.setWidth(ow);
-			ent.setHeight(oh);
-			ent.setDirection(od);
-			ent.setMoveState(oms);
+			ent.getBounds().set(bounds.getPooled0());
+			ent.setDirection(uDirection);
+			ent.setMoveState(uMoveState);
 			paint.setColor(Color.RED);
 			paint.setStyle(Style.FILL);
-			canvas.drawRect(new RectF(bounds.left - 16, bounds.top - 32, bounds.right + 16, bounds.top - 16), paint);
+			bounds.getPooled0().set(bounds.getPooled1().left - 16, bounds.getPooled1().top - 32, bounds.getPooled1().right + 16, bounds.getPooled1().top - 16);
+			canvas.drawRect(bounds.getPooled0(), paint);
 			paint.setColor(Color.GREEN);
-			canvas.drawRect(new RectF(bounds.left - 16, bounds.top - 32, bounds.left - 16 + (bounds.width() + 32) * ent.getHealthRatio(), bounds.top - 16), paint);
+			bounds.getPooled0().set(bounds.getPooled1().left - 16, bounds.getPooled1().top - 32, bounds.getPooled1().left - 16 + (bounds.getPooled1().width() + 32) * ent.getHealthRatio(), bounds.getPooled1().top - 16);
+			canvas.drawRect(bounds.getPooled0(), paint);
 			paint.setColor(Color.WHITE);
 			paint.setTextSize(Values.FONT_SIZE_TINY);
 			paint.setTextAlign(Align.CENTER);
-			canvas.drawText(ent.getHealth() + "/" + ent.getMaxHealth(), bounds.left + bounds.width() / 2f, bounds.top - 8f, paint);
+			canvas.drawText(ent.getHealth() + "/" + ent.getMaxHealth(), bounds.getPooled1().centerX(), bounds.getPooled1().top - 48f, paint);
 		}
-
+		
 		super.postRender(game, canvas);
 	}
-
+	
 	@Override
-	public RenderLayer getRenderLayer(){
-		return RenderLayer.TOP_ALL;
+	public int getRenderLayer(){
+		return RenderLayer.TOP_OVER_ALL;
 	}
 
 	@Override

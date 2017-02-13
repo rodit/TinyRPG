@@ -5,6 +5,7 @@ import java.util.HashMap;
 
 import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.entity.EntityLiving;
+import net.site40.rodit.tinyrpg.game.script.ScriptManager.KVP;
 
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Function;
@@ -83,7 +84,7 @@ public class Attack {
 	public void setScript(String script){
 		this.script = script;
 	}
-
+	
 	public float getDamage(){
 		return damage;
 	}
@@ -98,13 +99,13 @@ public class Attack {
 
 	public void initCallbacks(Game game){
 		if(!TextUtils.isEmpty(script) && jsOnUse == null)
-			game.getScripts().execute(game, script, new String[] { "self" }, new Object[] { this });
+			game.getScript().runScript(game, script, new KVP<Attack>("self", this));
 	}
-
+	
 	public void onUse(Game game, EntityLiving user, EntityLiving target){
 		initCallbacks(game);
 		if(jsOnUse != null)
-			game.getScripts().executeFunction(game, jsOnUse, this, new String[0], new Object[0], new Object[] { user, target });
+			game.getScript().runFunction(game, jsOnUse, this, KVP.EMPTY, user, target);
 	}
 
 	public void deserializeXmlElement(Element e){

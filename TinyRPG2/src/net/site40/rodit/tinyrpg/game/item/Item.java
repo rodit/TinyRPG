@@ -6,6 +6,7 @@ import java.util.HashMap;
 import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.entity.Entity;
 import net.site40.rodit.tinyrpg.game.event.EventReceiver.EventType;
+import net.site40.rodit.tinyrpg.game.script.ScriptManager.KVP;
 import net.site40.rodit.util.Util;
 
 import org.mozilla.javascript.Context;
@@ -84,6 +85,7 @@ public class Item {
 	protected Rarity rarity;
 	protected long value;
 	protected boolean stackable;
+	protected boolean small;
 	protected int stackSize;
 	private int level;
 	
@@ -103,6 +105,7 @@ public class Item {
 		this.rarity = rarity;
 		this.value = value;
 		this.stackable = true;
+		this.small = false;
 		this.stackSize = 99;
 		this.level = 1;
 	}
@@ -187,6 +190,14 @@ public class Item {
 		this.stackable = stackable;
 	}
 	
+	public boolean isSmall(){
+		return small;
+	}
+	
+	public void setSmall(boolean small){
+		this.small = small;
+	}
+	
 	public int getStackSize(){
 		return stackSize;
 	}
@@ -202,20 +213,20 @@ public class Item {
 	
 	public void initCallbacks(Game game){
 		if(!TextUtils.isEmpty(script) && jsOnEquip == null && jsOnUnEquip == null)
-			game.getScripts().execute(game, script, new String[] { "self" }, new Object[] { this });
+			game.getScript().runScript(game, script, new KVP<Item>("self", this));
 	}
 
 	public void onEquip(Game game, Entity ent){
 		initCallbacks(game);
 		if(jsOnEquip != null)
-			game.getScripts().executeFunction(game, jsOnEquip, this, new String[0], new Object[0], new Object[] { ent });
+			game.getScript().runFunction(game, jsOnEquip, this, KVP.EMPTY, ent);
 		game.getEvents().onEvent(game, EventType.ITEM_EQUIP, this, ent);
 	}
 	
 	public void onUnEquip(Game game, Entity ent){
 		initCallbacks(game);
 		if(jsOnUnEquip != null)
-			game.getScripts().executeFunction(game, jsOnUnEquip, this, new String[0], new Object[0], new Object[] { ent });
+			game.getScript().runFunction(game, jsOnUnEquip, this, KVP.EMPTY, ent);
 		game.getEvents().onEvent(game, EventType.ITEM_UNEQUIP, this, ent);
 	}
 	
@@ -228,6 +239,7 @@ public class Item {
 		setRarity(Rarity.fromString(e.getAttribute("rarity")));
 		setValue(Util.tryGetLong(e.getAttribute("value")));
 		setStackable(Util.tryGetBool(e.getAttribute("stackable"), true));
+		setSmall(Util.tryGetBool(e.getAttribute("small"), false));
 		setStackSize(Util.tryGetInt(e.getAttribute("stackSize"), 99));
 		String lvlAttrib = e.getAttribute("level");
 		if(!TextUtils.isEmpty(lvlAttrib))

@@ -51,7 +51,7 @@ public class WindowContainer extends WindowSlotted{
 		this.txtTitle = new WindowComponent("txtTitle");
 		txtTitle.setText("Container");
 		txtTitle.getPaint().setTextSize(Values.FONT_SIZE_MEDIUM);
-		txtTitle.setX(this.getWidth() / 2f);
+		txtTitle.setX(bounds.getWidth() / 2f);
 		txtTitle.setY(92f);
 		add(txtTitle);
 		
@@ -61,17 +61,18 @@ public class WindowContainer extends WindowSlotted{
 				addSlot(OFFSET_X + x * WindowSlot.SLOT_WIDTH - X_SUB, OFFSET_Y + y * WindowSlot.SLOT_HEIGHT, PLAYER_KEY, "player_inv_" + k++);
 		
 		txtPageNoPlayer = new WindowComponent("txtPageNoPlayer");
-		txtPageNoPlayer.setX(1148 - getX() - X_SUB);
-		txtPageNoPlayer.setY(412 - getY());
+		txtPageNoPlayer.setX(1148 - bounds.getX() - X_SUB);
+		txtPageNoPlayer.setY(412 - bounds.getY());
 		txtPageNoPlayer.setText("1/1");
 		txtPageNoPlayer.getPaint().setTextSize(Values.FONT_SIZE_SMALL);
 		txtPageNoPlayer.addListener(new WindowListener(){
+			private String uPage;
 			public void update(Game game, WindowComponent component){
 				ProviderInfo info = getProviderInfo(PLAYER_KEY);
 				if(info == null)
 					return;
-				String page = String.valueOf(info.page[info.selectedTab] + 1);
-				component.setText(page + "/" + getMaxPages(PLAYER_KEY, ITEMS_PER_PAGE));
+				uPage = String.valueOf(info.page[info.selectedTab] + 1);
+				component.setText(uPage + "/" + getMaxPages(PLAYER_KEY, ITEMS_PER_PAGE));
 			}
 		});
 		add(txtPageNoPlayer);
@@ -80,36 +81,38 @@ public class WindowContainer extends WindowSlotted{
 		btnPageUpPlayer = new WindowComponent("btnPageUpPlayer");
 		btnPageUpPlayer.setBackground(WindowComponent.STATE_IDLE, "gui/scroll_up.png");
 		btnPageUpPlayer.setBackground(WindowComponent.STATE_DOWN, "gui/scroll_up_selected.png");
-		btnPageUpPlayer.setX(1116 - getX() - X_SUB);
-		btnPageUpPlayer.setY(248 - getY());
+		btnPageUpPlayer.setX(1116 - bounds.getX() - X_SUB);
+		btnPageUpPlayer.setY(248 - bounds.getY());
 		btnPageUpPlayer.setWidth(72);
 		btnPageUpPlayer.setHeight(72);
 		btnPageUpPlayer.addListener(new WindowListener(){
+			private int uMaxPages;
 			public void touchUp(Game game, WindowComponent component){
-				int maxPages = getMaxPages(PLAYER_KEY, ITEMS_PER_PAGE);
+				uMaxPages = getMaxPages(PLAYER_KEY, ITEMS_PER_PAGE);
 				ProviderInfo info = getProviderInfo(PLAYER_KEY);
 				info.page[info.selectedTab]--;
 				if(info.page[info.selectedTab] == -1)
-					info.page[info.selectedTab] = (maxPages > 0 ? maxPages : 1) - 1;
-				txtPageNoPlayer.setText((info.page[info.selectedTab] + 1) + "/" + maxPages);
+					info.page[info.selectedTab] = (uMaxPages > 0 ? uMaxPages : 1) - 1;
+				txtPageNoPlayer.setText((info.page[info.selectedTab] + 1) + "/" + uMaxPages);
 			}
 		});
 		add(btnPageUpPlayer);
 
 		btnPageDownPlayer.setBackground(WindowComponent.STATE_IDLE, "gui/scroll_down.png");
 		btnPageDownPlayer.setBackground(WindowComponent.STATE_DOWN, "gui/scroll_down_selected.png");
-		btnPageDownPlayer.setX(1116 - getX() - X_SUB);
-		btnPageDownPlayer.setY(512 - getY());
+		btnPageDownPlayer.setX(1116 - bounds.getX() - X_SUB);
+		btnPageDownPlayer.setY(512 - bounds.getY());
 		btnPageDownPlayer.setWidth(72);
 		btnPageDownPlayer.setHeight(72);
 		btnPageDownPlayer.addListener(new WindowListener(){
+			private int uMaxPages;
 			public void touchUp(Game game, WindowComponent component){
-				int maxPages = getMaxPages(PLAYER_KEY, ITEMS_PER_PAGE);
+				uMaxPages = getMaxPages(PLAYER_KEY, ITEMS_PER_PAGE);
 				ProviderInfo info = getProviderInfo(PLAYER_KEY);
 				info.page[info.selectedTab]++;
-				if(info.page[info.selectedTab] >= maxPages)
+				if(info.page[info.selectedTab] >= uMaxPages)
 					info.page[info.selectedTab] = 0;
-				txtPageNoPlayer.setText((info.page[info.selectedTab] + 1) + "/" + maxPages);
+				txtPageNoPlayer.setText((info.page[info.selectedTab] + 1) + "/" + uMaxPages);
 			}
 		});
 		add(btnPageDownPlayer);
@@ -120,17 +123,18 @@ public class WindowContainer extends WindowSlotted{
 				addSlot(OFFSET_X + x * WindowSlot.SLOT_WIDTH, OFFSET_Y + y * WindowSlot.SLOT_HEIGHT, CONTAINER_KEY, "container_inv_" + k++);
 
 		txtPageNoContainer = new WindowComponent("txtPageNoContainer");
-		txtPageNoContainer.setX(1148 - getX());
-		txtPageNoContainer.setY(412 - getY());
+		txtPageNoContainer.setX(1148 - bounds.getX());
+		txtPageNoContainer.setY(412 - bounds.getY());
 		txtPageNoContainer.setText("1/1");
 		txtPageNoContainer.getPaint().setTextSize(Values.FONT_SIZE_SMALL);
 		txtPageNoContainer.addListener(new WindowListener(){
+			private String uPage;
 			public void update(Game game, WindowComponent component){
 				ProviderInfo info = getProviderInfo(CONTAINER_KEY);
 				if(info == null)
 					return;
-				String page = String.valueOf(info.page[info.selectedTab] + 1);
-				component.setText(page + "/" + getMaxPages(CONTAINER_KEY, ITEMS_PER_PAGE));
+				uPage = String.valueOf(info.page[info.selectedTab] + 1);
+				component.setText(uPage + "/" + getMaxPages(CONTAINER_KEY, ITEMS_PER_PAGE));
 			}
 		});
 		add(txtPageNoContainer);
@@ -139,36 +143,38 @@ public class WindowContainer extends WindowSlotted{
 		btnPageUpContainer = new WindowComponent("btnPageUpContainer");
 		btnPageUpContainer.setBackground(WindowComponent.STATE_IDLE, "gui/scroll_up.png");
 		btnPageUpContainer.setBackground(WindowComponent.STATE_DOWN, "gui/scroll_up_selected.png");
-		btnPageUpContainer.setX(1116 - getX());
-		btnPageUpContainer.setY(248 - getY());
+		btnPageUpContainer.setX(1116 - bounds.getX());
+		btnPageUpContainer.setY(248 - bounds.getY());
 		btnPageUpContainer.setWidth(72);
 		btnPageUpContainer.setHeight(72);
 		btnPageUpContainer.addListener(new WindowListener(){
+			private int uMaxPages;
 			public void touchUp(Game game, WindowComponent component){
-				int maxPages = getMaxPages(CONTAINER_KEY, ITEMS_PER_PAGE);
+				uMaxPages = getMaxPages(CONTAINER_KEY, ITEMS_PER_PAGE);
 				ProviderInfo info = getProviderInfo(CONTAINER_KEY);
 				info.page[info.selectedTab]--;
 				if(info.page[info.selectedTab] == -1)
-					info.page[info.selectedTab] = (maxPages > 0 ? maxPages : 1) - 1;
-				txtPageNoContainer.setText((info.page[info.selectedTab] + 1) + "/" + maxPages);
+					info.page[info.selectedTab] = (uMaxPages > 0 ? uMaxPages : 1) - 1;
+				txtPageNoContainer.setText((info.page[info.selectedTab] + 1) + "/" + uMaxPages);
 			}
 		});
 		add(btnPageUpContainer);
 
 		btnPageDownContainer.setBackground(WindowComponent.STATE_IDLE, "gui/scroll_down.png");
 		btnPageDownContainer.setBackground(WindowComponent.STATE_DOWN, "gui/scroll_down_selected.png");
-		btnPageDownContainer.setX(1116 - getX());
-		btnPageDownContainer.setY(512 - getY());
+		btnPageDownContainer.setX(1116 - bounds.getX());
+		btnPageDownContainer.setY(512 - bounds.getY());
 		btnPageDownContainer.setWidth(72);
 		btnPageDownContainer.setHeight(72);
 		btnPageDownContainer.addListener(new WindowListener(){
+			private int uMaxPages;
 			public void touchUp(Game game, WindowComponent component){
-				int maxPages = getMaxPages(CONTAINER_KEY, ITEMS_PER_PAGE);
+				uMaxPages = getMaxPages(CONTAINER_KEY, ITEMS_PER_PAGE);
 				ProviderInfo info = getProviderInfo(CONTAINER_KEY);
 				info.page[info.selectedTab]++;
-				if(info.page[info.selectedTab] >= maxPages)
+				if(info.page[info.selectedTab] >= uMaxPages)
 					info.page[info.selectedTab] = 0;
-				txtPageNoContainer.setText((info.page[info.selectedTab] + 1) + "/" + maxPages);
+				txtPageNoContainer.setText((info.page[info.selectedTab] + 1) + "/" + uMaxPages);
 			}
 		});
 		add(btnPageDownContainer);

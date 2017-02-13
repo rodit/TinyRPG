@@ -43,7 +43,7 @@ public class ControlButton extends Component{
 			break;
 		case MotionEvent.ACTION_MOVE:
 			if(!game.isShowingDialog() && game.getInput().allowMovement()){
-				boolean contains = getBoundsF().contains(event.getX(), event.getY());
+				boolean contains = bounds.get().contains(event.getX(), event.getY());
 				if(joystick && !contains)
 					game.getInput().setUp(game, key);
 				if(joystick && contains)

@@ -29,6 +29,8 @@ public class ItemStack {
 	
 	public void setAmount(int amount){
 		this.amount = amount;
+		if(this.amount < 0)
+			this.amount = 0;
 	}
 	
 	public void consume(){

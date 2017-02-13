@@ -1,7 +1,7 @@
 package net.site40.rodit.tinyrpg.game;
 
-import android.util.SparseArray;
 import net.site40.rodit.tinyrpg.game.event.EventReceiver.EventType;
+import android.util.SparseArray;
 
 public class Input {
 
@@ -14,7 +14,7 @@ public class Input {
 
 	private SparseArray<KeyState> keys;
 	private boolean allowMovement;
-
+	
 	public Input(){
 		this.keys = new SparseArray<KeyState>();
 		keys.put(KEY_UP, new KeyState());
@@ -24,23 +24,24 @@ public class Input {
 		keys.put(KEY_ACTION, new KeyState());
 		keys.put(KEY_MENU, new KeyState());
 	}
-	
+
 	public void setDown(Game game, int key){
-		KeyState state = new KeyState(KeyState.STATE_DOWN);
+		KeyState state = keys.get(key);
+		state.state = KeyState.STATE_DOWN;
 		state.stateChangeTime = game.getTime();
-		keys.put(key, state);
 		game.getEvents().onEvent(game, EventType.KEY_DOWN, key);
 	}
-	
+
 	public void setUp(Game game, int key){
-		KeyState state = new KeyState(KeyState.STATE_UP);
+		KeyState state = keys.get(key);
+		state.state = KeyState.STATE_UP;
 		state.stateChangeTime = game.getTime();
-		keys.put(key, state);
 		game.getEvents().onEvent(game, EventType.KEY_UP, key);
 	}
-	
+
 	public void setIdle(Game game, int key){
-		KeyState state = new KeyState(KeyState.STATE_IDLE);
+		KeyState state = keys.get(key);
+		state.state = KeyState.STATE_IDLE;
 		state.stateChangeTime = game.getTime();
 		keys.put(key, state);
 	}
@@ -48,11 +49,11 @@ public class Input {
 	public boolean isDown(int key){
 		return keys.get(key).state == KeyState.STATE_DOWN;
 	}
-	
+
 	public boolean isUp(int key){
 		return keys.get(key).state == KeyState.STATE_UP;
 	}
-	
+
 	public void update(Game game){
 		for(int i = 0; i < keys.size(); i++){
 			KeyState state = keys.get(i);
@@ -62,11 +63,11 @@ public class Input {
 			}
 		}
 	}
-	
+
 	public boolean allowMovement(){
 		return allowMovement;
 	}
-	
+
 	public void allowMovement(boolean allowMovement){
 		this.allowMovement = allowMovement;
 	}

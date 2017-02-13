@@ -17,17 +17,18 @@ public class EntityAI extends EntityLiving{
 		this.tasks = new ArrayList<AITask>();
 	}
 	
+	private ArrayList<AITask> uDoneTasks = new ArrayList<AITask>();
 	@Override
 	public void update(Game game){
 		super.update(game);
 		
-		ArrayList<AITask> doneTasks = new ArrayList<AITask>();
+		uDoneTasks.clear();
 		for(AITask task : tasks){
 			task.update(game);
 			if(task.isDone(game))
-				doneTasks.add(task);
+				uDoneTasks.add(task);
 		}
-		tasks.removeAll(doneTasks);
+		tasks.removeAll(uDoneTasks);
 	}
 	
 	@Override

@@ -2,18 +2,18 @@ package net.site40.rodit.tinyrpg.game.gui.windows;
 
 import java.util.ArrayList;
 
+import net.site40.rodit.tinyrpg.game.Game;
+import net.site40.rodit.tinyrpg.game.object.GameObject;
+import net.site40.rodit.util.RenderUtil;
 import android.graphics.Canvas;
 import android.graphics.Paint.Align;
 import android.graphics.RectF;
 import android.os.SystemClock;
+import android.text.StaticLayout;
 import android.text.TextUtils;
 import android.util.SparseArray;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
-import net.site40.rodit.tinyrpg.game.Game;
-import net.site40.rodit.tinyrpg.game.GameObject;
-import net.site40.rodit.tinyrpg.game.render.ResourceWrapper;
-import net.site40.rodit.util.RenderUtil;
 
 public class WindowComponent extends GameObject{
 
@@ -21,15 +21,11 @@ public class WindowComponent extends GameObject{
 	public static final int FLAG_DISABLED = 1;
 	public static final int FLAG_INVISIBLE = 2;
 	public static final int FLAG_MULTILINE_TEXT = 3;
+	public static final int FLAG_WRAPPED_TEXT = 4;
 
 	public static final int STATE_IDLE = 0;
 	public static final int STATE_DOWN = 1;
 	public static final int STATE_DISABLED = 2;
-
-	private float x;
-	private float y;
-	private float width;
-	private float height;
 
 	private Window parent;
 	private String name;
@@ -39,6 +35,9 @@ public class WindowComponent extends GameObject{
 	private boolean focus;
 	private String text;
 	private ArrayList<WindowListener> listeners;
+	
+	private String[] lineCache;
+	private StaticLayout multiLineDrawCache;
 
 	public WindowComponent(){
 		this("");
@@ -48,9 +47,7 @@ public class WindowComponent extends GameObject{
 		super();
 		paint.setTextAlign(Align.CENTER);
 		paint.setTextSize(12f);
-
-		this.x = y = width = height = 0;
-
+		
 		this.name = name;
 		this.flags = new boolean[8];
 		this.state = STATE_IDLE;
@@ -60,59 +57,17 @@ public class WindowComponent extends GameObject{
 		this.listeners = new ArrayList<WindowListener>();
 	}
 
-	public float getX(){
-		return x;
-	}
-
 	public float getScreenX(){
-		return (parent == null ? 0 : parent.getX()) + x;
-	}
-
-	public void setX(float x){
-		this.x = x;
-	}
-
-	public float getY(){
-		return y;
+		return (parent == null ? 0 : parent.getBounds().getX()) + bounds.getX();
 	}
 
 	public float getScreenY(){
-		return (parent == null ? 0 : parent.getY()) + y;
+		return (parent == null ? 0 : parent.getBounds().getY()) + bounds.getY();
 	}
-
-	public void setY(float y){
-		this.y = y;
-	}
-
-	public float getWidth(){
-		return width;
-	}
-
-	public void setWidth(float width){
-		this.width = width;
-	}
-
-	public float getHeight(){
-		return height;
-	}
-
-	public void setHeight(float height){
-		this.height = height;
-	}
-
-	public RectF getBoundsF(){
-		return new RectF(getX(), getY(), getX() + getWidth(), getY() + getHeight());
-	}
-
+	
 	public RectF getScreenBoundsF(){
-		return new RectF(getScreenX(), getScreenY(), getScreenX() + getWidth(), getScreenY() + getHeight());
-	}
-
-	public void setBounds(float x, float y, float width, float height){
-		this.x = x;
-		this.y = y;
-		this.width = width;
-		this.height = height;
+		bounds.getPooled0().set(getScreenX(), getScreenY(), getScreenX() + bounds.getWidth(), getScreenY() + bounds.getHeight());
+		return bounds.getPooled0();
 	}
 
 	public Window getParent(){
@@ -192,8 +147,12 @@ public class WindowComponent extends GameObject{
 	public String getText(){
 		return text;
 	}
-
+	
 	public void setText(String text){
+		if(lineCache == null || multiLineDrawCache == null || !this.text.equals(text)){
+			lineCache = text.split("\n");
+			multiLineDrawCache = RenderUtil.getStaticLayout(text, (int)bounds.getWidth(), paint);
+		}
 		this.text = text;
 	}
 
@@ -213,7 +172,7 @@ public class WindowComponent extends GameObject{
 		long downTime = SystemClock.uptimeMillis();
 		long eventTime = SystemClock.uptimeMillis() + 100;
 		int metaState = 0;
-		MotionEvent motionEvent = MotionEvent.obtain(downTime, eventTime, type, x, y, metaState);
+		MotionEvent motionEvent = MotionEvent.obtain(downTime, eventTime, type, bounds.getX(), bounds.getY(), metaState);
 		touchInput(game, motionEvent);
 		motionEvent.recycle();
 	}
@@ -288,33 +247,43 @@ public class WindowComponent extends GameObject{
 		if(getFlag(FLAG_INVISIBLE))
 			return;
 
-		super.preRender(game, canvas);
+		if(Game.USE_OPENGL){
+			float drawX = getScreenX();
+			float drawY = getScreenY();
+			
+			
+		}else{
+			super.preRender(game, canvas);
 
-		float drawX = getScreenX();
-		float drawY = getScreenY();
-
-		String resource = getBackground(state);
-
-		ResourceWrapper wrapper = new ResourceWrapper(game.getResources().getObject(resource));
-		wrapper.draw(game, canvas, drawX, drawY, getWidth(), getHeight(), paint);
-		wrapper.dispose();
-
-		if(!TextUtils.isEmpty(text)){
-			if(paint.getTextAlign() == Align.CENTER){
-				drawX += getWidth() / 2f;
-				drawY += getHeight() / 2f + 10f;
+			float drawX = getScreenX();
+			float drawY = getScreenY();
+			bounds.getPooled0().set(drawX, drawY, drawX + bounds.getWidth(), drawY + bounds.getHeight());
+			
+			String resource = getBackground(state);
+			resourceCache.setResource(resource);
+			resourceCache.draw(game, canvas, this, bounds.getPooled0());
+			
+			if(!TextUtils.isEmpty(text)){
+				if(paint.getTextAlign() == Align.CENTER){
+					drawX += bounds.getWidth() / 2f;
+					drawY += bounds.getHeight() / 2f + 10f;
+				}
+				if(getFlag(FLAG_MULTILINE_TEXT))
+					RenderUtil.drawMultilineText(game, canvas, lineCache, drawX, drawY, paint);
+				else if(getFlag(FLAG_WRAPPED_TEXT)){
+					canvas.translate(bounds.getX(), bounds.getY());
+					RenderUtil.drawWrappedTextMemorySafe(game, multiLineDrawCache, canvas);
+					canvas.translate(-bounds.getX(), -bounds.getY());
+				}else
+					canvas.drawText(text, drawX, drawY, paint);
 			}
-			if(getFlag(FLAG_MULTILINE_TEXT))
-				RenderUtil.drawMultilineText(game, canvas, text, drawX, drawY, paint);
-			else
-				canvas.drawText(text, drawX, drawY, paint);
-		}
 
-		super.postRender(game, canvas);
+			super.postRender(game, canvas);
+		}
 	}
 
 	@Override
-	public RenderLayer getRenderLayer(){ return RenderLayer.TOP_ALL; }
+	public int getRenderLayer(){ return RenderLayer.TOP_OVER_ALL; }
 
 	@Override
 	public boolean shouldScale(){ return false; }

@@ -1,7 +1,7 @@
 package net.site40.rodit.tinyrpg.game.render;
 
 import net.site40.rodit.tinyrpg.game.Game;
-import net.site40.rodit.tinyrpg.game.GameObject;
+import net.site40.rodit.tinyrpg.game.object.GameObject;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -56,7 +56,7 @@ public class TextRenderer extends GameObject{
 	}
 	
 	@Override
-	public RenderLayer getRenderLayer(){
+	public int getRenderLayer(){
 		return RenderLayer.TOP;
 	}
 	

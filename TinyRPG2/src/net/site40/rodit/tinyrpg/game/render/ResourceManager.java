@@ -8,6 +8,8 @@ import java.util.HashMap;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import net.site40.rodit.tinyrpg.game.Game;
+
 import org.w3c.dom.Document;
 
 import android.content.res.AssetManager;
@@ -16,7 +18,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.text.TextUtils;
 import android.util.Log;
-import net.site40.rodit.tinyrpg.game.Game;
 
 public class ResourceManager {
 
@@ -66,7 +67,7 @@ public class ResourceManager {
 				value = BitmapFactory.decodeByteArray(data, 0, data.length);
 			else if(key.endsWith(".ttf"))
 				value = readFont(key);
-			else if(key.endsWith(".txt") || key.endsWith(".js"))
+			else if(key.endsWith(".txt") || key.endsWith(".js") || key.endsWith(".def") || key.endsWith(".frag") || key.endsWith(".vert"))
 				value = readString(key);
 			else if(key.endsWith(".tmx"))
 				return XmlResourceLoader.loadMap(this, key);

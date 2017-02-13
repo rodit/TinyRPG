@@ -67,6 +67,10 @@ public class WindowTextBoxComponent extends WindowComponent{
 		return maxLength;
 	}
 	
+	public void setMaxLength(int maxLength){
+		this.maxLength = maxLength;
+	}
+	
 	public void openKeyboard(Game game){
 		initIM(game);
 		im.showSoftInput(game.getView(), InputMethodManager.SHOW_FORCED);
@@ -143,7 +147,7 @@ public class WindowTextBoxComponent extends WindowComponent{
 		canvas.drawRect(getScreenBoundsF(), paint);
 		paint.setColor(textColor);
 		if(!TextUtils.isEmpty(getText()))
-			canvas.drawText(this.getText(), getScreenX() + this.getWidth() / 2f, getScreenY() + this.getHeight() / 2f + 16f, paint);
+			canvas.drawText(this.getText(), getScreenX() + bounds.getWidth() / 2f, getScreenY() + bounds.getHeight() / 2f + 16f, paint);
 		paint.setColor(paintColor);
 		paint.setTextAlign(align);
 

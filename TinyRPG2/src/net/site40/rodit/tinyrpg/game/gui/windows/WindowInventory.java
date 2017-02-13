@@ -39,7 +39,7 @@ public class WindowInventory extends WindowSlotted{
 		this.txtTitle = new WindowComponent("txtTitle");
 		txtTitle.setText("Inventory");
 		txtTitle.getPaint().setTextSize(Values.FONT_SIZE_MEDIUM);
-		txtTitle.setX(this.getWidth() / 2f);
+		txtTitle.setX(bounds.getWidth() / 2f);
 		txtTitle.setY(78f);
 		add(txtTitle);
 
@@ -51,27 +51,28 @@ public class WindowInventory extends WindowSlotted{
 		for(int i = 0; i < 7; i++)
 			addTab(OFFSET_X + i * WindowTab.TAB_WIDTH, OFFSET_Y - WindowTab.TAB_HEIGHT, i, PLAYER_KEY);
 
-		addEquipmentSlot((OFFSET_X - getX()) / 2f + 92f - SLOT_WIDTH / 2f - getX(), 64f + SLOT_HEIGHT / 2f, PLAYER_KEY, ItemEquippable.SLOT_HELMET);
-		addEquipmentSlot((OFFSET_X - getX()) / 2f + 92f - SLOT_WIDTH / 2f - getX(), 64f + SLOT_HEIGHT + SLOT_HEIGHT / 2f, PLAYER_KEY, ItemEquippable.SLOT_CHEST);
-		addEquipmentSlot((OFFSET_X - getX()) / 2f + 92f - SLOT_WIDTH / 2f + SLOT_WIDTH - getX(), 64f + SLOT_HEIGHT, PLAYER_KEY, ItemEquippable.SLOT_SHOULDERS);
-		addEquipmentSlot((OFFSET_X - getX()) / 2f + 92f - SLOT_WIDTH / 2f - SLOT_WIDTH - getX(), 64f + SLOT_HEIGHT, PLAYER_KEY, ItemEquippable.SLOT_NECK);
-		addEquipmentSlot((OFFSET_X - getX()) / 2f + 92f - SLOT_WIDTH / 2f - SLOT_WIDTH / 2f - getX(), 64f + SLOT_HEIGHT * 3f, PLAYER_KEY, ItemEquippable.SLOT_FINGER_0);
-		addEquipmentSlot((OFFSET_X - getX()) / 2f + 92f - SLOT_WIDTH / 2f + SLOT_WIDTH / 2f - getX(), 64f + SLOT_HEIGHT * 3f, PLAYER_KEY, ItemEquippable.SLOT_FINGER_1);
-		addEquipmentSlot((OFFSET_X - getX()) / 2f + 92f - SLOT_WIDTH / 2f - SLOT_WIDTH - getX(), 64f + SLOT_HEIGHT * 2f, PLAYER_KEY, ItemEquippable.SLOT_HAND_0);
-		addEquipmentSlot((OFFSET_X - getX()) / 2f + 92f - SLOT_WIDTH / 2f + SLOT_WIDTH - getX(), 64f + SLOT_HEIGHT * 2f, PLAYER_KEY, ItemEquippable.SLOT_HAND_1);
+		addEquipmentSlot((OFFSET_X - bounds.getX()) / 2f + 92f - SLOT_WIDTH / 2f - bounds.getX(), 64f + SLOT_HEIGHT / 2f, PLAYER_KEY, ItemEquippable.SLOT_HELMET);
+		addEquipmentSlot((OFFSET_X - bounds.getX()) / 2f + 92f - SLOT_WIDTH / 2f - bounds.getX(), 64f + SLOT_HEIGHT + SLOT_HEIGHT / 2f, PLAYER_KEY, ItemEquippable.SLOT_CHEST);
+		addEquipmentSlot((OFFSET_X - bounds.getX()) / 2f + 92f - SLOT_WIDTH / 2f + SLOT_WIDTH - bounds.getX(), 64f + SLOT_HEIGHT, PLAYER_KEY, ItemEquippable.SLOT_SHOULDERS);
+		addEquipmentSlot((OFFSET_X - bounds.getX()) / 2f + 92f - SLOT_WIDTH / 2f - SLOT_WIDTH - bounds.getX(), 64f + SLOT_HEIGHT, PLAYER_KEY, ItemEquippable.SLOT_NECK);
+		addEquipmentSlot((OFFSET_X - bounds.getX()) / 2f + 92f - SLOT_WIDTH / 2f - SLOT_WIDTH / 2f - bounds.getX(), 64f + SLOT_HEIGHT * 3f, PLAYER_KEY, ItemEquippable.SLOT_FINGER_0);
+		addEquipmentSlot((OFFSET_X - bounds.getX()) / 2f + 92f - SLOT_WIDTH / 2f + SLOT_WIDTH / 2f - bounds.getX(), 64f + SLOT_HEIGHT * 3f, PLAYER_KEY, ItemEquippable.SLOT_FINGER_1);
+		addEquipmentSlot((OFFSET_X - bounds.getX()) / 2f + 92f - SLOT_WIDTH / 2f - SLOT_WIDTH - bounds.getX(), 64f + SLOT_HEIGHT * 2f, PLAYER_KEY, ItemEquippable.SLOT_HAND_0);
+		addEquipmentSlot((OFFSET_X - bounds.getX()) / 2f + 92f - SLOT_WIDTH / 2f + SLOT_WIDTH - bounds.getX(), 64f + SLOT_HEIGHT * 2f, PLAYER_KEY, ItemEquippable.SLOT_HAND_1);
 		
 		txtPageNo = new WindowComponent("txtPageNo");
-		txtPageNo.setX(1148 - getX());
-		txtPageNo.setY(412 - getY());
+		txtPageNo.setX(1148 - bounds.getX());
+		txtPageNo.setY(412 - bounds.getY());
 		txtPageNo.setText("1/1");
 		txtPageNo.getPaint().setTextSize(Values.FONT_SIZE_SMALL);
 		txtPageNo.addListener(new WindowListener(){
+			private String uPage;
 			public void update(Game game, WindowComponent component){
 				ProviderInfo info = getProviderInfo(PLAYER_KEY);
 				if(info == null)
 					return;
-				String page = String.valueOf(info.page[info.selectedTab] + 1);
-				component.setText(page + "/" + getMaxPages(PLAYER_KEY, ITEMS_PER_PAGE));
+				uPage = String.valueOf(info.page[info.selectedTab] + 1);
+				component.setText(uPage + "/" + getMaxPages(PLAYER_KEY, ITEMS_PER_PAGE));
 			}
 		});
 		add(txtPageNo);
@@ -80,36 +81,38 @@ public class WindowInventory extends WindowSlotted{
 		btnPageUp = new WindowComponent("btnPageUp");
 		btnPageUp.setBackground(WindowComponent.STATE_IDLE, "gui/scroll_up.png");
 		btnPageUp.setBackground(WindowComponent.STATE_DOWN, "gui/scroll_up_selected.png");
-		btnPageUp.setX(1116 - getX());
-		btnPageUp.setY(248 - getY());
+		btnPageUp.setX(1116 - bounds.getX());
+		btnPageUp.setY(248 - bounds.getY());
 		btnPageUp.setWidth(72);
 		btnPageUp.setHeight(72);
 		btnPageUp.addListener(new WindowListener(){
+			private int uMaxPages;
 			public void touchUp(Game game, WindowComponent component){
-				int maxPages = getMaxPages(PLAYER_KEY, ITEMS_PER_PAGE);
+				uMaxPages = getMaxPages(PLAYER_KEY, ITEMS_PER_PAGE);
 				ProviderInfo info = getProviderInfo(PLAYER_KEY);
 				info.page[info.selectedTab]--;
 				if(info.page[info.selectedTab] == -1)
-					info.page[info.selectedTab] = (maxPages > 0 ? maxPages : 1) - 1;
-				txtPageNo.setText((info.page[info.selectedTab] + 1) + "/" + maxPages);
+					info.page[info.selectedTab] = (uMaxPages > 0 ? uMaxPages : 1) - 1;
+				txtPageNo.setText((info.page[info.selectedTab] + 1) + "/" + uMaxPages);
 			}
 		});
 		add(btnPageUp);
 
 		btnPageDown.setBackground(WindowComponent.STATE_IDLE, "gui/scroll_down.png");
 		btnPageDown.setBackground(WindowComponent.STATE_DOWN, "gui/scroll_down_selected.png");
-		btnPageDown.setX(1116 - getX());
-		btnPageDown.setY(512 - getY());
+		btnPageDown.setX(1116 - bounds.getX());
+		btnPageDown.setY(512 - bounds.getY());
 		btnPageDown.setWidth(72);
 		btnPageDown.setHeight(72);
 		btnPageDown.addListener(new WindowListener(){
+			private int uMaxPages;
 			public void touchUp(Game game, WindowComponent component){
-				int maxPages = getMaxPages(PLAYER_KEY, ITEMS_PER_PAGE);
+				uMaxPages = getMaxPages(PLAYER_KEY, ITEMS_PER_PAGE);
 				ProviderInfo info = getProviderInfo(PLAYER_KEY);
 				info.page[info.selectedTab]++;
-				if(info.page[info.selectedTab] >= maxPages)
+				if(info.page[info.selectedTab] >= uMaxPages)
 					info.page[info.selectedTab] = 0;
-				txtPageNo.setText((info.page[info.selectedTab] + 1) + "/" + maxPages);
+				txtPageNo.setText((info.page[info.selectedTab] + 1) + "/" + uMaxPages);
 			}
 		});
 		add(btnPageDown);

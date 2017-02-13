@@ -4,7 +4,6 @@ import net.site40.rodit.tinyrpg.game.Game;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint.Style;
-import android.graphics.RectF;
 
 public class FadeInEffect extends PPEffect implements IChainableEffect{
 	
@@ -55,7 +54,8 @@ public class FadeInEffect extends PPEffect implements IChainableEffect{
 		if(alpha > 255 || alpha < 0)
 			alpha = lastAlpha;
 		paint.setAlpha(alpha);
-		canvas.drawRect(new RectF(0, 0, 1280, 720), paint);
+		bounds.set(0, 0, 1280, 720);
+		canvas.drawRect(bounds.get(), paint);
 		lastAlpha = alpha;
 	}
 	

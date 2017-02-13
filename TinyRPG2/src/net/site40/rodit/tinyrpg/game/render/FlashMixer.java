@@ -1,8 +1,8 @@
 package net.site40.rodit.tinyrpg.game.render;
 
 import net.site40.rodit.tinyrpg.game.Game;
-import net.site40.rodit.tinyrpg.game.IGameObject;
 import net.site40.rodit.tinyrpg.game.IPaintMixer;
+import net.site40.rodit.tinyrpg.game.object.GameObject;
 import android.graphics.Canvas;
 
 public class FlashMixer implements IPaintMixer{
@@ -19,7 +19,7 @@ public class FlashMixer implements IPaintMixer{
 	}
 	
 	@Override
-	public void preRender(Game game, Canvas canvas, IGameObject object){
+	public void preRender(Game game, Canvas canvas, GameObject object){
 		if(start == -1L)
 			start = game.getTime();
 		if(game.getTime() - start >= life){
@@ -36,5 +36,5 @@ public class FlashMixer implements IPaintMixer{
 	}
 	
 	@Override
-	public void postRender(Game game, Canvas canvas, IGameObject object){}
+	public void postRender(Game game, Canvas canvas, GameObject object){}
 }

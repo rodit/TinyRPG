@@ -91,7 +91,7 @@ public class MobSpawnRegistry{
 
 		public Battle encounter(Game game, Team defence){
 			EntityLiving member = defence.getMembers().get(0);
-			return game.getHelper().battle(game.getMap().getMap().getRegion(member.getX(), member.getY()), genAttack(game), defence);
+			return game.getHelper().battle(game.getMap().getMap().getRegion(member.getBounds().getX(), member.getBounds().getY()), genAttack(game), defence);
 		}
 
 		protected Team genAttack(Game game){

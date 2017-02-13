@@ -44,12 +44,21 @@ public abstract class MovementProvider {
 		private long startTime;
 		private float startX;
 		private float startY;
-
+		
 		public void alignToTile(EntityPlayer player){
-			if(moveTiles < 1 && (player.getX() % (float)TILE_WIDTH != 0f || player.getY() % (float)TILE_WIDTH != 0f)){
-				player.setX(round(player.getX(), 16));
-				player.setY(round(player.getY(), 16));
+			if(moveTiles < 1 && (player.getBounds().getX() % (float)TILE_WIDTH != 0f || player.getBounds().getY() % (float)TILE_WIDTH != 0f)){
+				player.setX(round(player.getBounds().getX(), 16));
+				player.setY(round(player.getBounds().getY(), 16));
 			}
+		}
+		
+		public void setMovement(Game game, EntityPlayer player, Direction moveDir, int moveTiles){
+			this.moveDir = moveDir;
+			this.moveTiles = moveTiles;
+			this.startX = player.getBounds().getX();
+			this.startY = player.getBounds().getY();
+			this.startTime = game.getTime();
+			player.setMoveState(MovementState.WALK);
 		}
 		
 		public int round(double i, int v){
@@ -62,7 +71,7 @@ public abstract class MovementProvider {
 				return;
 			Input input = game.getInput();
 			if(moveTiles < 1 && game.getTime() - lastTileLand >= TILE_MOVE_DELAY){
-				if(input.allowMovement()){
+				if(input.allowMovement() && !game.isShowingDialog()){
 					boolean move = false;
 					if(input.isDown(Input.KEY_UP)){
 						moveDir = Direction.D_UP;
@@ -82,8 +91,8 @@ public abstract class MovementProvider {
 					}
 					if(move){
 						player.setDirection(moveDir);
-						float newX = player.getX();
-						float newY = player.getY();
+						float newX = player.getBounds().getX();
+						float newY = player.getBounds().getY();
 						switch(moveDir){
 						case D_UP:
 							newY -= TILE_HEIGHT;
@@ -100,34 +109,34 @@ public abstract class MovementProvider {
 						}
 						if(game.getMap().checkMove(game, player, newX, newY)){
 							moveTiles = 1;
-							startX = player.getX();
-							startY = player.getY();
+							startX = player.getBounds().getX();
+							startY = player.getBounds().getY();
 							startTime = game.getTime();
 							player.setMoveState(MovementState.WALK);
 						}
 					}
 				}
-			}else if(moveTiles > 0 && moveDir != null){
+			}else if(input.allowMovement() && moveTiles > 0 && moveDir != null){
 				long diff = game.getTime() - startTime;
-				float totalTime = ((float)TILE_WIDTH / (player.getStats().getSpeed() * SPEED_MULTI));
+				float totalTime = ((float)TILE_WIDTH / (2f * SPEED_MULTI));
 				float fact = (float)diff / totalTime;
 				float distance = Math.min(fact * (float)TILE_WIDTH, TILE_WIDTH);
 				switch(moveDir){
 				case D_UP:
 					player.setY(startY - distance);
-					player.setVelocityY(-0.00001f);
+					player.setVelocityY(-Float.MIN_NORMAL);//-0.00001f);
 					break;
 				case D_DOWN:
 					player.setY(startY + distance);
-					player.setVelocityY(0.00001f);
+					player.setVelocityY(Float.MIN_NORMAL);//0.00001f);
 					break;
 				case D_LEFT:
 					player.setX(startX - distance);
-					player.setVelocityX(-0.00001f);
+					player.setVelocityX(-Float.MIN_NORMAL);//-0.00001f);
 					break;
 				case D_RIGHT:
 					player.setX(startX + distance);
-					player.setVelocityX(0.00001f);
+					player.setVelocityX(Float.MIN_NORMAL);//0.00001f);
 					break;
 				}
 				if(distance >= (float)TILE_WIDTH){
@@ -135,6 +144,13 @@ public abstract class MovementProvider {
 					moveTiles--;
 					lastTileLand = game.getTime();
 					player.setMoveState(MovementState.IDLE);
+					this.alignToTile(player);
+					if(moveTiles > 0){
+						startX = player.getBounds().getX();
+						startY = player.getBounds().getY();
+						startTime = game.getTime();
+						player.setMoveState(MovementState.WALK);
+					}
 				}
 			}
 		}

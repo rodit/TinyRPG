@@ -1,15 +1,13 @@
 package net.site40.rodit.tinyrpg.game.script;
 
-import static net.site40.rodit.tinyrpg.game.render.MM.EMPTY_OBJECT_ARRAY;
-import static net.site40.rodit.tinyrpg.game.render.MM.EMPTY_STRING_ARRAY;
-
-import org.mozilla.javascript.Function;
-
 import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.entity.EntityLiving;
 import net.site40.rodit.tinyrpg.game.entity.MovementProvider;
+import net.site40.rodit.tinyrpg.game.script.ScriptManager.KVP;
 import net.site40.rodit.tinyrpg.game.util.Direction;
 import net.site40.rodit.util.Util;
+
+import org.mozilla.javascript.Function;
 
 public class CutseneHelper {
 
@@ -43,7 +41,7 @@ public class CutseneHelper {
 						e.printStackTrace();
 					}
 				}
-				game.getScripts().executeFunction(game, onComplete, null, EMPTY_STRING_ARRAY, EMPTY_OBJECT_ARRAY, args);
+				game.getScript().runFunction(game, onComplete, null, KVP.EMPTY, args);
 			}
 		}.start();
 	}

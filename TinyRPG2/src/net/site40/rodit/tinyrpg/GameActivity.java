@@ -1,6 +1,7 @@
 package net.site40.rodit.tinyrpg;
 
 import net.site40.rodit.tinyrpg.game.Game;
+import net.site40.rodit.tinyrpg.game.render.gl.RoditGL;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
@@ -20,6 +21,7 @@ public class GameActivity extends Activity {
 	private Game game;
 
 	private GLSurfaceView glSurfaceView;
+	private RoditGL rodit;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -28,13 +30,17 @@ public class GameActivity extends Activity {
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 
-		//this.glSurfaceView = new GLSurfaceView(this);
-		//glSurfaceView.setEGLContextClientVersion(2);
-		//glSurfaceView.setRenderer(new RGLRenderer(game = new Game(getApplicationContext(), glSurfaceView)));
-		//setContentView(glSurfaceView);
-		if(view == null){
-			this.view = new GameView(getApplicationContext(), this);
-			setContentView(view);
+		if(Game.USE_OPENGL){
+			this.glSurfaceView = new GLSurfaceView(this);
+			glSurfaceView.setEGLContextClientVersion(2);
+			glSurfaceView.setPreserveEGLContextOnPause(true);
+			glSurfaceView.setRenderer(new RoditGL(game = new Game(this, glSurfaceView)));
+			setContentView(glSurfaceView);
+		}else{
+			if(view == null){
+				this.view = new GameView(getApplicationContext(), this);
+				setContentView(view);
+			}
 		}
 	}
 

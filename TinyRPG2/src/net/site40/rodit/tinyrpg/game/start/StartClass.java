@@ -2,6 +2,7 @@ package net.site40.rodit.tinyrpg.game.start;
 
 import java.util.ArrayList;
 
+import net.site40.rodit.tinyrpg.game.entity.EntityPlayer;
 import net.site40.rodit.tinyrpg.game.entity.EntityStats;
 import net.site40.rodit.tinyrpg.game.item.Inventory;
 import net.site40.rodit.tinyrpg.game.item.Item;
@@ -22,9 +23,13 @@ public class StartClass {
 		if(!classes.contains(startClass))
 			classes.add(startClass);
 	}
-	
+
 	public void deregister(StartClass startClass){
 		classes.remove(startClass);
+	}
+
+	public static ArrayList<StartClass> getClasses(){
+		return classes;
 	}
 
 	private String name;
@@ -100,6 +105,17 @@ public class StartClass {
 	public void setStats(EntityStats stats){
 		this.stats = stats;
 	}
+	
+	public void apply(EntityPlayer player){
+		player.setInventory(new Inventory(startGearInv));
+		for(int i = 0; i < ItemEquippable.SLOT_HAIR; i++){
+			if(startGearEquip[i] != null)
+				player.getInventory().add(startGearEquip[i]);
+			player.setEquipped(i, player.getInventory().getExistingStack(startGearEquip[i]));
+		}
+		player.setStats(new EntityStats(stats));
+		player.setStartClass(name);
+	}
 
 	public void deserializeXmlElement(Element e){
 		this.name = e.getAttribute("name");
@@ -132,6 +148,7 @@ public class StartClass {
 			}else
 				startGearInv.add(item, amount);
 		}
+		stats.setLevel(Util.tryGetInt(e.getAttribute("level"), 1));
 		stats.setSpeed(Util.tryGetFloat(e.getAttribute("speed"), EntityStats.DEFAULT_STAT));
 		stats.setStrength(Util.tryGetFloat(e.getAttribute("strength"), EntityStats.DEFAULT_STAT));
 		stats.setDefence(Util.tryGetFloat(e.getAttribute("defence"), EntityStats.DEFAULT_STAT));

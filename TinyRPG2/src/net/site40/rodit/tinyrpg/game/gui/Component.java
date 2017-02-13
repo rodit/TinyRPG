@@ -2,18 +2,17 @@ package net.site40.rodit.tinyrpg.game.gui;
 
 import java.util.ArrayList;
 
+import net.site40.rodit.tinyrpg.game.Game;
+import net.site40.rodit.tinyrpg.game.object.Bounds;
+import net.site40.rodit.tinyrpg.game.object.GameObject;
+import net.site40.rodit.tinyrpg.game.render.Animation;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Paint.Align;
-import android.graphics.Rect;
-import android.graphics.RectF;
 import android.os.SystemClock;
 import android.text.TextUtils;
 import android.view.MotionEvent;
-import net.site40.rodit.tinyrpg.game.Game;
-import net.site40.rodit.tinyrpg.game.GameObject;
-import net.site40.rodit.tinyrpg.game.render.Animation;
 
 public class Component extends GameObject{
 
@@ -26,7 +25,6 @@ public class Component extends GameObject{
 	private String text;
 	private String background;
 	private String backgroundSelected;
-	private float x, y, width, height;
 	private Gui gui;
 	private ArrayList<ComponentListener> listeners;
 	private boolean selected;
@@ -103,58 +101,6 @@ public class Component extends GameObject{
 		this.backgroundSelected = backgroundSelected;
 	}
 
-	public void setBounds(float x, float y, float width, float height){
-		this.setX(x);
-		this.setY(y);
-		this.setWidth(width);
-		this.setHeight(height);
-	}
-	
-	public float getX(){
-		return x;
-	}
-
-	public void setX(float x){
-		this.x = x;
-	}
-
-	public float getY(){
-		return y;
-	}
-
-	public void setY(float y){
-		this.y = y;
-	}
-
-	public float getWidth(){
-		return width;
-	}
-
-	public void setWidth(float width){
-		this.width = width;
-	}
-
-	public float getHeight(){
-		return height;
-	}
-
-	public void setHeight(float height){
-		this.height = height;
-	}
-
-	public RectF getBoundsF(){
-		return new RectF(x, y, x + width, y + height);
-	}
-
-	public Rect getBounds(){
-		if(width == 0 || height == 0){
-			height = paint.getTextSize();
-			width = paint.measureText(text);
-			x -= width / 2;
-		}
-		return new Rect((int)x, (int)y, (int)(x + width), (int)(y + height));
-	}
-
 	public Gui getGui() {
 		return gui;
 	}
@@ -212,7 +158,7 @@ public class Component extends GameObject{
 				listener.touchUp(this, game);
 			break;
 		case MotionEvent.ACTION_MOVE:
-			if(!getBoundsF().contains(event.getX(), event.getY()))
+			if(!bounds.get().contains(event.getX(), event.getY()))
 				selected = false;
 			else if(!selected){
 				selected = true;
@@ -234,11 +180,11 @@ public class Component extends GameObject{
 		long downTime = SystemClock.uptimeMillis();
 		long eventTime = SystemClock.uptimeMillis() + 100;
 		int metaState = 0;
-		MotionEvent motionEvent = MotionEvent.obtain(downTime, eventTime, type, x, y, metaState);
+		MotionEvent motionEvent = MotionEvent.obtain(downTime, eventTime, type, bounds.getX(), bounds.getY(), metaState);
 		input(motionEvent, game);
 		motionEvent.recycle();
 	}
-
+	
 	@Override
 	public void draw(Game game, Canvas canvas){
 		if(flag == INACTIVE)
@@ -250,18 +196,18 @@ public class Component extends GameObject{
 		if(toUse != null && !TextUtils.isEmpty(toUse)){
 			Object o = game.getResources().getObject(toUse);
 			if(o instanceof Bitmap)
-				canvas.drawBitmap((Bitmap)o, null, new RectF(x, y, x + width, y + height), paint);
+				canvas.drawBitmap((Bitmap)o, null, bounds.get(), paint);
 			else if(o instanceof Animation){
-				canvas.drawBitmap(((Animation)o).getFrame(game.getTime()), null, new RectF(x, y, x + width, y + height), paint);
+				canvas.drawBitmap(((Animation)o).getFrame(game.getTime()), null, bounds.get(), paint);
 			}
 		}
 		if(!TextUtils.isEmpty(text)){
 			String[] lines = text.split("\n");
 			for(int i = 0; i < lines.length; i++){
 				if(paint.getTextAlign() == Align.CENTER && flag != IGNORE_CUSTOM_CENTERING)
-					drawCenteredText(canvas, lines[i], getBounds());
+					drawCenteredText(canvas, lines[i], bounds);
 				else
-					canvas.drawText(lines[i], x, y + (float)i * paint.getTextSize(), paint);
+					canvas.drawText(lines[i], bounds.getX(), bounds.getY() + (float)i * paint.getTextSize(), paint);
 			}
 		}
 		
@@ -269,19 +215,20 @@ public class Component extends GameObject{
 	}
 	
 	@Override
-	public RenderLayer getRenderLayer(){
-		return RenderLayer.TOP_ALL;
+	public int getRenderLayer(){
+		return RenderLayer.TOP_OVER_ALL;
 	}
 	
 	@Override
 	public boolean shouldScale(){
 		return false;
 	}
-
-	protected void drawCenteredText(Canvas canvas, String text, Rect r){
-		int width = r.width();
-		int numOfChars = paint.breakText(text, true, width, null);
-		int start = (text.length() - numOfChars) / 2;
-		canvas.drawText(text, start, start + numOfChars, r.exactCenterX(), r.exactCenterY() + paint.getTextSize() / 4, paint);
+	
+	private int dWidth, dNumChars, dStart;
+	protected void drawCenteredText(Canvas canvas, String text, Bounds bounds){
+		dWidth = (int)bounds.getWidth();
+		dNumChars = paint.breakText(text, true, dWidth, null);
+		dStart = (text.length() - dNumChars) / 2;
+		canvas.drawText(text, dStart, dStart + dNumChars, bounds.getCenterX(), bounds.getCenterY() + paint.getTextSize() / 4, paint);
 	}
 }

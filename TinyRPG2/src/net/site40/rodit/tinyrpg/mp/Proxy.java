@@ -16,7 +16,6 @@ import net.site40.rodit.tinyrpg.game.entity.EntityPlayer;
 import net.site40.rodit.tinyrpg.game.entity.EntityStats;
 import net.site40.rodit.tinyrpg.game.item.Inventory;
 import net.site40.rodit.tinyrpg.game.item.Item;
-import net.site40.rodit.tinyrpg.game.item.ItemEquippable;
 import net.site40.rodit.tinyrpg.game.item.ItemStack;
 import net.site40.rodit.util.Util;
 public class Proxy {
@@ -96,12 +95,10 @@ public class Proxy {
 
 		public static void readEntityEquippedState(Game game, EntityLiving e, ByteArrayReader reader){
 			for(int i = 0; i < e.getEquipped().length; i++){
-				Item item = Item.get(reader.readString());
-				if(item == null || !(item instanceof ItemEquippable))
-					continue;
-				ItemEquippable ie = (ItemEquippable)item;
-				e.setEquipped(i, ie);
-				ie.onEquip(game, e);
+				int index = reader.readInt();
+				ItemStack stack = index > -1 ? e.getInventory().getItemStackByIndex(index) : null;
+				e.setEquipped(index, stack);
+				stack.getItem().onEquip(game, e);
 			}
 		}
 
@@ -197,28 +194,17 @@ public class Proxy {
 			writer.write(stats.getMagika());
 			writer.write(stats.getForge());
 		}
-
-		public static void readEntityEquippedState(Game game, EntityLiving e, ByteArrayReader reader){
-			for(int i = 0; i < e.getEquipped().length; i++){
-				Item item = Item.get(reader.readString());
-				if(item == null || !(item instanceof ItemEquippable))
-					continue;
-				ItemEquippable ie = (ItemEquippable)item;
-				e.setEquipped(i, ie);
-				ie.onEquip(game, e);
-			}
-		}
 		
 		public static void writeEntityEquippedState(EntityLiving e, ByteArrayWriter writer)throws IOException{
 			for(int i = 0; i < e.getEquipped().length; i++)
-				writer.write(e.getEquipped(i).getName());
+				writer.write(e.getInventory().getIndexByItemStack(e.getEquipped(i)));
 		}
 		
 		public static void writeEntityState(Entity e, ByteArrayWriter writer)throws IOException{
-			writer.write(e.getX());
-			writer.write(e.getY());
-			writer.write(e.getWidth());
-			writer.write(e.getHeight());
+			writer.write(e.getBounds().getX());
+			writer.write(e.getBounds().getY());
+			writer.write(e.getBounds().getWidth());
+			writer.write(e.getBounds().getHeight());
 			writer.write(e.getResource());
 			writer.write(e.getDirection().toString());
 			writer.write(e.getMoveState().toString());

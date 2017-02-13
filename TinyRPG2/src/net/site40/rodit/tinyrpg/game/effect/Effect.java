@@ -5,6 +5,7 @@ import java.util.ArrayList;
 
 import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.entity.EntityLiving;
+import net.site40.rodit.tinyrpg.game.script.ScriptManager.KVP;
 import net.site40.rodit.util.TinyInputStream;
 import net.site40.rodit.util.TinyOutputStream;
 import net.site40.rodit.util.Util;
@@ -118,21 +119,21 @@ public class Effect {
 	
 	public void initCallbacks(Game game){
 		if(!TextUtils.isEmpty(script) && jsStart == null && jsEnd == null)
-			game.getScripts().execute(game, script, new String[] { "self" }, new Object[] { this });
+			game.getScript().runScript(game, script, new KVP<Effect>("self", this));
 	}
 	
 	public void start(Game game, EntityLiving entity){
 		this.started = true;
 		initCallbacks(game);
 		if(jsStart != null)
-			game.getScripts().executeFunction(game, jsStart, this, new String[0], new Object[0], new Object[] { entity });
+			game.getScript().runFunction(game, jsStart, this, KVP.EMPTY, entity);
 	}
 	
 	public void stop(Game game, EntityLiving entity){
 		this.stopped = true;
 		initCallbacks(game);
-		if(jsStart != null)
-			game.getScripts().executeFunction(game, jsEnd, this, new String[0], new Object[0], new Object[] { entity });
+		if(jsEnd != null)
+			game.getScript().runFunction(game, jsEnd, this, KVP.EMPTY, entity);
 	}
 	
 	public void deserializeXmlElement(Element e){

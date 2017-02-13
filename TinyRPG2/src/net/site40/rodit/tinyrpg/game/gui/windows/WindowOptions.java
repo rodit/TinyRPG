@@ -24,7 +24,7 @@ public class WindowOptions extends Window{
 		this.txtTitle = new WindowComponent("txtTitle");
 		txtTitle.setText("Game Options");
 		txtTitle.getPaint().setTextSize(Values.FONT_SIZE_MEDIUM);
-		txtTitle.setX(this.getWidth() / 2f);
+		txtTitle.setX(bounds.getWidth() / 2f);
 		txtTitle.setY(78f);
 		add(txtTitle);
 		
@@ -45,8 +45,8 @@ public class WindowOptions extends Window{
 		chkBgMusic.getPaint().setTextSize(Values.FONT_SIZE_SMALL);
 		chkBgMusic.setBackgroundDefault("gui/checkbox.png");
 		chkBgMusic.setBackgroundChecked("gui/checkbox_checked.png");
-		chkBgMusic.setX(chkRenderHardware.getX());
-		chkBgMusic.setY(chkRenderHardware.getY() + chkRenderHardware.getHeight() + 4f);
+		chkBgMusic.setX(chkRenderHardware.getBounds().getX());
+		chkBgMusic.setY(chkRenderHardware.getBounds().getY() + chkRenderHardware.getBounds().getHeight() + 4f);
 		chkBgMusic.setWidth(64f);
 		chkBgMusic.setHeight(64f);
 		attachToOption(game, chkBgMusic, "music_bg");
@@ -57,12 +57,12 @@ public class WindowOptions extends Window{
 		btnBack.setBackground(WindowComponent.STATE_DOWN, "gui/button_selected.png");
 		btnBack.setText("Back");
 		btnBack.setX(32f);
-		btnBack.setY(getHeight() - 92f);
+		btnBack.setY(bounds.getHeight() - 92f);
 		btnBack.setWidth(164f);	
 		btnBack.setHeight(72f);
 		btnBack.addListener(new WindowListener(){
 			public void touchUp(Game game, WindowComponent component){
-				WindowOptions.this.hide();
+				WindowOptions.this.close();
 			}
 		});
 		add(btnBack);

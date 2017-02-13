@@ -1,16 +1,24 @@
 package net.site40.rodit.tinyrpg.game.render;
 
 import net.site40.rodit.tinyrpg.game.Game;
-import net.site40.rodit.tinyrpg.game.GameObject;
+import net.site40.rodit.tinyrpg.game.object.GameObject;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
 public class BitmapRenderer extends GameObject{
 
-	private Bitmap bmp;
+	private Bitmap[] bmps;
 
-	public BitmapRenderer(Bitmap bmp){
-		this.bmp = bmp;
+	public BitmapRenderer(Bitmap... bmps){
+		this.bmps = bmps;
+	}
+
+	public float getX(){
+		return 0f;
+	}
+
+	public float getY(){
+		return 0f;
 	}
 
 	@Override
@@ -20,14 +28,16 @@ public class BitmapRenderer extends GameObject{
 	public void draw(Game game, Canvas canvas){
 		super.preRender(game, canvas);
 
-		if(bmp != null && !bmp.isRecycled())
-			canvas.drawBitmap(bmp, 0, 0, null);
+		for(Bitmap bmp : bmps){
+			if(bmp != null && !bmp.isRecycled())
+				canvas.drawBitmap(bmp, getX(), getY(), null);
+		}
 
 		super.postRender(game, canvas);
 	}
-	
+
 	@Override
-	public RenderLayer getRenderLayer(){
+	public int getRenderLayer(){
 		return RenderLayer.TOP;
 	}
 

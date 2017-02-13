@@ -45,7 +45,7 @@ public class Inventory {
 
 	public boolean hasItem(Item item){
 		for(ItemStack stack : items)
-			if(stack.getItem() == item)
+			if(stack.getItem() == item && stack.getAmount() > 0)
 				return true;
 		return false;
 	}
@@ -103,7 +103,7 @@ public class Inventory {
 			for(int i = 0; i < count; i++)
 				items.remove(this.getStack(item));
 	}
-
+	
 	public void setCountAdd(Item item, int count){
 		count -= getCount(item);
 		if(item.isStackable()){
@@ -135,7 +135,7 @@ public class Inventory {
 		if(count > 0)
 			setCountAdd(item, nCount);
 		else if(count < 0)
-			setCountRemove(item, nCount);
+			setCountRemove(item, Math.abs(nCount));
 	}
 
 	public void add(ItemStack stack){
@@ -229,11 +229,11 @@ public class Inventory {
 			if(type == TAB_EQUIPPED){
 				if(owner == null)
 					return null;
-				Item item = null;
-				if((item = getOwnerLiving().getEquipped(index)) == null)
+				ItemStack stack = null;
+				if((stack = getOwnerLiving().getEquipped(index)) == null)
 					return null;
 				else
-					return new ItemStack(item, 1);
+					return stack;
 			}
 			ArrayList<ItemStack> stacks = provide(type);
 			if(index > -1 && index < stacks.size())
@@ -248,9 +248,9 @@ public class Inventory {
 				if(owner == null)
 					break;
 				for(int i = 0; i < 9; i++){
-					Item item = getOwnerLiving().getEquipped(i);
-					if(item != null)
-						stacks.add(new ItemStack(item, 1));
+					ItemStack stack = getOwnerLiving().getEquipped(i);
+					if(stack != null)
+						stacks.add(stack);
 				}
 				break;
 			case TAB_ALL:

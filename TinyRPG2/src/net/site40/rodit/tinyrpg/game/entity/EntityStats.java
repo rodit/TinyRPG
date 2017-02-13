@@ -2,15 +2,18 @@ package net.site40.rodit.tinyrpg.game.entity;
 
 import java.io.IOException;
 
+import net.site40.rodit.tinyrpg.game.SuperCalc;
 import net.site40.rodit.util.TinyInputStream;
 import net.site40.rodit.util.TinyOutputStream;
 
 public class EntityStats {
 	
+	public static final int UPGRADE_POINTS_LEVEL = 3;
 	public static final float DEFAULT_STAT = 0.5f;
 
 	private int level;
 	private int xp;
+	private int upgradePoints;
 	private float speed;
 	private float strength;
 	private float defence;
@@ -28,8 +31,28 @@ public class EntityStats {
 	public EntityStats(){
 		this.level = 1;
 		this.xp = 0;
+		this.upgradePoints = 0;
 		this.speed = this.strength = this.defence = this.luck = this.magika = this.forge = 0f;
 		this.hpMulti = this.speedMulti = this.strengthMulti = this.defenceMulti = this.luckMulti = this.magikaMulti = this.forgeMulti = 1f;
+	}
+	
+	public EntityStats(EntityStats stats){
+		level = stats.level;
+		xp = stats.xp;
+		upgradePoints = stats.upgradePoints;
+		speed = stats.speed;
+		strength = stats.strength;
+		defence = stats.defence;
+		luck = stats.luck;
+		magika = stats.magika;
+		forge = stats.forge;
+		hpMulti = stats.hpMulti;
+		speedMulti = stats.speedMulti;
+		strengthMulti = stats.strengthMulti;
+		defenceMulti = stats.defenceMulti;
+		luckMulti = stats.luckMulti;
+		magikaMulti = stats.magikaMulti;
+		forgeMulti = stats.forgeMulti;
 	}
 	
 	public int getLevel(){
@@ -50,6 +73,26 @@ public class EntityStats {
 	
 	public void addXp(int xp){
 		this.xp += xp;
+	}
+	
+	public int getXpForLevelUp(){
+		return SuperCalc.getXpForLevel(level);
+	}
+	
+	public int getUpgradePoints(){
+		return upgradePoints;
+	}
+	
+	public void setUpgradePoints(int upgradePoints){
+		this.upgradePoints = upgradePoints;
+	}
+	
+	public void addUpgradePoints(int upgradePoints){
+		this.upgradePoints += upgradePoints;
+	}
+	
+	public void removeUpgradePoints(int upgradePoints){
+		this.upgradePoints -= upgradePoints;
 	}
 	
 	public float getMoveSpeed(){
@@ -196,9 +239,18 @@ public class EntityStats {
 		this.forgeMulti = forgeMulti;
 	}
 	
+	public int compare(EntityStats stats){
+		if(stats.level > level && stats.speed > speed && stats.strength > strength && stats.defence > defence && stats.luck > luck && stats.magika > magika && stats.forge > forge)
+			return 1;
+		if(stats.level >= level && stats.speed >= speed && stats.strength >= strength && stats.defence >= defence && stats.luck >= luck && stats.magika >= magika && stats.forge >= forge)
+			return 0;
+		return -1;
+	}
+	
 	public void load(TinyInputStream in)throws IOException{
 		this.level = in.readInt();
 		this.xp = in.readInt();
+		this.upgradePoints = in.readInt();
 		this.speed = in.readFloat();
 		this.strength = in.readFloat();
 		this.defence = in.readFloat();
@@ -211,6 +263,7 @@ public class EntityStats {
 	public void save(TinyOutputStream out)throws IOException{
 		out.write(level);
 		out.write(xp);
+		out.write(upgradePoints);
 		out.write(speed);
 		out.write(strength);
 		out.write(defence);
@@ -223,5 +276,13 @@ public class EntityStats {
 		String f0s = (int)f0 + "";
 		String f1s = (int)f1 + "";
 		return Float.valueOf(f0s + "." + f1s);
+	}
+	
+	@Override
+	public boolean equals(Object object){
+		if(!(object instanceof EntityStats))
+			return false;
+		EntityStats s = (EntityStats)object;
+		return s.speed == speed && s.strength == strength && s.defence == defence && s.luck == luck && s.magika == magika && s.forge == forge;
 	}
 }

@@ -1,11 +1,10 @@
 package net.site40.rodit.tinyrpg.game.entity.npc;
 
 import net.site40.rodit.tinyrpg.game.Game;
-import net.site40.rodit.tinyrpg.game.GameObject;
+import net.site40.rodit.tinyrpg.game.object.GameObject;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint.Align;
-import android.graphics.RectF;
 
 public class Nametag extends GameObject{
 
@@ -16,6 +15,7 @@ public class Nametag extends GameObject{
 		this.paint = entity.getPaint();
 	}
 	
+	private float dTextWidth;
 	@Override
 	public void draw(Game game, Canvas canvas){
 		if(entity == null)
@@ -24,19 +24,20 @@ public class Nametag extends GameObject{
 		paint.setColor(Color.argb(128, 0, 0, 0));
 		paint.setTextAlign(Align.CENTER);
 		paint.setTextSize(8f);
-		float textWidth = paint.measureText(entity.getDisplayName());
+		dTextWidth = paint.measureText(entity.getDisplayName());
 		
-		canvas.drawRect(new RectF(entity.getX() + entity.getWidth() / 2 - textWidth / 2 - 4f, entity.getY() - 10f, entity.getX() + entity.getWidth() / 2 + textWidth / 2 + 2f, entity.getY() - 2f), paint);
+		bounds.set(entity.getBounds().getX() + entity.getBounds().getWidth() / 2 - dTextWidth / 2 - 4f, entity.getBounds().getY() - 10f, dTextWidth + 4f, 8f);
+		canvas.drawRect(bounds.get(), paint);
 		paint.setColor(Color.WHITE);
-		canvas.drawText(entity.getDisplayName(), entity.getX() + entity.getWidth() / 2, entity.getY() - 3.2f, paint);
+		canvas.drawText(entity.getDisplayName(), entity.getBounds().getX() + entity.getBounds().getWidth() / 2, entity.getBounds().getY() - 3.2f, paint);
 	}
 
 	@Override
 	public void update(Game game){}
 
 	@Override
-	public RenderLayer getRenderLayer(){
-		return RenderLayer.TOP_OVERRIDE_PLAYER;
+	public int getRenderLayer(){
+		return RenderLayer.TOP_OVER_PLAYER;
 	}
 
 	@Override

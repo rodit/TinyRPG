@@ -37,13 +37,15 @@ public class Shop {
 				return shop;
 		return null;
 	}
-
+	
 	private Entity owner;
 	private Inventory initialInventory;
 	private Inventory inventory;
 	private float purchaseMultiplier;
 	private float sellMultiplier;
 	private long initialMoney;
+	
+	private TempShopOwner memOwner;
 
 	public Shop(){
 		this(new Inventory(), 1f, 1f);
@@ -64,6 +66,10 @@ public class Shop {
 
 	public Entity getOwner(){
 		return owner;
+	}
+	
+	public TempShopOwner getInventoryOwner(){
+		return memOwner == null ? memOwner = new TempShopOwner(this) : memOwner;
 	}
 
 	public void setOwner(Entity owner){
@@ -136,10 +142,9 @@ public class Shop {
 	}
 	
 	public void open(Game game){
-		TempShopOwner tempOwner = new TempShopOwner(this);
-		game.setGlobal("current_container", tempOwner);
+		game.setGlobal("current_container", getInventoryOwner());
 		game.setGlobal("current_shop", this);
-		WindowShop shopWindow = new WindowShop(game, tempOwner, this);
+		WindowShop shopWindow = new WindowShop(game, this);
 		game.getWindows().register(shopWindow);
 		shopWindow.show();
 	}

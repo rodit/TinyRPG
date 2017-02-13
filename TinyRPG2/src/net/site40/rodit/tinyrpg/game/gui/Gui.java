@@ -3,15 +3,14 @@ package net.site40.rodit.tinyrpg.game.gui;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import net.site40.rodit.tinyrpg.game.Game;
+import net.site40.rodit.tinyrpg.game.object.GameObject;
+import net.site40.rodit.tinyrpg.game.render.Animation;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.RectF;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
-import net.site40.rodit.tinyrpg.game.Game;
-import net.site40.rodit.tinyrpg.game.GameObject;
-import net.site40.rodit.tinyrpg.game.render.Animation;
 
 public abstract class Gui extends GameObject{
 	
@@ -31,6 +30,7 @@ public abstract class Gui extends GameObject{
 		this.addQueue = new ArrayList<Component>();
 		this.removeQueue = new ArrayList<Component>();
 		this.components = new ArrayList<Component>();
+		bounds.set(0, 0, 1280, 720);
 		this.init();
 	}
 
@@ -86,7 +86,7 @@ public abstract class Gui extends GameObject{
 		synchronized(components){
 			for(Iterator<Component> iterator = components.iterator(); iterator.hasNext();){
 				Component c = iterator.next();
-				if(c.getBoundsF().contains(event.getX(), event.getY()) || event.getAction() == MotionEvent.ACTION_MOVE)
+				if(c.getBounds().get().contains(event.getX(), event.getY()) || event.getAction() == MotionEvent.ACTION_MOVE)
 					c.input(event, game);
 			}
 		}
@@ -140,9 +140,9 @@ public abstract class Gui extends GameObject{
 		if(!TextUtils.isEmpty(background)){
 			Object o = game.getResources().getObject(background);
 			if(o instanceof Bitmap)
-				canvas.drawBitmap((Bitmap)o, null, new RectF(0, 0, 1280, 720), null);
+				canvas.drawBitmap((Bitmap)o, null, bounds.get(), null);
 			else if(o instanceof Animation){
-				canvas.drawBitmap(((Animation)o).getFrame(game.getTime()), null, new RectF(0, 0, 1280, 720), null);
+				canvas.drawBitmap(((Animation)o).getFrame(game.getTime()), null, bounds.get(), null);
 			}
 		}
 		for(Component c : components)
@@ -156,8 +156,8 @@ public abstract class Gui extends GameObject{
 	}
 
 	@Override
-	public RenderLayer getRenderLayer(){
-		return RenderLayer.TOP_ALL;
+	public int getRenderLayer(){
+		return RenderLayer.TOP_OVER_ALL;
 	}
 
 	@Override

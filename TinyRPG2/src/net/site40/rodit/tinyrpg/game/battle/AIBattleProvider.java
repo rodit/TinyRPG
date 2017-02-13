@@ -1,9 +1,5 @@
 package net.site40.rodit.tinyrpg.game.battle;
 
-import static net.site40.rodit.tinyrpg.game.render.MM.EMPTY_STRING_ARRAY;
-import static net.site40.rodit.tinyrpg.game.render.Strings.DIALOG_AI_HEAL;
-import static net.site40.rodit.tinyrpg.game.render.Strings.DIALOG_AI_NOTHING;
-import static net.site40.rodit.tinyrpg.game.render.Strings.DIALOG_AI_WEAPONS;
 import static net.site40.rodit.tinyrpg.game.render.Strings.getString;
 
 import java.util.ArrayList;
@@ -11,15 +7,21 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 
-import android.util.Log;
 import net.site40.rodit.tinyrpg.game.Dialog.DialogCallback;
 import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.SuperCalc;
+import net.site40.rodit.tinyrpg.game.entity.Damage;
+import net.site40.rodit.tinyrpg.game.entity.Damage.DamageType;
+import net.site40.rodit.tinyrpg.game.entity.Damage.SourceStack;
 import net.site40.rodit.tinyrpg.game.entity.EntityLiving;
 import net.site40.rodit.tinyrpg.game.entity.mob.EntityMob;
 import net.site40.rodit.tinyrpg.game.item.InventoryUtil;
 import net.site40.rodit.tinyrpg.game.item.Item;
+import net.site40.rodit.tinyrpg.game.item.ItemStack;
 import net.site40.rodit.tinyrpg.game.item.Weapon;
+import net.site40.rodit.tinyrpg.game.render.Strings;
+import net.site40.rodit.tinyrpg.game.render.Strings.GameData;
+import android.util.Log;
 
 public class AIBattleProvider implements IBattleProvider{
 
@@ -80,17 +82,22 @@ public class AIBattleProvider implements IBattleProvider{
 		this.battle = battle;
 		Log.i("AIBattleProvider", "AI choosing option...");
 		sortOptions();
-		AIOption option = null;
-		while(option == null){
-			for(AIOption possible : options){
-				if(possible.canChoose(game, this)){
-					option = possible;
-					break;
-				}
-			}
-		}
+		AIOption option = chooseOption(game, 1000);
 		Log.i("AIBattleProvider", "AI chosen option " + option.getClass().getName() + ".");
 		option.choose(game, this);
+	}
+	
+	private AIOption chooseOption(Game game, int maxAttempts){
+		for(int attempts = 0; attempts < maxAttempts; attempts++){
+			for(AIOption possible : options){
+				if(possible.canChoose(game, this))
+					return possible;
+			}
+		}
+		NothingOption opt = new NothingOption();
+		opt.game = game;
+		opt.provider = this;
+		return opt;
 	}
 
 	public void decisionMade(Game game, Battle battle){
@@ -126,7 +133,10 @@ public class AIBattleProvider implements IBattleProvider{
 					EntityLiving target = opposition.get(i);
 					float predictedDamage = 0f;
 					if(option instanceof WeaponAttackOption){
-						for(Item item : provider.getEntity().getEquipped()){
+						for(ItemStack stack	: provider.getEntity().getEquipped()){
+							if(stack == null)
+								continue;
+							Item item = stack.getItem();
 							if(item instanceof Weapon){
 								Weapon weapon = (Weapon)item;
 								predictedDamage += SuperCalc.getDirectDamage(game, provider.getEntity(), target, weapon);
@@ -160,8 +170,8 @@ public class AIBattleProvider implements IBattleProvider{
 
 	public abstract static class AIOption{
 
-		private Game game;
-		private AIBattleProvider provider;
+		protected Game game;
+		protected AIBattleProvider provider;
 
 		private HashMap<AIDifficulty, Integer> priorities;
 		private HashMap<AIDifficulty, Float> chances;
@@ -253,7 +263,7 @@ public class AIBattleProvider implements IBattleProvider{
 		}
 
 		public void choose(Game game, AIBattleProvider provider){
-			game.getHelper().dialog(getString(DIALOG_AI_NOTHING, provider.getEntity().getDisplayName()), EMPTY_STRING_ARRAY, defaultCallback);
+			game.getHelper().dialog(getString(Strings.Dialog.AI_NOTHING, provider.getEntity().getDisplayName()), GameData.EMPTY_STRING_ARRAY, defaultCallback);
 		}
 	}
 
@@ -288,15 +298,18 @@ public class AIBattleProvider implements IBattleProvider{
 		}
 
 		public void choose(Game game, AIBattleProvider provider){
-			for(Item item : provider.getEntity().getEquipped()){
+			for(ItemStack stack : provider.getEntity().getEquipped()){
+				if(stack == null)
+					continue;
+				Item item = stack.getItem();
 				if(item instanceof Weapon){
 					Weapon weapon = (Weapon)item;
 					EntityLiving target = provider.targetProvider.getTarget(game, provider, this);
-					SuperCalc.attack(game, provider.getEntity(), target, weapon);
+					target.hit(game, provider.owner, new Damage(new SourceStack(provider.battle, provider.owner, weapon), DamageType.PHYSICAL_ATTACK, SuperCalc.getDamage(game, provider.owner, target, weapon)));
 					target.attachPaintMixer(Battle.newHitMixer());
 				}
 			}
-			game.getHelper().dialog(getString(DIALOG_AI_WEAPONS, provider.getEntity().getDisplayName()), EMPTY_STRING_ARRAY, defaultCallback);
+			game.getHelper().dialog(getString(Strings.Dialog.AI_WEAPONS, provider.getEntity().getDisplayName()), GameData.EMPTY_STRING_ARRAY, defaultCallback);
 		}
 	}
 
@@ -330,7 +343,7 @@ public class AIBattleProvider implements IBattleProvider{
 			Item bestHealing = InventoryUtil.getBestHealingItem(provider.getEntity().getInventory());
 			if(bestHealing != null){
 				bestHealing.onEquip(game, provider.getEntity());
-				game.getHelper().dialog(getString(DIALOG_AI_HEAL, provider.getEntity().getDisplayName(), InventoryUtil.grammer(bestHealing)), EMPTY_STRING_ARRAY, defaultCallback);
+				game.getHelper().dialog(getString(Strings.Dialog.AI_HEAL, provider.getEntity().getDisplayName(), InventoryUtil.grammer(bestHealing)), GameData.EMPTY_STRING_ARRAY, defaultCallback);
 			}
 		}
 	}

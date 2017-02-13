@@ -5,7 +5,6 @@ import net.site40.rodit.tinyrpg.game.gui.windows.WindowSlotted.ProviderInfo;
 import net.site40.rodit.tinyrpg.game.item.Hair;
 import net.site40.rodit.tinyrpg.game.item.ItemStack;
 import android.graphics.Canvas;
-import android.graphics.RectF;
 
 public class WindowSlot extends WindowComponent{
 
@@ -78,10 +77,11 @@ public class WindowSlot extends WindowComponent{
 		ProviderInfo info = getParentSlotted().getProviderInfo(providerKey);
 		ItemStack own = getParentSlotted().getProvider(providerKey).provide(slotTag, info.page[slotTag] * itemsPerPage + slotIndex);
 		if(own != null && own.getItem() != null && !(own.getItem() instanceof Hair)){
-			canvas.drawBitmap(game.getResources().getBitmap(own.getItem().getResource()), null, new RectF(getScreenX() + 8f, getScreenY() + 8f, getScreenX() + getWidth() - 8f, getScreenY() + getHeight() - 8f), null);
+			bounds.getPooled0().set(getScreenX() + 8f, getScreenY() + 8f, getScreenX() + bounds.getWidth() - 8f, getScreenY() + bounds.getHeight() - 8f);
+			canvas.drawBitmap(game.getResources().getBitmap(own.getItem().getResource()), null, bounds.getPooled0(), null);
 			float size = getPaint().getTextSize();
 			getPaint().setTextSize(24f);
-			canvas.drawText(String.valueOf(own.getAmount()), getScreenX() + getWidth() - 24f, getScreenY() + getHeight() - 16f, getPaint());
+			canvas.drawText(String.valueOf(own.getAmount()), getScreenX() + bounds.getWidth() - 24f, getScreenY() + bounds.getHeight() - 16f, getPaint());
 			getPaint().setTextSize(size);
 		}
 	}

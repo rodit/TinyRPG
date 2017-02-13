@@ -26,8 +26,9 @@ public class Ticker {
 		this.lastUpdate = lastUpdate;
 	}
 	
+	private volatile long now;
 	public boolean shouldRun(Game game){
-		long now = game.getTime();
+		now = game.getTime();
 		if(now - lastUpdate >= interval){
 			lastUpdate = now;
 			return true;

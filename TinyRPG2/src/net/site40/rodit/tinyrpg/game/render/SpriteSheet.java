@@ -3,6 +3,7 @@ package net.site40.rodit.tinyrpg.game.render;
 import java.util.HashMap;
 
 import net.site40.rodit.tinyrpg.game.Game;
+import net.site40.rodit.tinyrpg.game.object.GameObject;
 import net.site40.rodit.tinyrpg.game.util.Direction;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
@@ -13,12 +14,14 @@ import android.graphics.RectF;
 public class SpriteSheet {
 
 	public static enum MovementState{
-		IDLE, WALK
+		IDLE, WALK;
 	}
 
 	public static final int DEFAULT_WIDTH = 32;
 	public static final int DEFAULT_HEIGHT = 32;
 	public static final int DEFAULT_DELAY = 106;
+	
+	public static final RectF DEFAULT_BOUNDS = new RectF(0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT);
 
 	private Bitmap sheet;
 	private HashMap<MovementState, HashMap<Direction, Animation>> animations;
@@ -82,7 +85,15 @@ public class SpriteSheet {
 		animations.put(MovementState.WALK, walkAnims);
 	}
 	
-	public Bitmap getBitmap(Game game, Sprite sprite){
-		return animations.get(sprite.getMoveState()).get(sprite.getDirection()).getFrame(game.getTime());
+	public Bitmap getBitmap(Game game, GameObject object){
+		return animations.get(object.getMoveState()).get(object.getDirection()).getFrame(game.getTime());
+	}
+	
+	public Bitmap getBitmap(Game game, MovementState moveState, Direction direction){
+		return animations.get(moveState).get(direction).getFrame(game.getTime());
+	}
+	
+	public Animation getAnimation(MovementState moveState, Direction direction){
+		return animations.get(moveState).get(direction);
 	}
 }

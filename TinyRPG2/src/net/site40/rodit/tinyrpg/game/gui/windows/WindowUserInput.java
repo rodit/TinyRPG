@@ -51,13 +51,13 @@ public class WindowUserInput extends Window{
 		inputBox.setName("input");
 		inputBox.setText(initTxt == null ? "" : initTxt);
 		inputBox.getPaint().setTextSize(Values.FONT_SIZE_MEDIUM);
-		inputBox.setBounds(32f, 100f, getWidth() - 64f, 64f);
+		inputBox.setBounds(32f, 100f, bounds.getWidth() - 64f, 64f);
 		add(inputBox);
 		
 		this.txtMsg = new WindowComponent("txtMsg");
 		txtMsg.setText(msg);
 		txtMsg.getPaint().setTextSize(Values.FONT_SIZE_MEDIUM);
-		txtMsg.setX(getWidth() / 2f);
+		txtMsg.setX(bounds.getWidth() / 2f);
 		txtMsg.setY(56f);
 		add(txtMsg);
 		
@@ -66,11 +66,11 @@ public class WindowUserInput extends Window{
 		btnCancel.getPaint().setTextSize(Values.FONT_SIZE_MEDIUM - 8f);
 		btnCancel.setBackground(WindowComponent.STATE_IDLE, "gui/button.png");
 		btnCancel.setBackground(WindowComponent.STATE_DOWN, "gui/button_selected.png");
-		btnCancel.setBounds(inputBox.getX(), inputBox.getY() + inputBox.getHeight() + 24f, 192f, 64f);
+		btnCancel.setBounds(inputBox.getBounds().getX(), inputBox.getBounds().getY() + inputBox.getBounds().getHeight() + 24f, 192f, 64f);
 		btnCancel.addListener(new WindowListener(){
 			public void touchUp(Game game, WindowComponent component){
 				if(callback != null && callback.onResult(WindowUserInput.this, InputResult.CANCELLED))
-					hide();
+					close();
 			}
 		});
 		add(btnCancel);
@@ -80,11 +80,11 @@ public class WindowUserInput extends Window{
 		btnOk.getPaint().setTextSize(Values.FONT_SIZE_MEDIUM - 8f);
 		btnOk.setBackground(WindowComponent.STATE_IDLE, "gui/button.png");
 		btnOk.setBackground(WindowComponent.STATE_DOWN, "gui/button_selected.png");
-		btnOk.setBounds(getWidth() - 192f - 32f, btnCancel.getY(), 192f, 64f);
+		btnOk.setBounds(bounds.getWidth() - 192f - 32f, btnCancel.getBounds().getY(), 192f, 64f);
 		btnOk.addListener(new WindowListener(){
 			public void touchUp(Game game, WindowComponent component){
 				if(callback != null && callback.onResult(WindowUserInput.this, inputBox.getText()))
-					hide();
+					close();
 			}
 		});
 		add(btnOk);

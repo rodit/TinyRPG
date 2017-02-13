@@ -2,12 +2,6 @@ package net.site40.rodit.tinyrpg.game.gui;
 
 import java.io.IOException;
 
-import org.w3c.dom.Document;
-
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint.Align;
-import android.graphics.RectF;
 import net.site40.rodit.tinyrpg.game.Dialog;
 import net.site40.rodit.tinyrpg.game.Dialog.DialogCallback;
 import net.site40.rodit.tinyrpg.game.Game;
@@ -18,6 +12,7 @@ import net.site40.rodit.tinyrpg.game.battle.Team;
 import net.site40.rodit.tinyrpg.game.entity.mob.EntityMob;
 import net.site40.rodit.tinyrpg.game.gui.windows.WindowInventory;
 import net.site40.rodit.tinyrpg.game.gui.windows.WindowOptions;
+import net.site40.rodit.tinyrpg.game.gui.windows.WindowPlayerStats;
 import net.site40.rodit.tinyrpg.game.gui.windows.WindowQuests;
 import net.site40.rodit.tinyrpg.game.gui.windows.WindowTextBoxComponent;
 import net.site40.rodit.tinyrpg.game.gui.windows.WindowUserInput;
@@ -29,6 +24,13 @@ import net.site40.rodit.tinyrpg.game.render.effects.FadeOutEffect;
 import net.site40.rodit.tinyrpg.game.render.effects.Weather.Lightning;
 import net.site40.rodit.tinyrpg.game.render.effects.Weather.Rain;
 import net.site40.rodit.util.RenderUtil;
+
+import org.w3c.dom.Document;
+
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint.Align;
+import android.graphics.RectF;
 
 public class GuiIngameMenu extends Gui{
 
@@ -47,7 +49,7 @@ public class GuiIngameMenu extends Gui{
 	public void init(){
 		Component bg = new Component(){
 			private final RectF BOUNDS_MENU = new RectF(32, 32, 32 + 384, 32 + 512);
-			private final String[] OPTIONS = new String[] { "Inventory", "Quests", "Map", "Combat", "Save", "Options", "Menu", "Back", "Debug" };
+			private final String[] OPTIONS = new String[] { "Inventory", "Quests", "Map", "Player", "Save", "Options", "Menu", "Back", "Debug" };
 			private long keyUpDown = 0L;
 			private long keyDownDown = 0L;
 
@@ -64,6 +66,15 @@ public class GuiIngameMenu extends Gui{
 					WindowQuests questsWindow = new WindowQuests(game);
 					game.getWindows().register(questsWindow);
 					questsWindow.show();
+					break;
+				case 2:
+					//TODO: Show map window.
+					break;
+				case 3:
+					game.getGuis().hide(GuiIngameMenu.class);
+					WindowPlayerStats statsWindow = new WindowPlayerStats(game, game.getPlayer());
+					statsWindow.show();
+					game.getWindows().register(statsWindow);
 					break;
 				case 4:
 					boolean success = false;
@@ -101,7 +112,7 @@ public class GuiIngameMenu extends Gui{
 				case 8:
 					game.getGuis().hide(GuiIngameMenu.class);
 					game.getInput().allowMovement(true);
-					game.getHelper().dialog("Choose a debug operation.", new String[] { "Fade Out", "Start Lightning", "Stop Lightning", "Start Rain", "Load Map", "Test Battle", "Give Item", "Cancel" }, new DialogCallback(){
+					game.getHelper().dialog("Choose a debug operation.", new String[] { "Fade Out", "Start Lightning", "Stop Lightning", "Start Rain", "Load Map", "Test Battle", "Give Item", "Give All Items", "Add Level Points", "Cancel" }, new DialogCallback(){
 						public void onSelected(int option){
 							switch(option){
 							case 0:
@@ -171,11 +182,19 @@ public class GuiIngameMenu extends Gui{
 								inputWindow.show();
 								game.getWindows().register(inputWindow);
 								break;
+							case 7:
+								for(Item item : Item.getItems())
+									game.getPlayer().getInventory().add(item, item.isStackable() ? item.getStackSize() : 1);
+								break;
+							case 8:
+								game.getPlayer().getStats().addUpgradePoints(5);
+								break;
 							}
 						}
 					});
 					break;
 				}
+				game.getInput().allowMovement(true);
 			}
 
 			public void moveUp(){

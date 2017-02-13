@@ -125,7 +125,7 @@ public class MPController {
 	public void handleMarkAccepted(Game game, MarkObject mark){
 		if(mark.getMapFile().equals(game.getMap().getMap().getFile()))
 			game.removeObject(mark);
-		//TODO: Change this to another form of display (e.g. in feed).
+		//TODO: Change this to another form of display (e.g. in feed)
 		game.getHelper().dialog("You are being summoned to another world...");
 	}
 	

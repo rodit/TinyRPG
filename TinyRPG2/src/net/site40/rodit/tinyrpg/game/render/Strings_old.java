@@ -2,9 +2,13 @@ package net.site40.rodit.tinyrpg.game.render;
 
 import java.util.regex.Pattern;
 
-public class Strings {
+public class Strings_old {
 	
 	public static String DIALOG_DROP_EQUIPPED = "You cannot drop an item which is currently equipped.";
+	
+	public static String DIALOG_SWIM = "The water is a deep blue colour. Would you like to swim in it?";
+	
+	public static String DIALOG_TALK_BROKEN = "My dialog is broken for some reason. I can't talk right now.~Sorry about that. Contact the developers immediately for a fix.";
 
 	public static String DIALOG_SELECT_ATTACK = "Select an attack.";
 	public static String DIALOG_NO_SP_ATTACK = "You do not have any special attacks.";
@@ -41,6 +45,8 @@ public class Strings {
 	public static String[] DIALOG_YES_NO = new String[] { "Yes", "No" };
 	
 	public static String DIALOG_CONFIRM_SUMMON = "Would you like to summon %s to your world?";
+	
+	public static String UI_QUEST_COMPLETED = " (Completed)";
 	
 	public static String getString(String res, Object... replace){
 		String replaced = res;

@@ -2,12 +2,13 @@ package net.site40.rodit.tinyrpg.game.gui.windows;
 
 import java.util.ArrayList;
 
-import android.graphics.Paint.Align;
 import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.Values;
 import net.site40.rodit.tinyrpg.game.gui.windows.WindowListboxComponent.ItemSelectedListener;
 import net.site40.rodit.tinyrpg.game.gui.windows.WindowListboxComponent.ListboxComponentRenderer.StringRenderer;
 import net.site40.rodit.tinyrpg.game.quest.Quest;
+import net.site40.rodit.tinyrpg.game.render.Strings.UI;
+import android.graphics.Paint.Align;
 
 public class WindowQuests extends Window{
 	
@@ -34,34 +35,39 @@ public class WindowQuests extends Window{
 		
 		this.lbQuests = new WindowListboxComponent<String>();
 		lbQuests.setX(32f);
-		lbQuests.setY(txtTitle.getY() + txtTitle.getPaint().getTextSize() + 16f);
-		lbQuests.setWidth(getWidth() - 64f);
-		lbQuests.setHeight(getHeight() - getY() - 128f);
+		lbQuests.setY(txtTitle.getBounds().getY() + txtTitle.getPaint().getTextSize() + 16f);
+		lbQuests.setWidth(bounds.getWidth() - 64f);
+		lbQuests.setHeight(bounds.getHeight() - bounds.getY() - 128f);
 		lbQuests.getPaint().setTextAlign(Align.LEFT);
 		lbQuests.getPaint().setTextSize(Values.FONT_SIZE_BIG);
 		lbQuests.addListener(new WindowListener(){
 			int lastSize = -1;
+			private String uText;
+			private ArrayList<Quest> uAccepted = new ArrayList<Quest>();
 			public void update(Game game, WindowComponent component){
-				ArrayList<Quest> accepted = game.getQuests().getAccepted();
-				if(lastSize < 0 || lastSize < accepted.size()){
+				uAccepted.clear();
+				game.getQuests().getAccepted(uAccepted);
+				if(lastSize < 0 || lastSize < uAccepted.size()){
 					lbQuests.clear();
-					for(Quest q : accepted){
-						String text = q.getShowName() + (game.getQuests().isCompleted(q) ? " (Completed)" : "");
-						lbQuests.add(text);
+					for(Quest q : uAccepted){
+						uText = q.getShowName() + (game.getQuests().isCompleted(q) ? UI.QUEST_COMPLETED : "");
+						lbQuests.add(uText);
 					}
-					lastSize = accepted.size();
+					lastSize = uAccepted.size();
 				}
 			}
 		});
 		lbQuests.addListener(new ItemSelectedListener<String>(){
+			private ArrayList<Quest> uAccepted = new ArrayList<Quest>();
 			public void selected(Game game, WindowListboxComponent<String> listbox){
 				int selectedIndex = listbox.getSelectedIndex();
 				if(selectedIndex < 0)
 					return;
-				ArrayList<Quest> accepted = game.getQuests().getAccepted();
-				if(selectedIndex >= accepted.size())
+				uAccepted.clear();
+				game.getQuests().getAccepted(uAccepted);
+				if(selectedIndex >= uAccepted.size())
 					return;
-				Quest selected = accepted.get(selectedIndex);
+				Quest selected = uAccepted.get(selectedIndex);
 				WindowQuest questWindow = new WindowQuest(game, selected, WindowQuests.this);
 				game.getWindows().register(questWindow);
 				questWindow.zIndex = 0;

@@ -4,25 +4,34 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 
-import android.graphics.Canvas;
-import android.graphics.RectF;
-import android.util.Log;
 import net.site40.rodit.tinyrpg.game.Game;
-import net.site40.rodit.tinyrpg.game.GameObject;
 import net.site40.rodit.tinyrpg.game.entity.Entity;
 import net.site40.rodit.tinyrpg.game.entity.EntityLiving;
 import net.site40.rodit.tinyrpg.game.entity.EntityPlayer;
 import net.site40.rodit.tinyrpg.game.entity.npc.EntityNPC;
 import net.site40.rodit.tinyrpg.game.event.EventReceiver.EventType;
 import net.site40.rodit.tinyrpg.game.item.Item;
+import net.site40.rodit.tinyrpg.game.object.GameObject;
 import net.site40.rodit.tinyrpg.game.render.BitmapRenderer;
 import net.site40.rodit.tinyrpg.game.render.ResourceManager;
 import net.site40.rodit.tinyrpg.game.render.XmlResourceLoader;
 import net.site40.rodit.util.TinyInputStream;
 import net.site40.rodit.util.TinyOutputStream;
 import net.site40.rodit.util.Util;
+import android.graphics.Bitmap;
+import android.graphics.Bitmap.Config;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
+import android.graphics.RectF;
+import android.graphics.Xfermode;
+import android.util.Log;
 
 public class MapState extends GameObject {
+	
+	public static final boolean BAD_LIGHTING = false;
 
 	public static final int LOAD_STATE_SAVE = 1;
 
@@ -30,14 +39,17 @@ public class MapState extends GameObject {
 
 	private RPGMap map;
 	private BitmapRenderer rotObj;
+	private GameObject lightMapObj;
 	private ArrayList<Entity> entities;
 
 	private boolean spawnedEntities = false;
-
+	
 	public MapState(RPGMap map){
 		this.map = map;
 		if(map != null && map.hasRot())
 			this.rotObj = genRotObject();
+		//if(map != null && map.hasLightMap())
+		//this.lightMapObj = getLightMapObject();
 		this.entities = new ArrayList<Entity>();
 	}
 
@@ -88,6 +100,14 @@ public class MapState extends GameObject {
 		game.removeObject(e);
 		Log.i("MapState", "Despawned entity " + e.getName() + ".");
 		game.getEvents().onEvent(game, EventType.ENTITY_DESPAWNED, e);
+	}
+	
+	public ArrayList<Entity> getCollidingEntitiesByTraceBounds(RectF bounds, Object... exclude){
+		ArrayList<Entity> collisions = new ArrayList<Entity>();
+		for(Entity e : entities)
+			if(!e.isNoclip() && !Util.arrayContains(exclude, e, Object.class) && RectF.intersects(bounds, e.getTraceBounds()))
+				collisions.add(e);
+		return collisions;
 	}
 
 	public ArrayList<Entity> getCollidingEntities(RectF bounds, Object... exclude){
@@ -150,14 +170,79 @@ public class MapState extends GameObject {
 			return true;
 		return false;
 	}
-	
+
 	private BitmapRenderer genRotObject(){
 		return new BitmapRenderer(map.getRenderOnTop()){
 			@Override
-			public RenderLayer getRenderLayer(){
-				return RenderLayer.TOP_OVERRIDE_PLAYER;
+			public float getY(){
+				return 1f;
+			}
+
+			@Override
+			public int getRenderLayer(){
+				return RenderLayer.TOP_OVER_PLAYER;
 			}
 		};
+	}
+
+	private GameObject getLightMapObject(){
+		if(BAD_LIGHTING){
+			return new GameObject(){
+				private float lastPlayerX = Integer.MIN_VALUE;
+				private float lastPlayerY = Integer.MAX_VALUE;
+				private boolean update = false;
+
+				private Bitmap bitmapCache;
+				private Canvas canvas;
+				private Paint paint = new Paint();
+				private Xfermode xfer;
+				private Xfermode defaultXfer;
+
+				@Override
+				public void update(Game game){
+					if(xfer == null){
+						bitmapCache = map.getLightMap().copy(Config.ARGB_8888, true);
+						canvas = new Canvas(bitmapCache);
+						defaultXfer = paint.getXfermode();
+						xfer = new PorterDuffXfermode(PorterDuff.Mode.SRC_IN);
+						paint.setXfermode(xfer);
+					}
+					if(game.getPlayer().getBounds().getX() != lastPlayerX || game.getPlayer().getBounds().getY() != lastPlayerY)
+						update = true;
+				}
+
+				@Override
+				public void draw(Game game, Canvas canvas){
+					if(update){
+						paint.setColor(Color.TRANSPARENT);
+						this.canvas.drawPaint(paint);
+						this.canvas.drawBitmap(map.getLightMap(), 0, 0, null);
+						update = false;
+						lastPlayerX = game.getPlayer().getBounds().getX();
+						lastPlayerY = game.getPlayer().getBounds().getY();
+						this.canvas.drawCircle(game.getPlayer().getBounds().getCenterX(), game.getPlayer().getBounds().getCenterY(), 75f, paint);
+					}
+					canvas.drawBitmap(bitmapCache, 0, 0, null);
+				}
+
+				@Override
+				public int getRenderLayer(){
+					return RenderLayer.TOP_OVER_PLAYER;
+				}
+
+				@Override
+				public boolean shouldScale(){
+					return true;
+				}
+			};
+		}else{
+			return new BitmapRenderer(map.getLightMap()){
+				@Override
+				public int getRenderLayer(){
+					return RenderLayer.TOP_OVER_PLAYER;
+				}
+			};
+		}
 	}
 
 	@Override
@@ -171,6 +256,10 @@ public class MapState extends GameObject {
 				if(map.hasRot()){
 					this.rotObj = genRotObject();
 					game.addObject(rotObj);;
+				}
+				if(map.hasLightMap()){
+					this.lightMapObj = getLightMapObject();
+					game.addObject(lightMapObj);
 				}
 				for(Entity e : entities){
 					spawn(game, e, e.getScript().endsWith("spawn_conditional.js"));
@@ -236,6 +325,10 @@ public class MapState extends GameObject {
 			this.rotObj = genRotObject();
 			game.addObject(rotObj);
 		}
+		if(lightMapObj == null && map.hasLightMap()){
+			this.lightMapObj = getLightMapObject();
+			game.addObject(lightMapObj);
+		}
 
 		super.preRender(game, canvas);
 
@@ -245,7 +338,7 @@ public class MapState extends GameObject {
 	}
 
 	@Override
-	public RenderLayer getRenderLayer(){
+	public int getRenderLayer(){
 		return RenderLayer.BOTTOM;
 	}
 
@@ -261,7 +354,7 @@ public class MapState extends GameObject {
 			map = null;
 		}
 	}
-	
+
 	public void load(Game game, TinyInputStream in)throws IOException{
 		map = new RPGMap(in.readString(), false);
 		int entCount = in.readInt();
@@ -282,18 +375,18 @@ public class MapState extends GameObject {
 
 	public void save(Game game, TinyOutputStream out)throws IOException{
 		//synchronized(entities){
-			ArrayList<Entity> entCopy = new ArrayList<Entity>(entities);
-			out.writeString(map.getFile());
-			int entCount = entCopy.size();
-			if(entCopy.contains(game.getPlayer()))
-				entCount--;
-			out.write(entCount);
-			for(Entity e : entCopy){
-				if(e == game.getPlayer())
-					continue;
-				out.writeString(e.getClass().getCanonicalName());
-				e.save(out);
-			}
+		ArrayList<Entity> entCopy = new ArrayList<Entity>(entities);
+		out.writeString(map.getFile());
+		int entCount = entCopy.size();
+		if(entCopy.contains(game.getPlayer()))
+			entCount--;
+		out.write(entCount);
+		for(Entity e : entCopy){
+			if(e == game.getPlayer())
+				continue;
+			out.writeString(e.getClass().getCanonicalName());
+			e.save(out);
+		}
 		//}
-	}
+}
 }

@@ -4,7 +4,6 @@ import net.site40.rodit.tinyrpg.game.Game;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint.Style;
-import android.graphics.RectF;
 
 public class FadeOutEffect extends PPEffect implements IChainableEffect{
 	
@@ -51,7 +50,8 @@ public class FadeOutEffect extends PPEffect implements IChainableEffect{
 	public void postDraw(Game game, Canvas canvas){
 		paint.setColor(color);
 		paint.setAlpha(getCurrentAlpha(game));
-		canvas.drawRect(new RectF(0, 0, 1280, 720), paint);
+		bounds.set(0, 0, 1280, 720);
+		canvas.drawRect(bounds.get(), paint);
 	}
 	
 	public boolean isComplete(Game game){

@@ -1,7 +1,7 @@
 package net.site40.rodit.tinyrpg.game.render.effects;
 
 import net.site40.rodit.tinyrpg.game.Game;
-import net.site40.rodit.tinyrpg.game.GameObject;
+import net.site40.rodit.tinyrpg.game.object.GameObject;
 import android.graphics.Canvas;
 
 public class DayNightCycle extends GameObject{
@@ -60,13 +60,14 @@ public class DayNightCycle extends GameObject{
 				float transitionFactor = ((float)game.getTime() - (float)startTime) / (float)TRANSITION_LENGTH_MS;
 				if(lastTime == TIME.NIGHT)
 					transitionFactor = 1f - transitionFactor;
-				game.getLighting().setDarkness(transitionFactor);
+				//TODO: Make this compatible with map's static light map or remove the whole thing...
+				//game.getLighting().setDarkness(transitionFactor);
 			}
 			break;
 		}
 	}
 
 	public void draw(Game game, Canvas canvas){}
-	public RenderLayer getRenderLayer(){ return RenderLayer.BOTTOM; }
+	public int getRenderLayer(){ return RenderLayer.BOTTOM; }
 	public boolean shouldScale(){ return false; }
 }

@@ -3,10 +3,9 @@ package net.site40.rodit.tinyrpg.game.gui.windows;
 import java.util.ArrayList;
 
 import net.site40.rodit.tinyrpg.game.Game;
-import net.site40.rodit.tinyrpg.game.GameObject;
+import net.site40.rodit.tinyrpg.game.object.GameObject;
 import net.site40.rodit.util.RenderUtil;
 import android.graphics.Canvas;
-import android.graphics.RectF;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 
@@ -14,15 +13,12 @@ public abstract class Window extends GameObject{
 	
 	public int zIndex = 99;
 
-	private float x;
-	private float y;
-	private float width;
-	private float height;
-
 	protected boolean drawBackground;
 	private boolean visible;
 	private boolean hasFocus;
 	private boolean swallowInput = true;
+	protected boolean canClose;
+	private boolean closed;
 	private ArrayList<WindowComponent> components;
 	private ArrayList<WindowComponent> addQueue;
 	private ArrayList<WindowComponent> removeQueue;
@@ -32,11 +28,10 @@ public abstract class Window extends GameObject{
 	}
 
 	public Window(Game game, boolean drawBackground){
-		this.x = y = width = height = 0;
-
 		this.drawBackground = drawBackground;
 		this.visible = false;
 		this.hasFocus = false;
+		this.canClose = true;
 		this.components = new ArrayList<WindowComponent>();
 		this.addQueue = new ArrayList<WindowComponent>();
 		this.removeQueue = new ArrayList<WindowComponent>();
@@ -45,49 +40,6 @@ public abstract class Window extends GameObject{
 	}
 
 	public abstract void initialize(Game game);
-
-	public float getX(){
-		return x;
-	}
-
-	public void setX(float x){
-		this.x = x;
-	}
-
-	public float getY(){
-		return y;
-	}
-
-	public void setY(float y){
-		this.y = y;
-	}
-
-	public float getWidth(){
-		return width;
-	}
-
-	public void setWidth(float width){
-		this.width = width;
-	}
-
-	public float getHeight(){
-		return height;
-	}
-
-	public void setHeight(float height){
-		this.height = height;
-	}
-
-	public RectF getBoundsF(){
-		return new RectF(x, y, x + width, y + height);
-	}
-
-	public void setBounds(float x, float y, float width, float height){
-		this.x = x;
-		this.y = y;
-		this.width = width;
-		this.height = height;
-	}
 
 	public void add(WindowComponent component){
 		synchronized(addQueue){
@@ -126,6 +78,15 @@ public abstract class Window extends GameObject{
 	public void setVisible(boolean visible){
 		this.visible = visible;
 	}
+	
+	public boolean isClosed(){
+		return closed;
+	}
+	
+	public void close(){
+		this.closed = true;
+		hide();
+	}
 
 	public void unfocusAll(Game game){
 		for(WindowComponent component : components){
@@ -139,7 +100,7 @@ public abstract class Window extends GameObject{
 	}
 	
 	public WindowEventStatus touchInput(Game game, MotionEvent event){
-		if(visible && this.getBoundsF().contains(event.getX(), event.getY()))
+		if(visible && bounds.get().contains(event.getX(), event.getY()))
 			hasFocus = true;
 		
 		boolean overrideHandled = false;
@@ -178,6 +139,14 @@ public abstract class Window extends GameObject{
 	public void setSwallowInput(boolean swallowInput){
 		this.swallowInput = swallowInput;
 	}
+	
+	public boolean canClose(){
+		return canClose;
+	}
+	
+	public void setCanClose(boolean canClose){
+		this.canClose = canClose;
+	}
 
 	@Override
 	public void update(Game game){
@@ -209,14 +178,14 @@ public abstract class Window extends GameObject{
 			return;
 
 		if(drawBackground)
-			RenderUtil.drawBitmapBox(canvas, game, getBoundsF(), paint);
-
+			RenderUtil.drawBitmapBox(canvas, game, bounds.get(), paint);
+		
 		for(WindowComponent component : components)
 			component.draw(game, canvas);
 	}
 
 	@Override
-	public RenderLayer getRenderLayer(){ return RenderLayer.TOP_ALL; }
+	public int getRenderLayer(){ return RenderLayer.TOP_OVER_ALL; }
 	@Override
 	public boolean shouldScale(){ return false; }
 }

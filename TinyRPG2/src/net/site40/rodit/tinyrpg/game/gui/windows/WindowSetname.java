@@ -1,16 +1,11 @@
 package net.site40.rodit.tinyrpg.game.gui.windows;
 
-import static net.site40.rodit.tinyrpg.game.render.MM.EMPTY_OBJECT_ARRAY;
-import static net.site40.rodit.tinyrpg.game.render.MM.EMPTY_STRING_ARRAY;
-import static net.site40.rodit.tinyrpg.game.render.Strings.DIALOG_CONFIRM_NAME;
-import static net.site40.rodit.tinyrpg.game.render.Strings.DIALOG_ENTER_NAME;
-import static net.site40.rodit.tinyrpg.game.render.Strings.DIALOG_YES_NO;
 import static net.site40.rodit.tinyrpg.game.render.Strings.getString;
-
-import android.graphics.Color;
 import net.site40.rodit.tinyrpg.game.Dialog.DialogCallback;
 import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.Values;
+import net.site40.rodit.tinyrpg.game.render.Strings;
+import android.graphics.Color;
 
 public class WindowSetname extends Window{
 
@@ -45,20 +40,20 @@ public class WindowSetname extends Window{
 		btnConfirm.setBackground(WindowComponent.STATE_DOWN, "gui/button_selected.png");
 		btnConfirm.setText("Confirm");
 		btnConfirm.getPaint().setTextSize(Values.FONT_SIZE_MEDIUM);
-		btnConfirm.setBounds(txtName.getX(), txtName.getY() + txtName.getHeight() + 16f, txtName.getWidth(), 100);
+		btnConfirm.setBounds(txtName.getBounds().getX(), txtName.getBounds().getY() + txtName.getBounds().getHeight() + 16f, txtName.getBounds().getWidth(), 100);
 		btnConfirm.addListener(new WindowListener(){
 			public void touchUp(final Game game, WindowComponent component){
 				txtName.closeKeyboard(game);
 				if(txtName.getText().length() == 0)
-					game.getHelper().dialog(DIALOG_ENTER_NAME);
+					game.getHelper().dialog(Strings.Dialog.ENTER_NAME);
 				else{
-					game.getHelper().dialog(getString(DIALOG_CONFIRM_NAME, txtName.getText()), DIALOG_YES_NO, new DialogCallback(){
+					game.getHelper().dialog(getString(Strings.Dialog.CONFIRM_NAME, txtName.getText()), Strings.Dialog.YES_NO, new DialogCallback(){
 						@Override
 						public void onSelected(int option){
 							if(option == 0){
 								game.getPlayer().setUsername(txtName.getText());
-								WindowSetname.this.hide();
-								game.getScripts().execute(game, "script/init/nameset.js", EMPTY_STRING_ARRAY, EMPTY_OBJECT_ARRAY);
+								WindowSetname.this.close();
+								game.getScript().runScript(game, "script/init/nameset.js");
 							}
 						}
 					});

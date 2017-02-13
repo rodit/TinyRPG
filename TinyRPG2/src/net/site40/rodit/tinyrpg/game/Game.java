@@ -1,20 +1,22 @@
 package net.site40.rodit.tinyrpg.game;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 
 import net.site40.rodit.tinyrpg.game.Benchmark.BenchmarkClass;
+import net.site40.rodit.tinyrpg.game.MemoryProfiler.MemoryProfile;
 import net.site40.rodit.tinyrpg.game.audio.AudioManager;
 import net.site40.rodit.tinyrpg.game.battle.Battle;
 import net.site40.rodit.tinyrpg.game.chat.Chat;
 import net.site40.rodit.tinyrpg.game.entity.Entity;
 import net.site40.rodit.tinyrpg.game.entity.EntityPlayer;
-import net.site40.rodit.tinyrpg.game.entity.npc.EntityNPC;
 import net.site40.rodit.tinyrpg.game.event.EventHandler;
 import net.site40.rodit.tinyrpg.game.event.EventReceiver;
 import net.site40.rodit.tinyrpg.game.event.EventReceiver.EventType;
@@ -29,21 +31,29 @@ import net.site40.rodit.tinyrpg.game.map.MobSpawnRegistry;
 import net.site40.rodit.tinyrpg.game.map.RPGMap;
 import net.site40.rodit.tinyrpg.game.mod.ModManager;
 import net.site40.rodit.tinyrpg.game.mod.TinyMod;
+import net.site40.rodit.tinyrpg.game.object.GameObject;
 import net.site40.rodit.tinyrpg.game.quest.QuestManager;
 import net.site40.rodit.tinyrpg.game.render.ResourceManager;
 import net.site40.rodit.tinyrpg.game.render.ResourceStreamProvider.AssetStreamProvider;
 import net.site40.rodit.tinyrpg.game.render.ResourceStreamProvider.ModStreamProvider;
-import net.site40.rodit.tinyrpg.game.render.Sprite;
+import net.site40.rodit.tinyrpg.game.render.Strings.Benchmarks;
 import net.site40.rodit.tinyrpg.game.render.XmlResourceLoader;
 import net.site40.rodit.tinyrpg.game.render.effects.DayNightCycle;
-import net.site40.rodit.tinyrpg.game.render.effects.Lighting;
+import net.site40.rodit.tinyrpg.game.render.effects.EffectCompletionHolder;
+import net.site40.rodit.tinyrpg.game.render.effects.FadeInEffect;
+import net.site40.rodit.tinyrpg.game.render.effects.FadeOutEffect;
 import net.site40.rodit.tinyrpg.game.render.effects.PostProcessor;
 import net.site40.rodit.tinyrpg.game.render.effects.Weather;
+import net.site40.rodit.tinyrpg.game.render.gl.GLUtil;
+import net.site40.rodit.tinyrpg.game.render.gl.RoditGL;
 import net.site40.rodit.tinyrpg.game.saves.Options;
+import net.site40.rodit.tinyrpg.game.saves.Options.OptionChangedListener;
 import net.site40.rodit.tinyrpg.game.saves.SaveManager;
 import net.site40.rodit.tinyrpg.game.script.CutseneHelper;
-import net.site40.rodit.tinyrpg.game.script.ScriptEngine;
 import net.site40.rodit.tinyrpg.game.script.ScriptHelper;
+import net.site40.rodit.tinyrpg.game.script.ScriptManager;
+import net.site40.rodit.tinyrpg.game.script.ScriptManager.KVP;
+import net.site40.rodit.tinyrpg.game.util.Direction;
 import net.site40.rodit.tinyrpg.game.util.EagleTracer;
 import net.site40.rodit.tinyrpg.game.util.Savable;
 import net.site40.rodit.tinyrpg.game.util.ScreenUtil;
@@ -63,13 +73,14 @@ import android.graphics.Paint.Align;
 import android.graphics.Paint.Style;
 import android.graphics.Point;
 import android.graphics.PointF;
+import android.opengl.Matrix;
 import android.util.Log;
 import android.view.Display;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 
-public class Game implements Savable{
+public class Game implements Savable, OptionChangedListener{
 
 	public static final byte[] FILE_SIGNATURE = new byte[] { 7, 1, 5, 7 };
 	public static final String VERSION = "TinyRPG0";
@@ -80,10 +91,14 @@ public class Game implements Savable{
 	}
 
 	public static final boolean DEBUG = true;
-	public static final boolean DEBUG_DRAW = true;
+	public static final boolean DEBUG_DRAW = false;
+	public static final boolean DEBUG_MEM = false;
+	public static final boolean FRAME_SYNC = false;
 
 	public static final float SCALE_FACTOR = 2.5f;
 	public static final float SCALE_FACTOR_1 = 1f / SCALE_FACTOR;
+
+	public static final boolean USE_OPENGL = false;
 
 	private Thread gameThread;
 
@@ -97,11 +112,11 @@ public class Game implements Savable{
 	private ResourceManager resources;
 	private QuestManager quests;
 	private ForgeRegistry forge;
-	private ArrayList<IGameObject> objects;
-	private ArrayList<IGameObject> objRemove;
+	private ArrayList<GameObject> objects;
+	private ArrayList<GameObject> objRemove;
 	private ArrayList<Dialog> dialogs;
 	private Input input;
-	private ScriptEngine scripts;
+	private ScriptManager script;
 	private GuiManager guis;
 	private WindowManager windows;
 	private MapState map;
@@ -113,7 +128,8 @@ public class Game implements Savable{
 	private AudioManager audio;
 	private Chat chat;
 	private PostProcessor pp;
-	private Lighting lighting;
+	//TODO: See DayNightCycle class - now using map's static light map.
+	//private Lighting lighting;
 	private Weather weather;
 	private DayNightCycle dayNight;
 	private ModManager mods;
@@ -138,10 +154,9 @@ public class Game implements Savable{
 
 	private int objectModCount = 0;
 
-	public Game(Context context, View view){
-		gameThread = Thread.currentThread();
-		Log.i("Game", "Game is running on thread with ID: " + gameThread.getId());
+	private RoditGL rodit;
 
+	public Game(Context context, View view){
 		Display display = ((Activity)context).getWindowManager().getDefaultDisplay();
 		Point point = new Point();
 		display.getSize(point);
@@ -149,7 +164,7 @@ public class Game implements Savable{
 		screenScaleY = point.y / 720f;
 
 		if(DEBUG){
-			Benchmark.start("init");
+			Benchmark.start(Benchmarks.INIT);
 			//TODO: Set log level
 		}
 
@@ -171,11 +186,11 @@ public class Game implements Savable{
 		DEFAULT_PAINT.setTextSize(Values.FONT_SIZE_MEDIUM);
 		DEFAULT_PAINT.setAntiAlias(true);
 		DEFAULT_PAINT.setFilterBitmap(false);
-		this.objects = new ArrayList<IGameObject>();
-		this.objRemove = new ArrayList<IGameObject>();
+		this.objects = new ArrayList<GameObject>();
+		this.objRemove = new ArrayList<GameObject>();
 		this.dialogs = new ArrayList<Dialog>();
 		this.input = new Input();
-		this.scripts = new ScriptEngine();
+		this.script = new ScriptManager(this);
 		this.guis = new GuiManager();
 		this.windows = new WindowManager();
 		this.map = new MapState(null);
@@ -195,16 +210,20 @@ public class Game implements Savable{
 		globals.put("start_map", "map/player_home_bedroom.tmx");
 		globals.put("last_bookshelf_skill", "0");
 		globals.put("bookshelf_skill_count", "0");
+		globals.put("player_canswim", false);
+		globals.put("player_swimming", false);
 		//ENTITY VARS
 		globals.put("merek_speak_count", "0");
 		globals.put("test_dialog_index", "0");
-		
+
+		script.initializeGlobals(this);
+
 		this.saves = new SaveManager(this);
 		this.chat = new Chat();
 		this.pp = new PostProcessor();
-		this.lighting = new Lighting();
+		//this.lighting = new Lighting();
+		//pp.add(lighting);
 		this.weather = new Weather();
-		pp.add(lighting);
 		pp.add(weather);
 		this.dayNight = new DayNightCycle(this);
 		addObject(dayNight);
@@ -226,7 +245,7 @@ public class Game implements Savable{
 
 		this.time = this.delta = 0L;
 
-		scripts.execute(this, "script/init/start.js", new String[0], new Object[0]);
+		script.runScript(this, "script/init/start.js", KVP.EMPTY);
 
 		for(Item key : Item.getItems())
 			player.getInventory().add(key, key.getStackSize());
@@ -251,8 +270,10 @@ public class Game implements Savable{
 			e.printStackTrace();
 		}
 
+		options.setChangeListener(this);
+
 		if(DEBUG)
-			Log.i("Benchmark", "Game initialization took " + Benchmark.stop("init") + "ms.");
+			Log.i("Benchmark", "Game initialization took " + Benchmark.stop(Benchmarks.INIT) + "ms.");
 	}
 
 	public Context getContext(){
@@ -282,7 +303,7 @@ public class Game implements Savable{
 	public Object trace(Entity e){
 		if(isShowingDialog())
 			return null;
-		return tracer.trace(map, e, 4f);
+		return tracer.trace(map, e, e.getDirection() == Direction.D_DOWN ? 20f : 10f);
 	}
 
 	public ScreenUtil getScreen(){
@@ -301,25 +322,18 @@ public class Game implements Savable{
 		return forge;
 	}
 
-	public ArrayList<IGameObject> getObjects(){
+	public ArrayList<GameObject> getObjects(){
 		return objects;
 	}
 
-	public Sprite getSprite(String name){
-		for(IGameObject obj : objects)
-			if(obj instanceof Sprite && ((Sprite)obj).getName().equals(name))
-				return (Sprite)obj;
+	public GameObject getObject(String name){
+		for(GameObject obj : objects)
+			if(obj.getName() != null && obj.getName().equals(name))
+				return obj;
 		return null;
 	}
 
-	public void addObject(IGameObject object){
-		if(object == null){
-			new Exception().printStackTrace();
-			return;
-		}
-		if(object instanceof EntityNPC){
-			Log.i("NPC", "NPC ADDED");
-		}
+	public void addObject(GameObject object){
 		synchronized(objects){
 			if(!objects.contains(object)){
 				objects.add(object);
@@ -332,12 +346,18 @@ public class Game implements Savable{
 		}
 	}
 
-	public void removeObject(IGameObject object){
+	public void removeObject(GameObject object){
 		if(object == null)
 			return;
-		synchronized(objRemove){
-			objRemove.add(object);
+		Log.d("Game", "Removed object type " + object.getClass().getName() + " (direct=" + HANDLE_OBJECTS_DIRECTLY + ")");
+		if(HANDLE_OBJECTS_DIRECTLY){
+			objects.remove(object);
 			objectModCount++;
+		}else{
+			synchronized(objRemove){
+				objRemove.add(object);
+				objectModCount++;
+			}
 		}
 		synchronized(dialogs){
 			dialogs.remove(object);
@@ -352,8 +372,8 @@ public class Game implements Savable{
 		return input;
 	}
 
-	public ScriptEngine getScripts(){
-		return scripts;
+	public ScriptManager getScript(){
+		return script;
 	}
 
 	public GuiManager getGuis(){
@@ -376,8 +396,30 @@ public class Game implements Savable{
 		return battle;
 	}
 
-	public void setBattle(Battle battle){
-		this.battle = battle;
+	public void setBattle(final Battle battle){
+		if(battle == null){
+			this.battle = null;
+			return;
+		}
+		FadeOutEffect out = new FadeOutEffect(250L);
+		EffectCompletionHolder holder = new EffectCompletionHolder(out, new Runnable(){
+			@Override
+			public void run(){
+				Game.this.battle = battle;
+				skipFrames(1);
+				FadeInEffect in = new FadeInEffect(250L);
+				EffectCompletionHolder inHolder = new EffectCompletionHolder(in, new Runnable(){
+					@Override
+					public void run(){
+						battle.start();
+					}
+				});
+				pp.add(in);
+				pp.add(inHolder);
+			}
+		});
+		pp.add(out);
+		pp.add(holder);
 	}
 
 	public SaveManager getSaves(){
@@ -392,9 +434,9 @@ public class Game implements Savable{
 		return pp;
 	}
 
-	public Lighting getLighting(){
-		return lighting;
-	}
+	//	public Lighting getLighting(){
+	//		return lighting;
+	//	}
 
 	public Weather getWeather(){
 		return weather;
@@ -416,6 +458,14 @@ public class Game implements Savable{
 		return mp.getStatus() == GameStatus.REMOTE;
 	}
 
+	public void setGl(RoditGL rodit){
+		this.rodit = rodit;
+	}
+
+	public RoditGL getGl(){
+		return rodit;
+	}
+
 	public void releaseMap(boolean save){
 		if(map == null)
 			return;
@@ -434,12 +484,17 @@ public class Game implements Savable{
 		map = null;
 	}
 
+	static boolean HANDLE_OBJECTS_DIRECTLY = false;
 	public void switchMap(String mapName){
+		Log.d("THREAD", "CURRENT: " + Thread.currentThread().getId() + " GAME: " + gameThread.getId());
+		if(this.isGameThread())
+			HANDLE_OBJECTS_DIRECTLY = true;
 		RPGMap loadMap = (RPGMap)resources.getObject(mapName);
 		if(loadMap == null){
 			Log.e("Game", "Failed to load map: " + mapName + ". Resource was probably not found.");
 			return;
 		}
+		setGlobalb("player_swimming", false);
 		if(player == null)
 			player = new EntityPlayer();
 		MapState current = this.map;
@@ -483,6 +538,9 @@ public class Game implements Savable{
 			if(isOnline())
 				mp.sendMapUpdate(mapName);
 		}
+		HANDLE_OBJECTS_DIRECTLY = false;
+		setGlobalb("transitioning", false);
+		System.gc();
 	}
 
 	public void setMapOld(MapState newMap){
@@ -533,6 +591,14 @@ public class Game implements Savable{
 		System.gc();
 	}
 
+	public void showMessage(String message, Gui returnGui){
+		GuiMessage msgGui = (GuiMessage)guis.get(GuiMessage.class);
+		msgGui.get("txtMessage").setText(message);
+		setGlobal("gui_message_return", returnGui);
+		guis.hide(returnGui);
+		guis.show(GuiMessage.class);
+	}
+
 	public void scroll(float x, float y){
 		scrollX += x;
 		scrollY += y;
@@ -574,6 +640,10 @@ public class Game implements Savable{
 		return Util.tryGetInt(getGlobals(key));
 	}
 
+	public long getGloball(String key){
+		return Util.tryGetLong(getGlobals(key));
+	}
+
 	public boolean getGlobalb(String key){
 		return Util.tryGetBool(getGlobals(key));
 	}
@@ -594,10 +664,14 @@ public class Game implements Savable{
 		setGlobal(key, String.valueOf(i));
 	}
 
+	public void setGloball(String key, long l){
+		setGlobal(key, String.valueOf(l));
+	}
+
 	public void setGlobalb(String key, boolean b){
 		setGlobal(key, String.valueOf(b));
 	}
-	
+
 	public void setGlobalf(String key, float f){
 		setGlobal(key, String.valueOf(f));
 	}
@@ -626,14 +700,6 @@ public class Game implements Savable{
 		events.remove(receiver);
 	}
 
-	public void showMessage(String message, Gui returnGui){
-		GuiMessage msgGui = (GuiMessage)guis.get(GuiMessage.class);
-		msgGui.get("txtMessage").setText(message);
-		setGlobal("gui_message_return", returnGui);
-		guis.hide(returnGui);
-		guis.show(GuiMessage.class);
-	}
-
 	public long getTime(){
 		return time;
 	}
@@ -655,10 +721,14 @@ public class Game implements Savable{
 	public boolean isPaused(){
 		return paused;
 	}
-	
+
+	public void cleanExit(){
+		((Activity)context).finish();
+	}
+
 	public void flushObjects(){
 		synchronized(objects){
-			for(IGameObject obj : objRemove){
+			for(GameObject obj : objRemove){
 				objects.remove(obj);
 				if(obj != null)
 					obj.dispose(this);
@@ -669,21 +739,31 @@ public class Game implements Savable{
 		}
 	}
 
+	private long uNow;
+	private ArrayList<GameObject> uCopy = new ArrayList<GameObject>();
 	public void update(){
-		if(DEBUG)
-			Benchmark.start("update");
+		if(gameThread == null){
+			gameThread = Thread.currentThread();
+			Log.i("Game", "Game is running on thread with ID: " + gameThread.getId());
+		}
 
-		long now = System.currentTimeMillis();
-		delta = now - time;
-		time = now;
+		if(DEBUG)
+			Benchmark.start(Benchmarks.UPDATE);
+		if(DEBUG_MEM)
+			MemoryProfiler.start("u");
+
+		uNow = System.currentTimeMillis();
+		delta = uNow - time;
+		time = uNow;
 
 		scheduler.update(this);
 		pp.update(this);
-		
+
 		synchronized(objects){
 			flushObjects();
-			ArrayList<IGameObject> copy = new ArrayList<IGameObject>(objects);
-			for(IGameObject obj : copy){
+			uCopy.clear();
+			uCopy.addAll(objects);
+			for(GameObject obj : uCopy){
 				if(battle != null)
 					if(!(obj instanceof Dialog))
 						continue;
@@ -700,24 +780,109 @@ public class Game implements Savable{
 		input.update(this);
 
 		if(DEBUG)
-			updateTime = Benchmark.stop("update");
+			updateTime = Benchmark.stop(Benchmarks.UPDATE);
+		if(DEBUG_MEM){
+			MemoryProfile profile = MemoryProfiler.end("u");
+			if(time - lastMemProfileDump >= 1000){
+				if(memDumpStream == null){
+					try{
+						memDumpStream = new FileOutputStream(new File(context.getFilesDir(), "memdump.txt"), true);
+					}catch(IOException e){}
+				}
+				try{
+					profile.dump(memDumpStream);
+				}catch(IOException e){}
+			}
+		}
 	}
 
 	public void pushTranslate(Canvas canvas){
-		canvas.translate(scrollX, scrollY);
+		if(USE_OPENGL)
+			Matrix.translateM(rodit.getPVMatrix(), 0, scrollX, scrollY, 0f);
+		else
+			canvas.translate(scrollX, scrollY);
 	}
 
 	public void popTranslate(Canvas canvas){
-		canvas.translate(-scrollX, -scrollY);
+		if(USE_OPENGL)
+			Matrix.translateM(rodit.getPVMatrix(), 0, -scrollX, -scrollY, 0f);
+		else
+			canvas.translate(-scrollX, -scrollY);
+	}
+
+	public void draw(){
+		if(USE_OPENGL)
+			GLUtil.prepareFrame();
+
+		if(skipFrames > 0){
+			skipFrames--;
+			return;
+		}
+
+		scrollX = (player == null ? 0 : player.getBounds().getX()) * SCALE_FACTOR - 1280f / 2f;
+		scrollY = (player == null ? 0 : player.getBounds().getY()) * SCALE_FACTOR - 720f / 2f;
+
+		if(battle != null)
+			battle.draw(this, null);
+
+		popTranslate(null);
+		Matrix.scaleM(rodit.getPVMatrix(), 0, SCALE_FACTOR, SCALE_FACTOR, 1f);
+
+		synchronized(objects){
+			if(objectModCount > 0){
+				Collections.sort(objects, GameObject.RenderLayer.RENDER_COMPARATOR);
+				objectModCount = 0;
+			}
+
+			ArrayList<GameObject> copy = new ArrayList<GameObject>(objects);
+			for(GameObject obj : copy){
+				if(battle != null)
+					if(!(obj instanceof Dialog))
+						continue;
+				if(!obj.shouldScale())
+					Matrix.scaleM(rodit.getPVMatrix(), 0, SCALE_FACTOR_1, SCALE_FACTOR_1, 1f);
+
+				obj.draw(this, null);
+
+				if(!obj.shouldScale())
+					Matrix.scaleM(rodit.getPVMatrix(), 0, SCALE_FACTOR, SCALE_FACTOR, 1f);
+			}
+		}
+
+		pushTranslate(null);
+		windows.draw(this, null);
+		guis.draw(null, this);
+
+		if(FRAME_SYNC){
+			if(delta > 17L && delta < 33L){
+				long diff = 33 - delta;
+				try{
+					Thread.sleep(diff);
+				}catch(InterruptedException e){
+					e.printStackTrace();
+				}
+			}
+		}
+
+		frameCounter++;
 	}
 
 	long lastFps = 0;
 	private int lastFpsI = 0;
 	private int frameCounter = 0;
 	private Paint fpsPaint;
+	private HashMap<String, Integer> dbgData = new HashMap<String, Integer>();
+	private String dbgName;
+	private long dObjDrawTime;
+	private long dGuiDrawTime;
+	private long dMemUsed;
+	private long dLastMem;
+	private long dSyncDiff;
 	public void draw(Canvas canvas){
 		if(DEBUG)
-			Benchmark.start("draw");
+			Benchmark.start(Benchmarks.DRAW);
+		if(DEBUG_MEM)
+			MemoryProfiler.start("d");
 
 		if(screenScaleX > 1f || screenScaleY > 1f)
 			canvas.scale(screenScaleX, screenScaleY);
@@ -727,11 +892,11 @@ public class Game implements Savable{
 			skipFrames--;
 			return;
 		}
-		
+
 		pp.preDraw(this, canvas);
 
-		scrollX = (player == null ? 0 : player.getX()) * SCALE_FACTOR - 1280f / 2f;
-		scrollY = (player == null ? 0 : player.getY()) * SCALE_FACTOR - 720f / 2f;
+		scrollX = (player == null ? 0 : player.getBounds().getX()) * SCALE_FACTOR - 1280f / 2f;
+		scrollY = (player == null ? 0 : player.getBounds().getY()) * SCALE_FACTOR - 720f / 2f;
 
 		if(battle != null)
 			battle.draw(this, canvas);
@@ -741,59 +906,84 @@ public class Game implements Savable{
 		canvas.scale(SCALE_FACTOR, SCALE_FACTOR);
 
 		if(DEBUG)
-			Benchmark.start("draw_objects");
+			Benchmark.start(Benchmarks.DRAW_OBJ);
 		synchronized(objects){
 			if(objectModCount > 0){
-				Collections.sort(objects, IGameObject.RENDER_COMPARATOR);
+				Collections.sort(objects, GameObject.RenderLayer.RENDER_COMPARATOR);
 				objectModCount = 0;
 			}
 
-			ArrayList<IGameObject> copy = new ArrayList<IGameObject>(objects);
-			for(IGameObject obj : copy){
+			uCopy.clear();
+			uCopy.addAll(objects);
+			for(GameObject obj : uCopy){
 				if(battle != null)
 					if(!(obj instanceof Dialog))
 						continue;
 				if(!obj.shouldScale())
 					canvas.scale(SCALE_FACTOR_1, SCALE_FACTOR_1);
+
+				dbgName = null;
+				if(DEBUG_DRAW){
+					dbgName = obj.getName();
+					if(dbgName != null){
+						if(!dbgData.containsKey(dbgName))
+							dbgData.put(dbgName, 0);
+						Benchmark.start("sprite_" + dbgName);
+					}
+				}
+
 				obj.draw(this, canvas);
+
+				if(DEBUG_DRAW){
+					if(dbgName != null){
+						long drawTime = Benchmark.stop("sprite_" + dbgName);
+						int i = dbgData.get(dbgName);
+						if(i % 60 == 0)
+							System.out.println("Sprite draw (" + dbgName + "): " + drawTime + "ms");
+						dbgData.put(dbgName, i + 1);
+					}
+				}
+
 				if(!obj.shouldScale())
 					canvas.scale(SCALE_FACTOR, SCALE_FACTOR);
 
 				if(DEBUG_DRAW){
-					if(obj instanceof Sprite){
-						Sprite sprite = (Sprite)obj;
-						Style style = obj.getPaint().getStyle();
-						int color = obj.getPaint().getColor();
-						float size = sprite.getPaint().getTextSize();
-						obj.getPaint().setStyle(Style.STROKE);
-						obj.getPaint().setColor(Color.RED);
-						canvas.drawRect(sprite.getBounds(), obj.getPaint());
-						sprite.getPaint().setColor(Color.BLUE);
-						sprite.getPaint().setTextSize(8f);
-						canvas.drawText(sprite.getName(), sprite.getX(), sprite.getY() - 8f, sprite.getPaint());
-						sprite.getPaint().setTextSize(size);
-						obj.getPaint().setStyle(style);
-						obj.getPaint().setColor(color);
+					Style style = obj.getPaint().getStyle();
+					int color = obj.getPaint().getColor();
+					float size = obj.getPaint().getTextSize();
+					obj.getPaint().setStyle(Style.STROKE);
+					obj.getPaint().setColor(Color.RED);
+					canvas.drawRect(obj.getBounds().get(), obj.getPaint());
+					if(obj instanceof Entity){
+						obj.getPaint().setColor(Color.GREEN);
+						obj.getPaint().setStyle(Style.FILL);
+						canvas.drawRect(((Entity)obj).getCollisionBounds(), obj.getPaint());
 					}
+					if(obj.getName() != null){
+						obj.getPaint().setColor(Color.BLUE);
+						obj.getPaint().setTextSize(8f);
+						canvas.drawText(obj.getName(), obj.getBounds().getX(), obj.getBounds().getY() - 8f, obj.getPaint());
+					}
+					obj.getPaint().setTextSize(size);
+					obj.getPaint().setStyle(style);
+					obj.getPaint().setColor(color);
 				}
 			}
 		}
-		long objDrawTime = 0L;
 		if(DEBUG)
-			objDrawTime = Benchmark.stop("draw_objects");
+			dObjDrawTime = Benchmark.stop(Benchmarks.DRAW_OBJ);
 		pp.draw(this, canvas);
 
 		canvas.scale(SCALE_FACTOR_1, SCALE_FACTOR_1);
 
 		pushTranslate(canvas);
 		if(DEBUG)
-			Benchmark.start("draw_gui");
+			Benchmark.start(Benchmarks.DRAW_GUI);
 		windows.draw(this, canvas);
 		guis.draw(canvas, this);
 		pp.postDraw(this, canvas);
-		long guiDrawTime = 0l;
 		if(DEBUG){
-			guiDrawTime = Benchmark.stop("draw_gui");
+			dGuiDrawTime = Benchmark.stop(Benchmarks.DRAW_GUI);
 			if(fpsPaint == null){
 				fpsPaint = new Paint(DEFAULT_PAINT);
 				fpsPaint.setColor(Color.WHITE);
@@ -807,19 +997,23 @@ public class Game implements Savable{
 				frameCounter = 0;
 			}
 			canvas.drawText("FPS: " + lastFpsI, 1280f, 24f, fpsPaint);
-			long memUsed = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-			canvas.drawText("Memory: " + (memUsed / 1024l) + "/" + Runtime.getRuntime().maxMemory() + "KB", 1280f, 40f, fpsPaint);
+			dMemUsed = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+			canvas.drawText("Memory: " + (dMemUsed / 1024l) + "K" + " (" + ((double)(dMemUsed - dLastMem) / 1024d) + ")", 1280f, 40f, fpsPaint);
 			canvas.drawText("Objects: " + objects.size(), 1280f, 56f, fpsPaint);
-			BenchmarkClass ppDraw = Benchmark.getBenchmark("draw_pp");
-			drawTimes(canvas, fpsPaint, drawTime, new long[] { objDrawTime, guiDrawTime, ppDraw != null ? ppDraw.getTime() : 0L });
+			BenchmarkClass ppDraw = Benchmark.getBenchmark(Benchmarks.DRAW_PP);
+			drawTimes(canvas, fpsPaint, drawTime, new long[] { dObjDrawTime, dGuiDrawTime, ppDraw != null ? ppDraw.getTime() : 0L });
+			canvas.drawText("X: " + player.getBounds().getX() + " Y:" + player.getBounds().getY(), 1280f, 100f, fpsPaint);
+			dLastMem = dMemUsed;
 		}
 
-		if(delta > 17L && delta < 33L){
-			long diff = 33 - delta;
-			try{
-				Thread.sleep(diff);
-			}catch(InterruptedException e){
-				e.printStackTrace();
+		if(FRAME_SYNC){
+			if(delta > 17L && delta < 33L){
+				dSyncDiff = 33 - delta;
+				try{
+					Thread.sleep(dSyncDiff);
+				}catch(InterruptedException e){
+					e.printStackTrace();
+				}
 			}
 		}
 
@@ -829,28 +1023,42 @@ public class Game implements Savable{
 			canvas.scale(1f / screenScaleX, 1f / screenScaleY);
 
 		if(DEBUG)
-			drawTime = Benchmark.stop("draw");
+			drawTime = Benchmark.stop(Benchmarks.DRAW);
+		if(DEBUG_MEM){
+			MemoryProfile profile = MemoryProfiler.end("d");
+			if(time - lastMemProfileDump >= 1000){
+				lastMemProfileDump = time;
+				try{
+					profile.dump(memDumpStream);
+				}catch(IOException e){}
+			}
+		}
 	}
+	private FileOutputStream memDumpStream;
+	private long lastMemProfileDump;
 
+	private long dtHighest;
+	private int dtHighestIndex;
 	private void drawTimes(Canvas canvas, Paint paint, long drawTime, long[] times){
-		long highest = 0l;
-		int highestIndex = 0;
+		dtHighest = 0l;
+		dtHighestIndex = 0;
 		for(int i = 0; i < times.length; i++){
-			if(times[i] > highest){
-				highest = times[i];
-				highestIndex = i;
+			if(times[i] > dtHighest){
+				dtHighest = times[i];
+				dtHighestIndex = i;
 			}
 		}
 		String toDraw = "Time: " + drawTime + "ms, ";
 		for(int i = 0; i < times.length; i++)
 			toDraw += times[i] + "ms, ";
-		toDraw += " H:" + highest + "ms, " + highestIndex + "i";
+		toDraw += " H:" + dtHighest + "ms, " + dtHighestIndex + "i";
 		canvas.drawText(toDraw, 1280f, 72f, paint);
 	}
 
+	private PointF iScaledPoint = new PointF(1f, 1f);
 	public void input(MotionEvent event){
-		PointF scaled = screen.scaleInput(event.getX(), event.getY());
-		event.setLocation(scaled.x, scaled.y);
+		screen.scaleInput(event.getX(), event.getY(), iScaledPoint);
+		event.setLocation(iScaledPoint.x, iScaledPoint.y);
 
 		windows.touchInput(this, event);
 		guis.input(event, this);
@@ -896,6 +1104,21 @@ public class Game implements Savable{
 	private volatile int skipFrames;
 	public void skipFrames(int frames){
 		skipFrames += frames;
+	}
+
+	@Override
+	public void onOptionChanged(String key, String oldValue, String newValue){
+		if(key.equals(Options.USE_HARDWARE_RENDER)){
+			if(Util.tryGetBool(newValue))
+				view.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+			else
+				view.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+		}else if(key.equals(Options.BACKGROUND_MUSIC)){
+			if(Util.tryGetBool(newValue))
+				audio.unpauseAll();
+			else
+				audio.pauseAll();
+		}
 	}
 
 	public void load(TinyInputStream in)throws IOException{

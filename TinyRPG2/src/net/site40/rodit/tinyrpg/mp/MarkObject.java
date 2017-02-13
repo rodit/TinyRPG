@@ -1,15 +1,14 @@
 package net.site40.rodit.tinyrpg.mp;
 
-import static net.site40.rodit.tinyrpg.game.render.Strings.DIALOG_CONFIRM_SUMMON;
 import static net.site40.rodit.tinyrpg.game.render.Strings.getString;
-
-import android.graphics.Canvas;
-import android.graphics.RectF;
 import net.site40.rodit.tinyrpg.game.Dialog.DialogCallback;
 import net.site40.rodit.tinyrpg.game.Game;
-import net.site40.rodit.tinyrpg.game.GameObject;
 import net.site40.rodit.tinyrpg.game.Input;
+import net.site40.rodit.tinyrpg.game.object.GameObject;
 import net.site40.rodit.tinyrpg.game.render.Animation;
+import net.site40.rodit.tinyrpg.game.render.Strings;
+import android.graphics.Canvas;
+import android.graphics.RectF;
 
 public class MarkObject extends GameObject{
 	
@@ -21,19 +20,13 @@ public class MarkObject extends GameObject{
 	
 	private String mapFile;
 	private String remoteUsername;
-	private float x;
-	private float y;
-	
-	private RectF boundsCache = null;
 	
 	private volatile boolean dialogOpen = false;
 	
 	public MarkObject(String mapFile, String remoteUsername, float x, float y){
 		this.mapFile = mapFile;
 		this.remoteUsername = remoteUsername;
-		this.x = x;
-		this.y = y;
-		boundsCache = new RectF(x, y, x + WIDTH, y + HEIGHT);
+		this.bounds.set(x, y, WIDTH, HEIGHT);
 	}
 	
 	public String getMapFile(){
@@ -46,12 +39,12 @@ public class MarkObject extends GameObject{
 
 	@Override
 	public void update(final Game game){
-		if(!dialogOpen && game.getInput().isUp(Input.KEY_ACTION) && RectF.intersects(boundsCache, game.getPlayer().getBounds())){
-			game.getHelper().dialog(getString(DIALOG_CONFIRM_SUMMON, remoteUsername), new String[] { "Yes", "No" }, new DialogCallback(){
+		if(!dialogOpen && game.getInput().isUp(Input.KEY_ACTION) && RectF.intersects(bounds.get(), game.getPlayer().getCollisionBounds())){
+			game.getHelper().dialog(getString(Strings.Dialog.CONFIRM_SUMMON, remoteUsername), new String[] { "Yes", "No" }, new DialogCallback(){
 				@Override
 				public void onSelected(int option){
 					if(option == 0){
-						game.getMP().sendMarkAccepted(mapFile, remoteUsername, x, y);
+						game.getMP().sendMarkAccepted(mapFile, remoteUsername, MarkObject.this.bounds.getX(), MarkObject.this.bounds.getY());
 						game.getHelper().dialog("Attempting to summon " + remoteUsername + " to your world...");
 					}
 					dialogOpen = false;
@@ -69,11 +62,11 @@ public class MarkObject extends GameObject{
 			game.removeObject(this);
 			return;
 		}
-		canvas.drawBitmap(resourceCache.getFrame(game.getTime()), null, boundsCache, paint);
+		canvas.drawBitmap(resourceCache.getFrame(game.getTime()), null, bounds.get(), paint);
 	}
 
 	@Override
-	public RenderLayer getRenderLayer(){
+	public int getRenderLayer(){
 		return RenderLayer.MIDDLE;
 	}
 
@@ -87,7 +80,7 @@ public class MarkObject extends GameObject{
 		if(!(object instanceof MarkObject))
 			return false;
 		MarkObject obj = (MarkObject)object;
-		return obj.getMapFile().equals(mapFile) && obj.getRemoteUsername().equals(remoteUsername) && obj.x == x && obj.y == y;
+		return obj.getMapFile().equals(mapFile) && obj.getRemoteUsername().equals(remoteUsername) && obj.getBounds().getX() == bounds.getX() && obj.getBounds().getY() == bounds.getY();
 	}
 	
 	@Override

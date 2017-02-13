@@ -80,6 +80,12 @@ public class ScreenUtil {
 		return new PointF(scaleInputX(x), scaleInputY(y));
 	}
 	
+	public PointF scaleInput(float x, float y, PointF out){
+		out.x = scaleInputX(x);
+		out.y = scaleInputY(y);
+		return out;
+	}
+	
 	public float scaleInputX(float x){
 		return x * ratioInputX;
 	}

@@ -3,7 +3,6 @@ package net.site40.rodit.tinyrpg.game.gui.windows;
 import net.site40.rodit.tinyrpg.game.Game;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.RectF;
 
 public class WindowSliderComponent extends WindowComponent{
 	
@@ -59,12 +58,12 @@ public class WindowSliderComponent extends WindowComponent{
 	
 	@Override
 	public void draw(Game game, Canvas canvas){
-		RectF drawBounds = getBoundsF();
 		paint.setColor(Color.BLUE);
-		canvas.drawRect(drawBounds, paint);
+		canvas.drawRect(bounds.get(), paint);
 		
-		drawBounds.right = drawBounds.width() * getCompletionRatio();
+		bounds.getPooled0().set(bounds.get());
+		bounds.getPooled0().right = bounds.getWidth() * getCompletionRatio();
 		paint.setColor(Color.WHITE);
-		canvas.drawRect(drawBounds, paint);
+		canvas.drawRect(bounds.getPooled0(), paint);
 	}
 }

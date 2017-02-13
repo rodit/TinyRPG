@@ -3,6 +3,7 @@ package net.site40.rodit.tinyrpg.game.item.armour;
 import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.entity.Entity;
 import net.site40.rodit.tinyrpg.game.item.ItemEquippable;
+import net.site40.rodit.tinyrpg.game.script.ScriptManager.KVP;
 
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Function;
@@ -42,13 +43,13 @@ public class Armour extends ItemEquippable{
 	public void initCallbacks(Game game){
 		super.initCallbacks(game);
 		if(!TextUtils.isEmpty(script) && jsOnHit == null)
-			game.getScripts().execute(game, script, new String[] { "self" }, new Object[] { this });
+			game.getScript().runScript(game, script, new KVP<Armour>("self", this));
 	}
 	
 	public void onHit(Game game, Entity sender, Entity receiver){
 		initCallbacks(game);
 		if(jsOnHit != null)
-			game.getScripts().executeFunction(game, jsOnHit, this, new String[0], new Object[0], new Object[] { sender, receiver });
+			game.getScript().runFunction(game, jsOnHit, this, KVP.EMPTY, sender, receiver);
 	}
 	
 	@Override

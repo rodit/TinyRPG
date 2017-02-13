@@ -1,12 +1,15 @@
 package net.site40.rodit.tinyrpg.game.entity.npc;
 
-import android.graphics.Canvas;
 import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.entity.Entity;
+import net.site40.rodit.tinyrpg.game.object.GameObject;
 import net.site40.rodit.tinyrpg.game.util.Direction;
 import net.site40.rodit.util.Util;
+import android.graphics.Canvas;
 
 public class EntityNPC extends EntityAI{
+	
+	public static final String OPT_DONT_CHANGE_DIRECTION = "opt_dont_change_direction";
 
 	protected Nametag nametag;
 
@@ -18,6 +21,11 @@ public class EntityNPC extends EntityAI{
 		super();
 		this.displayName = displayName;
 	}
+	
+	public void setX(float x, GameObject o){
+		super.setX(x);
+		System.out.println(o.getName());
+	}
 
 	@Override
 	public boolean showName(){
@@ -26,7 +34,7 @@ public class EntityNPC extends EntityAI{
 
 	@Override
 	public void onAction(Game game, Entity actor){
-		String optDontChangeDirection = getRuntimeProperty("opt_dont_change_direction");
+		String optDontChangeDirection = getRuntimeProperty(OPT_DONT_CHANGE_DIRECTION);
 		if(!Util.tryGetBool(optDontChangeDirection, false))
 			this.setDirection(Direction.opposite(actor.getDirection()));
 		super.onAction(game, actor);
@@ -41,7 +49,7 @@ public class EntityNPC extends EntityAI{
 	public void createNametag(Game game){
 		if(nametag == null){
 			nametag = new Nametag(this);
-			game.getObjects().add(nametag);
+			game.addObject(nametag);
 		}
 	}
 

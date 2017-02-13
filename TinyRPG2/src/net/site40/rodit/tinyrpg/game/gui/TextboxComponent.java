@@ -97,7 +97,7 @@ public class TextboxComponent extends Component{
 	@Override
 	public void draw(Game game, Canvas canvas){
 		getPaint().setColor(backgroundColor);
-		canvas.drawRect(getBounds(), getPaint());
+		canvas.drawRect(bounds.get(), getPaint());
 		getPaint().setColor(textColor);
 		drawCenteredText(canvas, getText(), getBounds());
 	}

@@ -5,9 +5,11 @@ import net.site40.rodit.tinyrpg.game.entity.EntityLiving;
 public class InventoryUtil {
 	
 	public static boolean hasWeaponEquipped(EntityLiving entity){
-		for(int i = 0; i < entity.getEquipped().length; i++)
-			if(entity.getEquipped(i) instanceof Weapon)
+		for(int i = 0; i < entity.getEquipped().length; i++){
+			ItemStack stack = entity.getEquipped(i);
+			if(stack != null && stack.getItem() instanceof Weapon)
 				return true;
+		}
 		return false;
 	}
 	

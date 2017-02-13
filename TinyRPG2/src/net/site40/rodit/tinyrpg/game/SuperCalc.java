@@ -2,30 +2,23 @@ package net.site40.rodit.tinyrpg.game;
 
 import net.site40.rodit.tinyrpg.game.entity.EntityLiving;
 import net.site40.rodit.tinyrpg.game.entity.EntityPlayer;
+import net.site40.rodit.tinyrpg.game.entity.EntityStats;
 import net.site40.rodit.tinyrpg.game.item.Item;
 import net.site40.rodit.tinyrpg.game.item.ItemStack;
 import net.site40.rodit.tinyrpg.game.item.Weapon;
-import net.site40.rodit.tinyrpg.game.item.armour.Armour;
 
 public class SuperCalc {
 	
 	public static final float BASE_MAGIKA = 10f;
 	public static final float BASE_HEALTH = 25f;
 	
-	public static void attack(Game game, EntityLiving user, EntityLiving receiver, Weapon weapon){
-		weapon.onHit(game, user, receiver);
-		receiver.removeHealth(getDamage(game, user, receiver, weapon));
-		for(int i = 0; i < receiver.getEquipped().length; i++){
-			Item item = receiver.getEquipped(i);
-			if(item instanceof Armour)
-				((Armour)item).onHit(game, user, receiver);
-		}
-	}
-	
 	public static float getDamage(Game game, EntityLiving user, EntityLiving receiver, Weapon weapon){
 		float rand = game.getRandom().nextFloat() - 0.5f;
 		rand /= 0.5f;
-		return getDirectDamage(game, user, receiver, weapon) * (1f + rand);
+		float direct = getDirectDamage(game, user, receiver, weapon) * (1f + rand);
+		float critChance = getCriticalHitChance(user);
+		float multi = game.getRandom().should(critChance) ? getCriticalMultiplier(user) : 1f;
+		return multi * direct;
 	}
 	
 	public static float getDirectDamage(Game game, EntityLiving user, EntityLiving receiver, Weapon weapon){
@@ -61,16 +54,15 @@ public class SuperCalc {
 	}
 	
 	public static int getMaxMagika(EntityLiving ent){
-		return (int)(BASE_MAGIKA + 30f * ((float)Math.pow(1.13f, ent.getStats().getMagika())));
+		return (int)(BASE_MAGIKA + 20f * ((float)Math.pow(1.13f, (float)ent.getStats().getLevel() / 5f)));
 	}
 	
 	public static int getMaxHealth(EntityLiving ent){
-		return (int)(BASE_HEALTH + (float)Math.pow(1.13f, ent.getStats().getLevel())) + getHealthBonus(ent);
+		return (int)(BASE_HEALTH + 30f * (float)Math.pow(1.13f, (float)ent.getStats().getLevel() / 3.5f)) + getHealthBonus(ent);
 	}
 	
 	private static int getHealthBonus(EntityLiving ent){
-		int strMulti = (int)(ent.getStats().getStrength() / 2f);
-		return strMulti * 10;
+		return (int)(((10f * ent.getStats().getStrength()) / 2f) * 8f);
 	}
 	
 	public static int getXpForLevel(int level){
@@ -112,5 +104,31 @@ public class SuperCalc {
 	
 	public static long getStackValueFromShop(ItemStack stack, EntityPlayer player){
 		return getItemValueFromShop(stack.getItem(), player) * stack.getAmount();
+	}
+	
+	public static float getCriticalHitChance(EntityLiving entity){
+		if(entity.parryCritFlag){
+			entity.parryCritFlag = false;
+			return 1f;
+		}
+		return (float)(Math.pow(0.98d, -(double)entity.getStats().getLevel() + Math.pow(0.975d, -(double)entity.getStats().getLuck()))) / 100f;
+	}
+	
+	public static float getCriticalMultiplier(EntityLiving entity){
+		return (float)(Math.pow(1.1d, (double)entity.getStats().getLevel() / 20d) + Math.pow(1.1d, (double)entity.getStats().getStrength() / 15d) - 1d);
+	}
+	
+	public static float getAssassinParryChance(EntityStats stats){
+		float luckAdd = stats.getLuck() > 9 ? ((stats.getLuck() * 10f) - 9) * 0.025f : 0f;
+		return (2f + (float)stats.getLevel() * 0.1f + luckAdd) / 100f;
+	}
+	
+	public static float getMageDamageReductionMulti(EntityStats stats){
+		return (10f + (float)stats.getLevel() * 0.5f) / 100f;
+	}
+	
+	public static float getThiefGoldBonusMulti(EntityStats stats){
+		float luckAdd = stats.getLuck() > 9 ? ((stats.getLuck() * 10f) - 9) * 0.025f : 0f;
+		return (10f + (float)stats.getLevel() * 0.5f + luckAdd) / 100f;
 	}
 }

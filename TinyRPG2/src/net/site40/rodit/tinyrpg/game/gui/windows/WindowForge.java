@@ -40,7 +40,7 @@ public class WindowForge extends WindowSlotted{
 		this.txtTitle = new WindowComponent("txtTitle");
 		txtTitle.setText("Forge");
 		txtTitle.getPaint().setTextSize(Values.FONT_SIZE_MEDIUM);
-		txtTitle.setX(this.getWidth() / 2f);
+		txtTitle.setX(bounds.getWidth() / 2f);
 		txtTitle.setY(78f);
 		add(txtTitle);
 		
@@ -50,17 +50,18 @@ public class WindowForge extends WindowSlotted{
 				addSlot(OFFSET_X + x * WindowSlot.SLOT_WIDTH, OFFSET_Y + y * WindowSlot.SLOT_HEIGHT, FORGE_KEY, "frg_inv_" + k++);
 		
 		txtPageNo = new WindowComponent("txtPageNo");
-		txtPageNo.setX(1148 - getX());
-		txtPageNo.setY(412 - getY());
+		txtPageNo.setX(1148 - bounds.getX());
+		txtPageNo.setY(412 - bounds.getY());
 		txtPageNo.setText("1/1");
 		txtPageNo.getPaint().setTextSize(Values.FONT_SIZE_SMALL);
 		txtPageNo.addListener(new WindowListener(){
+			private String uPage;
 			public void update(Game game, WindowComponent component){
 				ProviderInfo info = getProviderInfo(FORGE_KEY);
 				if(info == null)
 					return;
-				String page = String.valueOf(info.page[0] + 1);
-				component.setText(page + "/" + getMaxPages(FORGE_KEY, ITEMS_PER_PAGE));
+				uPage = String.valueOf(info.page[0] + 1);
+				component.setText(uPage + "/" + getMaxPages(FORGE_KEY, ITEMS_PER_PAGE));
 			}
 		});
 		add(txtPageNo);
@@ -69,36 +70,38 @@ public class WindowForge extends WindowSlotted{
 		btnPageUp = new WindowComponent("btnPageUp");
 		btnPageUp.setBackground(WindowComponent.STATE_IDLE, "gui/scroll_up.png");
 		btnPageUp.setBackground(WindowComponent.STATE_DOWN, "gui/scroll_up_selected.png");
-		btnPageUp.setX(1116 - getX());
-		btnPageUp.setY(248 - getY());
+		btnPageUp.setX(1116 - bounds.getX());
+		btnPageUp.setY(248 - bounds.getY());
 		btnPageUp.setWidth(72);
 		btnPageUp.setHeight(72);
 		btnPageUp.addListener(new WindowListener(){
+			private int uMaxPages;
 			public void touchUp(Game game, WindowComponent component){
-				int maxPages = getMaxPages(FORGE_KEY, ITEMS_PER_PAGE);
+				uMaxPages = getMaxPages(FORGE_KEY, ITEMS_PER_PAGE);
 				ProviderInfo info = getProviderInfo(FORGE_KEY);
 				info.page[0]--;
 				if(info.page[0] == -1)
-					info.page[0] = (maxPages > 0 ? maxPages : 1) - 1;
-				txtPageNo.setText((info.page[0] + 1) + "/" + maxPages);
+					info.page[0] = (uMaxPages > 0 ? uMaxPages : 1) - 1;
+				txtPageNo.setText((info.page[0] + 1) + "/" + uMaxPages);
 			}
 		});
 		add(btnPageUp);
 
 		btnPageDown.setBackground(WindowComponent.STATE_IDLE, "gui/scroll_down.png");
 		btnPageDown.setBackground(WindowComponent.STATE_DOWN, "gui/scroll_down_selected.png");
-		btnPageDown.setX(1116 - getX());
-		btnPageDown.setY(512 - getY());
+		btnPageDown.setX(1116 - bounds.getX());
+		btnPageDown.setY(512 - bounds.getY());
 		btnPageDown.setWidth(72);
 		btnPageDown.setHeight(72);
 		btnPageDown.addListener(new WindowListener(){
+			private int uMaxPages;
 			public void touchUp(Game game, WindowComponent component){
-				int maxPages = getMaxPages(FORGE_KEY, ITEMS_PER_PAGE);
+				uMaxPages = getMaxPages(FORGE_KEY, ITEMS_PER_PAGE);
 				ProviderInfo info = getProviderInfo(FORGE_KEY);
 				info.page[0]++;
-				if(info.page[0] >= maxPages)
+				if(info.page[0] >= uMaxPages)
 					info.page[0] = 0;
-				txtPageNo.setText((info.page[0] + 1) + "/" + maxPages);
+				txtPageNo.setText((info.page[0] + 1) + "/" + uMaxPages);
 			}
 		});
 		add(btnPageDown);
@@ -107,8 +110,8 @@ public class WindowForge extends WindowSlotted{
 		btnShowAll.setBackgroundDefault("gui/checkbox.png");
 		btnShowAll.setBackgroundChecked("gui/checkbox_checked.png");
 		btnShowAll.setText("Show All");
-		btnShowAll.setX(btnPageDown.getX() - 128f);
-		btnShowAll.setY(txtTitle.getY());
+		btnShowAll.setX(btnPageDown.getBounds().getX() - 128f);
+		btnShowAll.setY(txtTitle.getBounds().getY());
 		btnShowAll.setWidth(48f);
 		btnShowAll.setHeight(48f);
 		btnShowAll.addListener(new WindowListener(){
@@ -124,16 +127,17 @@ public class WindowForge extends WindowSlotted{
 		return ITEMS_PER_PAGE;
 	}
 	
+	private int sIndex = 0;
 	@Override
 	public void onSlotSelected(Game game, WindowSlot slot){
-		int index = slot.getIndex();
+		sIndex = slot.getIndex();
 		ProviderInfo info = getProviderInfo(FORGE_KEY);
 		ForgeProvider provider = (ForgeProvider)info.provider;
 		ItemStack stack = provider.provide(-1, info.page[0] * getItemsPerPage(slot.getProviderKey()) + slot.getIndex());
-		if(stack == null)
+		if(stack == null || stack.getItem() == null)
 			return;
-		provider.setSelectedRecipy(game.getForge().getAvailable(provider).get(index));
-		WindowItemForgeInfo itemWindow = new WindowItemForgeInfo(game, stack, info);
+		provider.setSelectedRecipy(game.getForge().getAvailable(provider).get(sIndex));
+		WindowItemForgeInfo itemWindow = new WindowItemForgeInfo(game, provider.getSelectedRecipy());
 		itemWindow.zIndex = 1;
 		game.getWindows().register(itemWindow);
 		itemWindow.show();

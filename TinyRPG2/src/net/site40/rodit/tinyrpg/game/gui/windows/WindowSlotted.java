@@ -40,10 +40,11 @@ public class WindowSlotted extends Window{
 		return providerInfo.get(providerKey).provider;
 	}
 
-	public void registerProvider(Object key, InventoryProvider provider){
+	public ProviderInfo registerProvider(Object key, InventoryProvider provider){
 		ProviderInfo info = new ProviderInfo(provider);
 		info.selectedTab = InventoryProvider.TAB_ALL;
 		providerInfo.put(key, info);
+		return info;
 	}
 
 	public WindowSlot addSlot(float x, float y, Object providerKey, String id){

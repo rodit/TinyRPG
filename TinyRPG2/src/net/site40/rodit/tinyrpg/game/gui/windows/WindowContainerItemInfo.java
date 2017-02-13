@@ -34,10 +34,11 @@ public class WindowContainerItemInfo extends WindowItemInfo{
 		if(!container){
 			this.setX(64f);
 			this.setY(152f);
-
 			btnEquipUse.setText("Store");
-		}else
+		}else{
 			btnEquipUse.setText("Take");
+			btnDispose.setFlag(WindowComponent.FLAG_INVISIBLE, true);
+		}
 
 		btnEquipUse.getListeners().clear();
 		btnEquipUse.addListener(new WindowListener(){
@@ -60,7 +61,7 @@ public class WindowContainerItemInfo extends WindowItemInfo{
 									stack.setAmount(stack.getAmount() - count);
 									getCurrentContainer(game).getInventory().add(stack.getItem(), count);
 								}
-								hide();
+								close();
 								return true;
 							}
 							return false;
@@ -77,9 +78,14 @@ public class WindowContainerItemInfo extends WindowItemInfo{
 						game.getPlayer().getInventory().getItems().remove(stack);
 						getCurrentContainer(game).getInventory().add(stack);
 					}
-					hide();
+					close();
 				}
 			}
 		});
+	}
+	
+	@Override
+	public boolean isVanillaWindow(){
+		return false;
 	}
 }

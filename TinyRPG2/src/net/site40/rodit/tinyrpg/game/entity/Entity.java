@@ -8,7 +8,9 @@ import net.site40.rodit.tinyrpg.game.Ticker;
 import net.site40.rodit.tinyrpg.game.chat.IChatSender;
 import net.site40.rodit.tinyrpg.game.item.Inventory;
 import net.site40.rodit.tinyrpg.game.item.Item;
-import net.site40.rodit.tinyrpg.game.render.Sprite;
+import net.site40.rodit.tinyrpg.game.object.Bounds;
+import net.site40.rodit.tinyrpg.game.object.GameObject;
+import net.site40.rodit.tinyrpg.game.script.ScriptManager.KVP;
 import net.site40.rodit.tinyrpg.game.shop.Shop;
 import net.site40.rodit.util.TinyInputStream;
 import net.site40.rodit.util.TinyOutputStream;
@@ -23,9 +25,8 @@ import org.w3c.dom.NodeList;
 
 import android.graphics.RectF;
 import android.text.TextUtils;
-import android.util.Log;
 
-public class Entity extends Sprite implements IChatSender{
+public class Entity extends GameObject implements IChatSender{
 	
 	public static final int ENTITY_DEFAULT = 0;
 	public static final int ENTITY_LIVING = 1;
@@ -44,19 +45,27 @@ public class Entity extends Sprite implements IChatSender{
 	protected Function jsOnCollide;
 	protected Function jsOnAction;
 	protected Ticker ticker;
-
+	
+	protected volatile Bounds collisionBounds;
+	protected volatile Bounds collisionBoundsPositional;
+	protected volatile Bounds traceBounds;
+	
 	public Entity(){
 		super();
-		this.x = 0f;
-		this.y = 0f;
-		this.width = 16f;
-		this.height = 16f;
+		setBounds(0f, 0f, 16f, 16f);
 		this.noclip = false;
 		this.money = 0L;
 		this.inventory = new Inventory();
 		this.script = "";
 		this.runtimeProperties = new HashMap<String, String>();
 		this.ticker = new Ticker(Long.MAX_VALUE);
+		
+		this.collisionBounds = new Bounds();
+		this.collisionBoundsPositional = new Bounds();
+		this.traceBounds = new Bounds();
+		bounds.link(collisionBounds);
+		bounds.link(collisionBoundsPositional);
+		bounds.link(traceBounds);
 	}
 	
 	public boolean showName(){
@@ -134,59 +143,55 @@ public class Entity extends Sprite implements IChatSender{
 
 	private void initCallbacks(Game game){
 		if(!TextUtils.isEmpty(script) && jsOnSpawn == null && jsOnDespawn == null && jsOnCollide == null && jsOnAction == null)
-			game.getScripts().execute(game, script, new String[] { "self" }, new Object[] { this });
+			game.getScript().runScript(game, script, new KVP<Entity>("self", this));//game.getScripts().execute(game, script, new String[] { "self" }, new Object[] { this });
 	}
 
 	public void onSpawn(Game game){
 		initCallbacks(game);
-		Log.i("SCRIPTENTITY", "script:" + script);
 		if(jsOnSpawn != null)
-			game.getScripts().executeFunction(game, jsOnSpawn, this, new String[0], new Object[0], new Object[0]);
+			game.getScript().runFunction(game, jsOnSpawn, this, KVP.EMPTY);//game.getScripts().executeFunction(game, jsOnSpawn, this, new String[0], new Object[0], new Object[0]);
 	}
 
 	public void onDespawn(Game game){
 		initCallbacks(game);
 		if(jsOnDespawn != null)
-			game.getScripts().executeFunction(game, jsOnDespawn, this, new String[0], new Object[0], new Object[0]);
+			game.getScript().runFunction(game, jsOnDespawn, this, KVP.EMPTY);//game.getScripts().executeFunction(game, jsOnDespawn, this, new String[0], new Object[0], new Object[0]);
 	}
 	
 	public void onCollide(Game game, Entity collide){
 		initCallbacks(game);
 		if(jsOnCollide != null)
-			game.getScripts().executeFunction(game, jsOnCollide, this, new String[0], new Object[0], new Object[] { collide });
+			game.getScript().runFunction(game, jsOnCollide, this, KVP.EMPTY, collide);//game.getScripts().executeFunction(game, jsOnCollide, this, new String[0], new Object[0], new Object[] { collide });
 	}
 	
 	public void onAction(Game game, Entity actor){
 		initCallbacks(game);
 		if(jsOnAction != null)
-			game.getScripts().executeFunction(game, jsOnAction, this, new String[0], new Object[0], new Object[] { actor });
+			game.getScript().runFunction(game, jsOnAction, this, KVP.EMPTY, actor);//game.getScripts().executeFunction(game, jsOnAction, this, new String[0], new Object[0], new Object[] { actor });
 	}
 
 	public RectF getCollisionBounds(){
-		return this.getBounds();
+		return collisionBounds.get();
 	}
-		
+	
 	public RectF getCollisionBounds(float x, float y){
-		RectF collision = getCollisionBounds();
-		collision.left = x;
-		collision.top = y;
-		collision.right = x + width;
-		collision.bottom = y + height;
-		return collision;
+		collisionBoundsPositional.setX(x);
+		collisionBoundsPositional.setY(y);
+		return collisionBoundsPositional.get();
 	}
 	
 	public RectF getTraceBounds(){
-		return getCollisionBounds();
+		return traceBounds.get();
 	}
 	
 	public void linkConfig(Document document){
 		Element root = (Element)document.getElementsByTagName("entity").item(0);
-		this.x = Util.tryGetFloat(root.getAttribute("x"), this.x);
-		this.y = Util.tryGetFloat(root.getAttribute("y"), this.y);
-		this.width = Util.tryGetFloat(root.getAttribute("width"), this.width);
-		this.height = Util.tryGetFloat(root.getAttribute("height"), this.height);
+		bounds.setX(Util.tryGetFloat(root.getAttribute("x"), bounds.getX()));
+		bounds.setY(Util.tryGetFloat(root.getAttribute("y"), bounds.getY()));
+		bounds.setWidth(Util.tryGetFloat(root.getAttribute("width"), bounds.getWidth()));
+		bounds.setHeight(Util.tryGetFloat(root.getAttribute("height"), bounds.getHeight()));
 		String nResource = root.getAttribute("resource");
-		this.resource = TextUtils.isEmpty(nResource) ? this.resource : nResource;
+		setResource(TextUtils.isEmpty(nResource) ? this.resource : nResource);
 		String nName = root.getAttribute("name");
 		this.name = TextUtils.isEmpty(nName) ? this.name : nName;
 		this.direction = Util.tryGetDirection(root.getAttribute("direction"), this.direction);

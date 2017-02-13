@@ -7,9 +7,10 @@ import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.Input;
 import net.site40.rodit.tinyrpg.game.Values;
 import net.site40.rodit.tinyrpg.game.effect.Effect;
-import net.site40.rodit.tinyrpg.game.gui.windows.WindowInventory;
-import net.site40.rodit.tinyrpg.game.render.SpriteSheet.MovementState;
-import net.site40.rodit.tinyrpg.game.util.Direction;
+import net.site40.rodit.tinyrpg.game.gui.windows.WindowPlayerEditor;
+import net.site40.rodit.tinyrpg.game.gui.windows.WindowPlayerStats;
+import net.site40.rodit.tinyrpg.game.gui.windows.WindowSlotted;
+import net.site40.rodit.tinyrpg.game.render.Strings.Benchmarks;
 import net.site40.rodit.util.ColorGradient;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -81,20 +82,22 @@ public class GuiIngame extends Gui{
 		final ColorGradient healthTextGradient = new ColorGradient(255, 255, 255, 255, 0, 0);
 		final ColorGradient magikaTextGradient = healthTextGradient;
 		Component playerPanel = new Component(){
+			private ArrayList<String> uDrawn = new ArrayList<String>();
 			@Override
 			public void draw(Game game, Canvas canvas){
 				if(game.getBattle() == null && game.isShowingDialog())
 					return;
-				if(game.getWindows().anyVisibleInstancesOf(WindowInventory.class))
+				if(game.getWindows().anyVisibleInstancesOf(WindowSlotted.class) || game.getWindows().anyVisibleInstancesOf(WindowPlayerEditor.class) || 
+						game.getWindows().anyVisibleInstancesOf(WindowPlayerStats.class))
 					return;
 				for(Gui gui : game.getGuis().list()){
 					if(game.getBattle() != null)
 						break;
-					if(gui.isActive() && (gui instanceof GuiIngameMenu || gui instanceof GuiPlayerInventory || gui instanceof GuiOptions || gui instanceof GuiQuest))
+					if(gui.isActive() && (gui instanceof GuiIngameMenu))
 						return;
 				}
 				if(Game.DEBUG)
-					Benchmark.start("draw_pp");
+					Benchmark.start(Benchmarks.DRAW_PP);
 
 				paint.setTextAlign(Align.CENTER);
 				paint.setTextSize(Values.FONT_SIZE_SMALL - 4f);
@@ -121,7 +124,8 @@ public class GuiIngame extends Gui{
 				*/
 
 				float healthRatio = game.getPlayer().getHealthRatio();
-				RectF healthBounds = new RectF(getX() + 128f, getY() + 16f, getX() + 384f, getY() + 44f);
+				bounds.getPooled0().set(bounds.getX() + 128f, bounds.getY() + 16f, bounds.getX() + 384f, bounds.getY() + 44f);
+				RectF healthBounds = bounds.getPooled0();
 				paint.setColor(Color.rgb(180, 0, 0));
 				canvas.drawRect(healthBounds, paint);
 
@@ -135,31 +139,34 @@ public class GuiIngame extends Gui{
 				canvas.drawText(game.getPlayer().getHealth() + "/" + game.getPlayer().getMaxHealth(), healthCenter[0], healthCenter[1], paint);
 
 				float magikaRatio = game.getPlayer().getMagikaRatio();
-				RectF magikaBounds = new RectF(getX() + 128f, getY() + 44f, getX() + 328f, getY() + 72f);
+				bounds.getPooled0().set(bounds.getX() + 128f, bounds.getY() + 44f, bounds.getX() + 328f, bounds.getY() + 72f);
+				RectF magikaBounds = bounds.getPooled0();
 				paint.setColor(Color.rgb(0, 0, 120));
 				canvas.drawRect(magikaBounds, paint);
 
 				float[] magikaCenter = new float[] { magikaBounds.centerX(), magikaBounds.centerY() + 10 };
 
-				RectF magikaBoundsFull = new RectF(magikaBounds.left, magikaBounds.top, magikaBounds.left + magikaBounds.width() * magikaRatio, magikaBounds.bottom);
+				bounds.getPooled0().set(magikaBounds.left, magikaBounds.top, magikaBounds.left + magikaBounds.width() * magikaRatio, magikaBounds.bottom);
+				RectF magikaBoundsFull = bounds.getPooled0();
 				paint.setColor(Color.BLUE);
 				canvas.drawRect(magikaBoundsFull, paint);
 				paint.setColor(magikaTextGradient.getColor(magikaRatio));
 				canvas.drawText(game.getPlayer().getMagika() + "/" + game.getPlayer().getMaxMagika(), magikaCenter[0], magikaCenter[1], paint);
-
+				
 				paint.setColor(Color.YELLOW);
 				paint.setTextAlign(Align.LEFT);
-				canvas.drawText(game.getPlayer().getMoney() + " Gold", getX() + 132f, getY() + 94f, paint);
+				canvas.drawText(game.getPlayer().getMoney() + " Gold", bounds.getX() + 132f, bounds.getY() + 94f, paint);
 
-				ArrayList<String> drawn = new ArrayList<String>();
+				uDrawn.clear();
 				for(Effect e : game.getPlayer().getEffects()){
-					if(drawn.contains(e.getName()))
+					if(uDrawn.contains(e.getName()))
 						continue;
-					canvas.drawBitmap(game.getResources().getBitmap(e.getResource()), null, new RectF(getX() + 128f + drawn.size() * 32f, getY() + 120f, getX() + 128f + drawn.size() * 32f + 32f, getY() + 120f + 32f), paint);
-					drawn.add(e.getName());
+					bounds.getPooled0().set(bounds.getX() + 128f + uDrawn.size() * 32f, bounds.getY() + 120f, bounds.getX() + 128f + uDrawn.size() * 32f + 32f, bounds.getY() + 120f + 32f);
+					canvas.drawBitmap(game.getResources().getBitmap(e.getResource()), null, bounds.getPooled0(), paint);
+					uDrawn.add(e.getName());
 				}
 				if(Game.DEBUG)
-					Benchmark.stop("draw_pp");
+					Benchmark.stop(Benchmarks.DRAW_PP);
 			}
 		};
 		playerPanel.setName("playerPanel");

@@ -120,7 +120,9 @@ public class MapObject {
 		this.height = height;
 	}
 	
+	private RectF bounds = new RectF();
 	public RectF getBounds(){
-		return new RectF(x, y, x + width, y + height);
+		bounds.set(x, y, x + width, y + height);
+		return bounds;
 	}
 }

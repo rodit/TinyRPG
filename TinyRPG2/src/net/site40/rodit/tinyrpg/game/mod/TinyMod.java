@@ -2,14 +2,17 @@ package net.site40.rodit.tinyrpg.game.mod;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+
+import net.site40.rodit.tinyrpg.game.Game;
+import net.site40.rodit.tinyrpg.game.script.ScriptManager.KVP;
+import net.site40.rodit.util.Util;
+import net.site40.rodit.util.ZipUtil;
 
 import org.xml.sax.SAXException;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import net.site40.rodit.tinyrpg.game.Game;
-import net.site40.rodit.util.Util;
-import net.site40.rodit.util.ZipUtil;
 
 
 public class TinyMod {
@@ -53,10 +56,11 @@ public class TinyMod {
 		this.modFile = new ZipUtil(game.getContext(), MOD_DIR + "/" + file);
 		this.info = new ModInfo(new String(modFile.readFile(MOD_INFO_FILE)));
 		try{
-			byte[] data = modFile.readFile("icon.png");
-			if(data == null || data.length == 0)
-				throw new IOException("Invalid mod icon length (null or zero).");
-			icon = BitmapFactory.decodeByteArray(data, 0, data.length);
+			InputStream iconIn = modFile.openFile("icon.png");
+			if(iconIn == null)
+				throw new IOException("Invalid mod icon - could not open stream.");
+			icon = BitmapFactory.decodeStream(iconIn);
+			iconIn.close();
 		}catch(IOException e){
 			icon = game.getResources().getBitmap("mod/default_icon.png");
 		}
@@ -93,6 +97,6 @@ public class TinyMod {
 			tempScriptFile.getParentFile().mkdirs();
 			Util.writeFile(tempScriptFile, scriptContents.getBytes());
 		}
-		game.getScripts().execute(game, info.name + "/" + id + ".js", new String[] { "mod" }, new Object[] { this }, true);
+		game.getScript().runScript(game, info.name + "/" + id + ".js", true, new KVP<?>[] { new KVP<TinyMod>("mod", this) });
 	}
 }

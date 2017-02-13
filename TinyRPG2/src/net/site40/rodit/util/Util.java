@@ -18,6 +18,7 @@ import java.util.Map.Entry;
 
 import net.site40.rodit.tinyrpg.game.Values;
 import net.site40.rodit.tinyrpg.game.battle.AIBattleProvider.AIDifficulty;
+import net.site40.rodit.tinyrpg.game.entity.Damage.DamageType;
 import net.site40.rodit.tinyrpg.game.forge.ForgeRegistry.ForgeRecipy.ForgeType;
 import net.site40.rodit.tinyrpg.game.item.ItemEquippable;
 import net.site40.rodit.tinyrpg.game.quest.Quest.QuestImportance;
@@ -55,6 +56,10 @@ public class Util {
 		for(Map.Entry<K, V> e : entries)
 			map.put(e.getKey(), e.getValue());
 	}
+	
+	public static float getDistance(float x0, float y0, float x1, float y1){
+		return (float)Math.sqrt(Math.pow(x0 - x1, 2f) + Math.pow(y0 - y1, 2f));
+	}
 
 	@SuppressLint("DefaultLocale")
 	public static String format(double d){
@@ -62,6 +67,10 @@ public class Util {
 			return String.format("%d", (long)d);
 		else
 			return new DecimalFormat("#.##").format(d);
+	}
+	
+	public static int getStatInt(float stat){
+		return (int)(stat * 10);
 	}
 
 	public static boolean arrayContains(int[] array, int val){
@@ -235,6 +244,17 @@ public class Util {
 	public static ForgeType tryGetForgeType(String key, ForgeType ret){
 		try{
 			return ForgeType.valueOf(key);
+		}catch(Exception e){}
+		return ret;
+	}
+	
+	public static DamageType tryGetDamageType(String key){
+		return tryGetDamageType(key, DamageType.OTHER);
+	}
+	
+	public static DamageType tryGetDamageType(String key, DamageType ret){
+		try{
+			return DamageType.valueOf(key);
 		}catch(Exception e){}
 		return ret;
 	}

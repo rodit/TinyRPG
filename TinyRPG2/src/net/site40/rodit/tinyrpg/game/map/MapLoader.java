@@ -28,6 +28,12 @@ public class MapLoader {
 				map.setRenderOnTop(BitmapFactory.decodeStream(imgStream));
 				imgStream.readAvailable();
 			}
+			map.setHasLightMap(in.readBoolean());
+			if(map.hasLightMap()){
+				imgStream = new LimitedStream(in.getStream(), in.readInt());
+				map.setLightMap(BitmapFactory.decodeStream(imgStream));
+				imgStream.readAvailable();
+			}
 			imgStream = null;
 			int mapPropCount = in.readInt();
 			for(int i = 0; i < mapPropCount; i++)

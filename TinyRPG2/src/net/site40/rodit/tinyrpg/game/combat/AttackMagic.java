@@ -2,8 +2,7 @@ package net.site40.rodit.tinyrpg.game.combat;
 
 import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.entity.EntityLiving;
-
-import static net.site40.rodit.tinyrpg.game.render.Strings.DIALOG_NO_MAGIKA_SP;
+import net.site40.rodit.tinyrpg.game.render.Strings;
 
 import org.w3c.dom.Element;
 
@@ -38,7 +37,7 @@ public class AttackMagic extends Attack{
 			super.onUse(game, user, target);
 		}else
 			if(user.isPlayer())
-				game.getHelper().dialog(DIALOG_NO_MAGIKA_SP);
+				game.getHelper().dialog(Strings.Dialog.NO_MAGIKA_SP);
 			else
 				Log.w("AttackMagic", "Non-player entity attempted to use magic attack without sufficient magika.");
 	}

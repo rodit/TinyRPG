@@ -83,9 +83,14 @@ public class QuestManager {
 	public void turnIn(Quest quest){
 		setStage(quest, quest.getStages() + 1);
 	}
-
+	
 	public ArrayList<Quest> getAccepted(){
 		ArrayList<Quest> accepted = new ArrayList<Quest>();
+		getAccepted(accepted);
+		return accepted;
+	}
+
+	public ArrayList<Quest> getAccepted(ArrayList<Quest> accepted){
 		for(Quest quest : quests)
 			if(hasQuest(quest) && !isTurnedIn(quest))
 				accepted.add(quest);

@@ -59,7 +59,7 @@ public class WindowControlComponent extends WindowComponent{
 			game.getInput().setUp(game, inputKey);
 			break;
 		case MotionEvent.ACTION_MOVE:
-			boolean contains = getBoundsF().contains(event.getX(), event.getY());
+			boolean contains = bounds.get().contains(event.getX(), event.getY());
 			if(!contains && joystick && game.getInput().allowMovement())
 				game.getInput().setUp(game, inputKey);
 			if(contains && joystick && game.getInput().allowMovement())

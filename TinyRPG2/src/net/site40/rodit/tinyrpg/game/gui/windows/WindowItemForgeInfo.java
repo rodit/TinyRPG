@@ -1,118 +1,136 @@
 package net.site40.rodit.tinyrpg.game.gui.windows;
 
-import net.site40.rodit.tinyrpg.game.Dialog.DialogCallback;
+import java.util.ArrayList;
+
 import net.site40.rodit.tinyrpg.game.Game;
-import net.site40.rodit.tinyrpg.game.forge.ForgeProvider;
+import net.site40.rodit.tinyrpg.game.Values;
 import net.site40.rodit.tinyrpg.game.forge.ForgeRegistry.ForgeRecipy;
 import net.site40.rodit.tinyrpg.game.forge.ForgeRegistry.ForgeStatus;
-import net.site40.rodit.tinyrpg.game.gui.windows.WindowSlotted.ProviderInfo;
+import net.site40.rodit.tinyrpg.game.item.Inventory;
+import net.site40.rodit.tinyrpg.game.item.Inventory.InventoryProvider;
 import net.site40.rodit.tinyrpg.game.item.ItemStack;
+import net.site40.rodit.util.GrammarUtil;
+import android.graphics.Paint.Align;
 
-import static net.site40.rodit.tinyrpg.game.render.Strings.DIALOG_FORGE_NO_GOLD;
-import static net.site40.rodit.tinyrpg.game.render.Strings.DIALOG_FORGE_NO_MATERIALS;
-import static net.site40.rodit.tinyrpg.game.render.Strings.DIALOG_FORGE_NO_SKILL;
-import static net.site40.rodit.tinyrpg.game.render.Strings.DIALOG_FORGE_SUCCESSFUL;
-import static net.site40.rodit.tinyrpg.game.render.Strings.DIALOG_FORGE_UNKNOWN;
+public class WindowItemForgeInfo extends WindowSlotted{
 
-import android.util.Log;
+	private static final String KEY_INPUT = "input";
+	private static final String KEY_OUTPUT = "output";
 
-public class WindowItemForgeInfo extends WindowItemInfo{
+	private static final int BASE_X = 156;
+	private static final int BASE_Y = 156;
+	private static final int OFFSET_X_OUT = 512;
+	private static final int OFFSET_Y_OUT = 0;
 
-	public WindowItemForgeInfo(Game game, ItemStack stack, ProviderInfo provider){
-		super(game, stack, provider);
+	private ForgeRecipy recipy;
+
+	private WindowComponent txtTitle;
+	private WindowComponent txtInput;
+	private WindowComponent txtCost;
+	private WindowComponent txtOutput;
+	private WindowComponent btnForge;
+	private WindowComponent txtOutputCount;
+
+	public WindowItemForgeInfo(Game game, ForgeRecipy recipy){
+		super(game);
+		this.recipy = recipy;
 		initialize(game);
 	}
 
 	@Override
 	public void initialize(Game game){
-		if(info == null || info.provider == null)
+		if(recipy == null)
 			return;
-
 		super.initialize(game);
-		
-		btnDispose.setFlag(WindowComponent.FLAG_INVISIBLE, true);
-		txtItemRarity.setFlag(WindowComponent.FLAG_INVISIBLE, true);
-		txtItemValue.setFlag(WindowComponent.FLAG_INVISIBLE, true);
-		
-		ForgeProvider provider = (ForgeProvider)info.provider;
 
-		final ForgeRecipy current = provider.getSelectedRecipy();
-		final ForgeStatus status = game.getForge().getForgeStatus(current, game.getPlayer());
+		this.setBounds(64, 32, 1152, 640);
+
+		registerProvider(KEY_INPUT, createInventoryProvider(recipy.getInput()));
+		registerProvider(KEY_OUTPUT, createInventoryProvider(recipy.getOutput()));
+
+		for(int y = 0; y < 3; y++){
+			for(int x = 0; x < 3; x++){
+				addSlot(BASE_X + x * WindowSlot.SLOT_WIDTH, BASE_Y + y * WindowSlot.SLOT_HEIGHT, KEY_INPUT, "input_" + x + "_" + y);
+				addSlot(BASE_X + OFFSET_X_OUT + x * WindowSlot.SLOT_WIDTH, BASE_Y + OFFSET_Y_OUT + y * WindowSlot.SLOT_HEIGHT, KEY_OUTPUT, "output_" + x + "_" + y);
+			}
+		}
+
+		txtTitle = new WindowComponent("txtTitle");
+		txtTitle.setText("Forge - " + GrammarUtil.capitalise(recipy.getType().toString()));
+		txtTitle.setX(bounds.getWidth() / 2);
+		txtTitle.setY(BASE_Y - 128f);
+		txtTitle.getPaint().setTextSize(Values.FONT_SIZE_MEDIUM);
+		txtTitle.getPaint().setTextAlign(Align.CENTER);
+		add(txtTitle);
+
+		txtInput = new WindowComponent("txtInput");
+		txtInput.setText("Input:");
+		txtInput.setX(BASE_X);
+		txtInput.setY(BASE_Y - 48f);
+		txtInput.getPaint().setTextSize(Values.FONT_SIZE_SMALL);
+		txtInput.getPaint().setTextAlign(Align.LEFT);
+		add(txtInput);
+
+		txtCost = new WindowComponent("txtCost");
+		txtCost.setText("Cost: " + recipy.getCost() + " Gold");
+		txtCost.setX(txtInput.getBounds().getX());
+		txtCost.setY(txtInput.getBounds().getY() + 28f);
+		txtCost.getPaint().setTextSize(Values.FONT_SIZE_SMALL - 8f);
+		txtCost.getPaint().setTextAlign(Align.LEFT);
+		add(txtCost);
+
+		txtOutput = new WindowComponent("txtOutput");
+		txtOutput.setText("Output:");
+		txtOutput.setX(BASE_X + OFFSET_X_OUT);
+		txtOutput.setY(txtInput.getBounds().getY() + 32f);
+		txtOutput.getPaint().setTextSize(Values.FONT_SIZE_SMALL);
+		txtOutput.getPaint().setTextAlign(Align.LEFT);
+		add(txtOutput);
 		
-		btnEquipUse.getListeners().clear();
-		btnEquipUse.setText("Forge");
-		btnEquipUse.addListener(new WindowListener(){
-			public void touchUp(final Game game, WindowComponent component){
-				game.getWindows().get(WindowUpgradeItem.class).hide();
-				WindowItemForgeInfo.this.hide();
-				DialogCallback callback = new DialogCallback(){
-					public void onSelected(int option){
-						game.getWindows().get(WindowUpgradeItem.class).show();
-						WindowItemForgeInfo.this.show();
-					}
-				};
+		btnForge = new WindowComponent("btnForge");
+		btnForge.setText(GrammarUtil.capitalise(recipy.getType().toString()));
+		btnForge.setX(BASE_X + 3 * WindowSlot.SLOT_WIDTH + 32f);
+		btnForge.setY(BASE_Y + 1.5f * WindowSlot.SLOT_HEIGHT);
+		btnForge.addListener(new WindowListener(){
+			@Override
+			public void touchUp(Game game, WindowComponent component){
+				ForgeStatus status = game.getForge().getForgeStatus(recipy, game.getPlayer());
 				switch(status){
-				case POSSIBLE:
-					for(ItemStack inStack : current.getInput())
-						game.getPlayer().getInventory().remove(inStack.getItem(), inStack.getAmount());
-					for(ItemStack outStack : current.getOutput())
-						game.getPlayer().getInventory().add(outStack);
-					game.getHelper().dialog(DIALOG_FORGE_SUCCESSFUL, new String[0], callback);
-					break;
-				case FORGE_STAT_LOW:
-					game.getHelper().dialog(DIALOG_FORGE_NO_SKILL, new String[0], callback);
-					break;
-				case MONEY_LOW:
-					game.getHelper().dialog(DIALOG_FORGE_NO_GOLD, new String[0], callback);
-					break;
-				case MATERIALS_LOW:
-					game.getHelper().dialog(DIALOG_FORGE_NO_MATERIALS, new String[0], callback);
-					break;
-				default:
-					game.getHelper().dialog(DIALOG_FORGE_UNKNOWN, new String[0], callback);
-					break;
+				
 				}
 			}
 		});
-		
-		txtItemDescription.setText("Input:");
-		for(ItemStack inStack : current.getInput()){
-			if(inStack == null)
-				Log.e("Forge", "Input stack for forge recipe == null!");
-			else
-				txtItemDescription.setText(txtItemDescription.getText() + "\n" + inStack.getItem().getShowName() + " x " + inStack.getAmount());
-		}
-
-		txtItemDescription.setText(txtItemDescription.getText() + "\nOutput:");
-		for(ItemStack outStack : current.getOutput()){
-			if(outStack == null)
-				Log.e("Forge", "Output stack for forge recipe == null!");
-			else
-				txtItemDescription.setText(txtItemDescription.getText() + "\n" + outStack.getItem().getShowName() + " x " + outStack.getAmount());
-		}
-
-		switch(status){
-		case POSSIBLE:
-		default:
-			break;
-		case FORGE_STAT_LOW:
-			txtItemDescription.setText(txtItemDescription.getText() + "\n\nForge skill too low.");
-			break;
-		case MONEY_LOW:
-			txtItemDescription.setText(txtItemDescription.getText() + "\n\nNot enough gold.");
-			break;
-		case MATERIALS_LOW:
-			txtItemDescription.setText(txtItemDescription.getText() + "\n\nNot enough materials.");
-			break;
-		}
+		add(btnForge);
 	}
-	
-	public boolean isVanillaWindow(){
-		return false;
-	}
-	
+
 	@Override
-	public void initAfterInit(Game game){
-		super.initAfterInit(game);
+	public void onSlotSelected(Game game, WindowSlot slot){
+		ProviderInfo info = getProviderInfo(slot.getProviderKey());
+		ItemStack stack = info.provider.provide(1, slot.getIndex());
+		if(stack != null){
+			WindowItemInfo itemInfo = new WindowItemInfo(game, stack, info){
+				@Override
+				public void initialize(Game game){
+					super.initialize(game);
+					setX(640 - bounds.getWidth() / 2f);
+					setY(WindowItemForgeInfo.this.bounds.getY());
+					btnDispose.setFlag(WindowComponent.FLAG_INVISIBLE, true);
+					btnEquipUse.setFlag(WindowComponent.FLAG_INVISIBLE, true);
+				}
+
+				@Override
+				public boolean isVanillaWindow(){ return false; }
+			};
+			game.getWindows().register(itemInfo);
+			itemInfo.zIndex = 1;
+			itemInfo.show();
+		}
+	}
+
+	private InventoryProvider createInventoryProvider(ArrayList<ItemStack> stacks){
+		Inventory inventory = new Inventory();
+		for(ItemStack stack : stacks)
+			inventory.add(stack);
+		return new InventoryProvider(inventory, null);
 	}
 }

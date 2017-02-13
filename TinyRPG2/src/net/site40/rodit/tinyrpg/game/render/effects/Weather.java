@@ -76,8 +76,10 @@ public class Weather extends PPEffect{
 		public void onAdded(Game game){}
 		public void onRemoved(Game game){}
 
+		private RectF screenBoundsCache = new RectF();
 		public RectF getScreenBounds(Game game){
-			return new RectF(game.getPlayer().getX() - 640, game.getPlayer().getY() - 360, game.getPlayer().getX() + 640, game.getPlayer().getY() + 360);
+			screenBoundsCache.set(game.getPlayer().getBounds().getX() - 640, game.getPlayer().getBounds().getY() - 360, game.getPlayer().getBounds().getX() + 640, game.getPlayer().getBounds().getY() + 360);
+			return screenBoundsCache;
 		}
 	}
 

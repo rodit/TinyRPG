@@ -2,14 +2,14 @@ package net.site40.rodit.tinyrpg.game.gui.windows;
 
 import java.util.ArrayList;
 
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.RectF;
-import android.view.MotionEvent;
 import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.item.Item;
 import net.site40.rodit.tinyrpg.game.item.ItemStack;
+import net.site40.rodit.tinyrpg.game.object.Bounds;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.view.MotionEvent;
 
 public class WindowListboxComponent<T> extends WindowComponent{
 
@@ -57,7 +57,7 @@ public class WindowListboxComponent<T> extends WindowComponent{
 	}
 
 	public float getMaxScrollOffsetY(){
-		return objects.size() * (objectHeight / getHeight());
+		return objects.size() * (objectHeight / bounds.getHeight());
 	}
 
 	public int getSelectedIndex(){
@@ -87,8 +87,8 @@ public class WindowListboxComponent<T> extends WindowComponent{
 	}
 
 	public void select(Game game, float y){
-		float relativeY = y - getY() - scrollOffsetY;
-		int relativeIndex = (int)((relativeY / getHeight()) * (int)(getHeight() / renderer.getObjectHeight(game, this, null)));
+		float relativeY = y - bounds.getY() - scrollOffsetY;
+		int relativeIndex = (int)((relativeY / bounds.getHeight()) * (int)(bounds.getHeight() / renderer.getObjectHeight(game, this, null)));
 		if(relativeIndex >= objects.size())
 			setSelectedIndex(-1);
 		else
@@ -160,7 +160,8 @@ public class WindowListboxComponent<T> extends WindowComponent{
 				int color = paint.getColor();
 				paint.setAlpha(80);
 				paint.setColor(Color.BLACK);
-				canvas.drawRect(new RectF(0, 0, getWidth(), renderer.getObjectHeight(game, this, object)), paint);
+				getBounds().getPooled0().set(0, 0, bounds.getWidth(), renderer.getObjectHeight(game, this, object));
+				canvas.drawRect(getBounds().getPooled0(), paint);
 				paint.setAlpha(alpha);
 				paint.setColor(color);
 			}
@@ -208,6 +209,8 @@ public class WindowListboxComponent<T> extends WindowComponent{
 
 		public static class ItemStackRenderer implements ListboxComponentRenderer<ItemStack>{
 
+			private Bounds bounds = new Bounds();
+			
 			@Override
 			public float getObjectHeight(Game game, WindowListboxComponent<ItemStack> listbox, ItemStack object){
 				return 92f;
@@ -219,7 +222,8 @@ public class WindowListboxComponent<T> extends WindowComponent{
 				if(item == null)
 					return;
 				int count = stack.getAmount();
-				canvas.drawBitmap(game.getResources().getBitmap(item.getResource()), null, new RectF(8, 8, 8 + 48, 8 + 48), paint);
+				bounds.set(8, 8, 8 + 48, 8 + 48);
+				canvas.drawBitmap(game.getResources().getBitmap(item.getResource()), null, bounds.get(), paint);
 				canvas.drawText(item.getShowName() + " x " + count, 72f, 24f, paint);
 			}
 		}

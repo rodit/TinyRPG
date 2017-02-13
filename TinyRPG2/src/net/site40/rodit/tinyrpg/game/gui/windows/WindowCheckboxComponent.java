@@ -54,7 +54,7 @@ public class WindowCheckboxComponent extends WindowComponent{
 		setText("");
 		super.draw(game, canvas);
 		paint.setTextAlign(Align.LEFT);
-		canvas.drawText(oText, getX() + getWidth() + 8, getY() + 32, paint);
+		canvas.drawText(oText, bounds.getX() + bounds.getWidth() + 8, bounds.getY() + 32, paint);
 		setText(oText);
 	}
 }

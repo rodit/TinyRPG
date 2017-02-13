@@ -17,19 +17,11 @@ public class GuiManager {
 		//TODO ADD ALL GUIS
 		guis.add(new GuiLoading());
 		guis.add(new GuiMenu());
-		guis.add(new GuiSetname());
 		
-		guis.add(new GuiInventory());
-		guis.add(new GuiPlayerInventory());
-		guis.add(new GuiInventoryPlayer());
-		guis.add(new GuiQuest());
 		guis.add(new GuiIngameMenu());
 		guis.add(new GuiOptions());
 		guis.add(new GuiIngame());
 		guis.add(new GuiMods());
-		guis.add(new GuiMessage());
-		guis.add(new GuiContainer());
-		guis.add(new GuiShop());
 	}
 	
 	public ArrayList<Gui> list(){

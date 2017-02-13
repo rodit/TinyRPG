@@ -7,19 +7,23 @@ import net.site40.rodit.tinyrpg.game.shop.Shop;
 import android.graphics.Canvas;
 
 public class TempShopOwner extends EntityLiving{
-	
+
 	private Shop shop;
-	
+
 	public TempShopOwner(Shop shop){
 		super();
 		this.shop = shop;
+		if(shop != null && shop.getOwner() instanceof EntityLiving)
+			this.displayName = ((EntityLiving)shop.getOwner()).getDisplayName();
+		else
+			this.displayName = "Shop";
 	}
-	
+
 	@Override
 	public Inventory getInventory(){
 		return shop.getInventory();
 	}
-	
+
 	@Override
 	public void update(Game game){ return; }
 	@Override

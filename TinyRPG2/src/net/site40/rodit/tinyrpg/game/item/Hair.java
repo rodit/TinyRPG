@@ -6,10 +6,11 @@ import net.site40.rodit.tinyrpg.game.render.SpriteSheet;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.graphics.RectF;
 
 public class Hair extends ItemEquippable{
 
+	public static int MAX_ID = 22;
+	
 	private int id;
 	private String color;
 	
@@ -48,10 +49,16 @@ public class Hair extends ItemEquippable{
 			SpriteSheet sheet = (SpriteSheet)obj;
 			Bitmap current = sheet.getBitmap(game, equipper);
 			if(current != null){
-				canvas.drawBitmap(current, null, new RectF(0f, 0f, equipper.getWidth(), equipper.getHeight()), paint);
+				spriteDrawBounds.set(0f, 0f, equipper.getBounds().getWidth(), equipper.getBounds().getHeight());
+				canvas.drawBitmap(current, null, spriteDrawBounds.get(), paint);
 				return true;
 			}
 		}
 		return false;
+	}
+	
+	@Override
+	public String getDefaultSpriteSheet(){
+		return getResource();
 	}
 }

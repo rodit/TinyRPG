@@ -5,11 +5,11 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import android.content.Context;
 import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.map.MapState;
 import net.site40.rodit.util.TinyInputStream;
 import net.site40.rodit.util.TinyOutputStream;
+import android.content.Context;
 
 public class SaveManager {
 	
@@ -79,6 +79,7 @@ public class SaveManager {
 		TinyOutputStream tout = new TinyOutputStream(fout);
 		game.save(tout);
 		tout.close();
+		saveLoaded = true;
 	}
 	
 	public void saveOptions(Game game)throws IOException{

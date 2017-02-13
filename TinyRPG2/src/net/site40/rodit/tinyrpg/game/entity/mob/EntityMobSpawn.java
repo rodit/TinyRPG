@@ -3,9 +3,6 @@ package net.site40.rodit.tinyrpg.game.entity.mob;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import org.w3c.dom.Document;
-
-import android.graphics.RectF;
 import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.battle.Battle;
 import net.site40.rodit.tinyrpg.game.battle.Team;
@@ -13,16 +10,25 @@ import net.site40.rodit.tinyrpg.game.entity.Entity;
 import net.site40.rodit.tinyrpg.game.entity.EntityLiving;
 import net.site40.rodit.util.TinyInputStream;
 import net.site40.rodit.util.TinyOutputStream;
+import net.site40.rodit.util.Util;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import android.graphics.RectF;
 
 public class EntityMobSpawn extends Entity{
 
 	private ArrayList<MobSpawnGroup> mobSpawns;
 	private long updateInterval;
-
+	
 	private ArrayList<EntityMob> spawnQueue;
-
+	
 	public EntityMobSpawn(){
 		super();
+		this.noclip = true;
 		this.mobSpawns = new ArrayList<MobSpawnGroup>();
 		setUpdateInterval(500l);
 	}
@@ -54,12 +60,23 @@ public class EntityMobSpawn extends Entity{
 	
 	public Battle encounter(Game game, ArrayList<EntityMob> spawn, Team defence){
 		EntityLiving member = defence.getMembers().get(0);
-		return game.getHelper().battle(game.getMap().getMap().getRegion(member.getX(), member.getY()), new Team(spawn.toArray(new EntityMob[0])), defence);
+		return game.getHelper().battle(game.getMap().getMap().getRegion(member.getBounds().getX(), member.getBounds().getY()), new Team(spawn.toArray(new EntityMob[0])), defence);
 	}
 	
 	@Override
 	public void linkConfig(Document document){
-		
+		Element root = (Element)document.getElementsByTagName("mobspawn").item(0);
+		setUpdateInterval(Util.tryGetLong(root.getAttribute("updateInterval"), updateInterval));
+		NodeList groupNodes = root.getElementsByTagName("group");
+		for(int i = 0; i < groupNodes.getLength(); i++){
+			Node n = groupNodes.item(i);
+			if(n.getNodeType() != Node.ELEMENT_NODE)
+				continue;
+			Element e = (Element)n;
+			MobSpawnGroup group = new MobSpawnGroup();
+			group.deserializeXmlElement(e);
+			mobSpawns.add(group);
+		}
 	}
 
 	public void load(TinyInputStream in)throws IOException{
@@ -123,6 +140,13 @@ public class EntityMobSpawn extends Entity{
 			for(int i = 0; i < weightedCount; i++)
 				spawn.add((EntityMob)game.getHelper().createEntity(config));
 			return spawn;
+		}
+		
+		public void deserializeXmlElement(Element e){
+			this.config = e.getAttribute("config");
+			this.minSpawn = Util.tryGetInt(e.getAttribute("min"), minSpawn);
+			this.maxSpawn = Util.tryGetInt(e.getAttribute("max"), maxSpawn);
+			this.weight = Util.tryGetFloat(e.getAttribute("weight"), weight);
 		}
 
 		public void load(TinyInputStream in)throws IOException{
