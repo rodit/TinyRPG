@@ -13,8 +13,10 @@ import net.site40.rodit.tinyrpg.game.map.MapLoader;
 import net.site40.rodit.tinyrpg.game.map.MapObject;
 import net.site40.rodit.tinyrpg.game.map.MobSpawnRegistry.MobSpawn;
 import net.site40.rodit.tinyrpg.game.map.RPGMap;
+import net.site40.rodit.tinyrpg.game.map.World;
 import net.site40.rodit.tinyrpg.game.quest.Quest;
 import net.site40.rodit.tinyrpg.game.quest.QuestManager;
+import net.site40.rodit.tinyrpg.game.shop.Shop;
 import net.site40.rodit.tinyrpg.game.start.StartClass;
 import net.site40.rodit.util.Util;
 
@@ -269,5 +271,29 @@ public class XmlResourceLoader {
 			game.getMobSpawns().registerMobSpawn(spawn.getSpawnAreaKey(), spawn);
 			loaded++;
 		}
+		Log.i("MobSpawnLoader", "Loaded " + loaded + " mob spawns from " + file + ".");
+	}
+	
+	public static void loadMapLocations(ResourceManager resources, World world, String file){
+		Document document = resources.readDocument(file);
+		world.loadLocations(document);
+		Log.i("MapLocationLoader", "Loaded " + world.getDiscoveries().size() + " world locations from " + file + ".");
+	}
+	
+	public static void loadShops(ResourceManager resources, String file){
+		Document document = resources.readDocument(file);
+		NodeList shopNodes = document.getElementsByTagName("shop");
+		int loaded = 0;
+		for(int i = 0; i < shopNodes.getLength(); i++){
+			Node n = shopNodes.item(i);
+			if(n.getNodeType() != Node.ELEMENT_NODE)
+				continue;
+			Element e = (Element)n;
+			Shop shop = new Shop();
+			shop.deserializeXmlElement(e);
+			Shop.register(shop);
+			loaded++;
+		}
+		Log.i("ShopLoader", "Loaded " + loaded + " shops from " + file + ".");
 	}
 }
