@@ -98,6 +98,12 @@ public class TransitionalRenderer extends GameObject{
 			canvas.drawBitmap(next, null, bounds.getPooled0(), paint);//new RectF(currentTranslationX, currentTranslationY, currentTranslationX + DRAW_WIDTH, currentTranslationY + DRAW_HEIGHT), paint);
 		}
 	}
+	
+	public void dispose(Game game){
+		for(int i = 0; i < resources.size(); i++)
+			game.getResources().release(resources.get(i));
+		current = next = null;
+	}
 
 	@Override
 	public int getRenderLayer(){
