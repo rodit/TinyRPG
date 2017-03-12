@@ -1,0 +1,4 @@
+chest_open.ogg;
+faction_join.ogg;
+new_area.ogg;
+parry.ogg

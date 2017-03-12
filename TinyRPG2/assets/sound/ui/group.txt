@@ -1,0 +1,2 @@
+menu_confirm.ogg;
+menu_select.ogg

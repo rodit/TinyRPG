@@ -1,0 +1,43 @@
+<sounds>
+	<group name="ui" base="sound/ui/"/>
+	<group name="weather" base="sound/weather/"/>
+	<group name="world" base="sound/world/"/>
+	
+	
+	<group name="weapon.generic.hit.flesh" base="sound/weapon/generic/hit/flesh/"/>
+	<group name="weapon.generic.hit.shield.iron" base="sound/weapon/generic/hit/shield/iron/"/>
+	<group name="weapon.generic.hit.shield.iron.large" base="sound/weapon/generic/hit/shield/iron/large/"/>
+	<group name="weapon.generic.hit.shield.magic" base="sound/weapon/generic/hit/shield/magic/"/>
+	<group name="weapon.generic.hit.shield.wood" base="sound/weapon/generic/hit/shield/wood/"/>
+	
+	<group name="weapon.hammer.hit.flesh" base="sound/weapon/hammer/hit/flesh/"/>
+	
+	<group name="weapon.weak.hit.sheild.iron" base="sound/weapon/weak/hit/shield/iron/"/>
+	
+	<group name="weapon.generic.use" base="sound/weapon/generic/use/"/>
+	<group name="weapon.fire.use" base="sound/weapon/fire/use/"/>
+	<group name="weapon.fire_powerful.use" base="sound/weapon/fire_powerful/use/"/>
+	<group name="weapon.hand.use" base="sound/weapon/hand/use/"/>
+	<group name="weapon.katana.use" base="sound/weapon/katana/use/"/>
+	<group name="weapon.knock.use" base="sound/weapon/knock/use/"/>
+	<group name="weapon.large.use" base="sound/weapon/large/use/"/>
+	<group name="weapon.stab.use" base="sound/weapon/stab/use/"/>
+	<group name="weapon.throw.use" base="sound/weapon/throw/use/"/>
+	
+	
+	<group name="item.money" base="sound/item/money/"/>
+	
+	<group name="item.generic.use" base="sound/item/generic/use/"/>
+	<group name="item.potion.use" base="sound/item/potion/use/"/>
+	
+	<group name="item.light.equip" base="sound/item/light/equip/"/>
+	<group name="item.heavy.equip" base="sound/item/heavy/equip/"/>
+	
+	
+	<group name="enemy.generic.bite" base="sound/enemy/generic/bite/"/>
+	<group name="enemy.generic.groan" base="sound/enemy/generic/groan/"/>
+	
+	<group name="enemy.giant" base="sound/enemy/giant/"/>
+	<group name="enemy.ogre" base="sound/enemy/ogre/"/>
+	<group name="enemy.slime" base="sound/enemy/slime/"/>
+</sounds>
