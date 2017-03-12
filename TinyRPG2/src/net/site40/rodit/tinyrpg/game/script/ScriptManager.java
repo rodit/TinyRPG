@@ -27,7 +27,7 @@ import com.faendir.rhino_android.RhinoAndroidHelper;
 
 public class ScriptManager {
 
-	public static final boolean USE_RHINO_MOD = true;
+	public static boolean USE_RHINO_MOD = true;
 	private static final String LOCAL_SCRIPT_PATH = "script_cache";
 
 	private HashMap<String, Script> scriptCache = new HashMap<String, Script>();
@@ -35,7 +35,7 @@ public class ScriptManager {
 	private RhinoAndroidHelper helper;
 	private Context scriptContext;
 	private Scriptable scriptScope;
-	
+
 	public boolean insideFunction = false;
 
 	public ScriptManager(Game game){
@@ -45,13 +45,22 @@ public class ScriptManager {
 		scriptContext.setOptimizationLevel(USE_RHINO_MOD ? 1 : -1);
 		this.scriptScope = scriptContext.initStandardObjects();
 	}
-	
+
 	public void initializeGlobals(Game game){
 		ScriptableObject.putProperty(scriptScope, "game", game);
 		ScriptableObject.putProperty(scriptScope, "helper", game.getHelper());
 		ScriptableObject.putProperty(scriptScope, "cutsene", new CutseneHelper());
 		ScriptableObject.putProperty(scriptScope, "quests", game.getQuests());
 		ScriptableObject.putProperty(scriptScope, "util", new Util());
+		ScriptableObject.putProperty(scriptScope, "audio", game.getAudio());
+		ScriptableObject.putProperty(scriptScope, "sfx", game.getSfx());
+	}
+
+	private Scriptable copyScope(){
+		Scriptable scope = scriptContext.newObject(scriptScope);
+		scope.setPrototype(scriptScope);
+		scope.setParentScope(null);
+		return scope;
 	}
 
 	private File getCachedLocal(Game game, String res){
@@ -73,8 +82,15 @@ public class ScriptManager {
 						e.printStackTrace();
 				}
 			}
-		}else
-			scriptSource = game.getResources().readString(res);
+		}else{
+			byte[] assetDat = game.getResources().readAsset(res);
+			if(assetDat != null)
+				scriptSource = new String(assetDat);
+			else{
+				Log.e("ScriptManager", "Failed to read script from assets " + res + ".");
+				return null;
+			}
+		}
 		if(!TextUtils.isEmpty(scriptSource)){
 			String localRes = (local ? "local:" : "") + res;
 			Script compiled = scriptContext.compileString(scriptSource, localRes, 1, null);
@@ -92,9 +108,8 @@ public class ScriptManager {
 		return script;
 	}
 
-	private void clearScope(Scriptable scope, KVP<?>... vars){
-		for(int i = 0; vars != null && i < vars.length; i++)
-			scope.delete(vars[i].getName());
+	public void cacheScript(Game game, String res, boolean local){
+		getCachedScript(game, res, local);
 	}
 
 	public Object runScript(Game game, String res, KVP<?>... vars){
@@ -106,16 +121,17 @@ public class ScriptManager {
 			Benchmark.start(Benchmarks.SCRIPT_EXEC + "_" + res);
 
 		Object ret = null;
-		
-		clearScope(scriptScope, vars);
 
-		for(int i = 0; vars != null && i < vars.length; i++)
-			ScriptableObject.putProperty(scriptScope, vars[i].getName(), vars[i].getValue());
+		Scriptable scope = copyScope();
+
+		for(int i = 0; vars != null && i < vars.length; i++){
+			ScriptableObject.putProperty(scope, vars[i].getName(), vars[i].getValue());
+		}
 
 		try{
-			if(USE_RHINO_MOD)
-				ret = scriptContext.evaluateString(scriptScope, game.getResources().getString(res), res, 1, null);
-			else{
+			if(USE_RHINO_MOD){
+				ret = getCachedScript(game, res, local).exec(scriptContext, scope);
+			}else{
 				Script run = getCachedScript(game, res, local);
 				if(run == null){
 					Log.e("ScriptManager", "Script not found " + res + " local=" + local + ".");
@@ -138,28 +154,28 @@ public class ScriptManager {
 	public Object runFunction(Game game, Function function, Object self, KVP<?>[] vars, Object... args){
 		if(insideFunction){
 			funcQueue.offer(new FunctionRunData(function, self, vars, args));
-			//game.getHelper().runAfterScript(function, self, vars, args);
 			return null;
 		}
 		if(Game.DEBUG)
 			Benchmark.start(Benchmarks.SCRIPT_FUNCTION);
-		
+
 		insideFunction = true;
 		Object ret = null;
 
-		scriptScope.delete("self");
-		clearScope(scriptScope, vars);
-		
-		for(int i = 0; vars != null && i < vars.length; i++)
-			ScriptableObject.putProperty(scriptScope, vars[i].getName(), vars[i].getValue());
+		Scriptable scope = copyScope();
+
+		for(int i = 0; vars != null && i < vars.length; i++){
+			ScriptableObject.putProperty(scope, vars[i].getName(), vars[i].getValue());
+		}
 
 		if(args == null)
 			args = GameData.EMPTY_ARRAY;
 
 		if(USE_RHINO_MOD)
-			ScriptableObject.putProperty(scriptScope, "self", self);
+			ScriptableObject.putProperty(scope, "self", self);
+
 		try{
-			ret = function.call(scriptContext, scriptScope, (Scriptable)Context.javaToJS(self, scriptScope), args);
+			ret = function.call(scriptContext, scope, (Scriptable)Context.javaToJS(self, scope), args);
 		}catch(Exception e){
 			Log.e("ScriptManager", "Error while running function - " + e.getMessage());
 			if(Game.DEBUG)
@@ -177,12 +193,12 @@ public class ScriptManager {
 	}
 
 	public static class FunctionRunData{
-		
+
 		public Function function;
 		public Object self;
 		public KVP<?>[] vars;
 		public Object[] args;
-		
+
 		public FunctionRunData(Function function, Object self, KVP<?>[] vars, Object[] args){
 			this.function = function;
 			this.self = self;
@@ -190,7 +206,7 @@ public class ScriptManager {
 			this.args = args;
 		}
 	}
-	
+
 	public static class KVP<T>{
 
 		public static final KVP<?>[] EMPTY = new KVP<?>[0];
@@ -218,7 +234,7 @@ public class ScriptManager {
 		public void setValue(T value){
 			this.value = value;
 		}
-		
+
 		public static KVP<?>[] get(String[] keys, Object[] vals){
 			KVP<?>[] kvps = new KVP<?>[keys.length];
 			for(int i = 0; i < keys.length && i < vals.length; i++)
