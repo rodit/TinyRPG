@@ -24,12 +24,14 @@ import net.site40.rodit.tinyrpg.game.map.Region;
 import net.site40.rodit.tinyrpg.game.object.GameObject;
 import net.site40.rodit.tinyrpg.game.render.DialogText;
 import net.site40.rodit.tinyrpg.game.render.Strings;
+import net.site40.rodit.tinyrpg.game.render.Strings.GameData;
 import net.site40.rodit.tinyrpg.game.render.TextRenderer;
 import net.site40.rodit.tinyrpg.game.render.effects.EffectCompletionHolder;
 import net.site40.rodit.tinyrpg.game.render.effects.FadeInEffect;
 import net.site40.rodit.tinyrpg.game.render.effects.FadeOutEffect;
 import net.site40.rodit.tinyrpg.game.script.ScriptManager.KVP;
-import net.site40.rodit.tinyrpg.game.shop.Shop;
+import net.site40.rodit.tinyrpg.game.shop.ShopLinker;
+import net.site40.rodit.util.ArrayUtil;
 import net.site40.rodit.util.GenericCallback;
 import net.site40.rodit.util.Util;
 
@@ -76,7 +78,7 @@ public class ScriptHelper {
 	}
 
 	public String[] empty(){
-		return new String[0];
+		return GameData.EMPTY_STRING_ARRAY;
 	}
 
 	public int[] emptyi(){
@@ -156,36 +158,43 @@ public class ScriptHelper {
 	}
 
 	public Dialog dialog(String body){
-		return dialog(body, new String[0]);
+		return dialog(body, GameData.EMPTY_STRING_ARRAY);
 	}
 
 	public Dialog dialog(String body, String[] options){
-		return dialog(body, options, null);
+		return dialog(body, options, (Function)null);
 	}
-
+	
 	public Dialog dialog(String body, String[] options, Object function){
-		return dialog(body, options, function, new Object[0]);
+		return dialog(body, options, function, GameData.EMPTY_ARRAY);
 	}
 
 	public Dialog dialog(String body, String[] options, Object function, Object[] args){
 		if(TextUtils.isEmpty(body) && options.length == 0)
 			return null;
+		if(function instanceof DialogCallback)
+			return dialogJCallback(body, options, (DialogCallback)function, args);
 		Function func = (Function)Context.jsToJava(function, Function.class);
 		Dialog d = new Dialog(body, options, func);
 		d.setArgs(args);
 		game.addObject(d);
 		return d;
 	}
+	
+	public Dialog dialogJCallback(String body, String[] options, DialogCallback callback){
+		return dialogJCallback(body, options, callback, GameData.EMPTY_ARRAY);
+	}
 
-	public Dialog dialog(String body, String[] options, DialogCallback callback){
+	public Dialog dialogJCallback(String body, String[] options, DialogCallback callback, Object[] args){
 		Dialog d = new Dialog(body, options, callback);
 		d.setOptions(options);
+		d.setArgs(args);
 		game.addObject(d);
 		return d;
 	}
 
 	public Object runScript(String file){
-		return runScript(file, new String[0], new Object[0]);
+		return runScript(file, GameData.EMPTY_STRING_ARRAY, GameData.EMPTY_ARRAY);
 	}
 
 	public Object runScript(String file, String[] varNames, Object[] varVals){
@@ -314,7 +323,7 @@ public class ScriptHelper {
 	}
 
 	public ScheduledEvent scheduleFunction(Object function, final Object self, long delay){
-		return scheduleFunction(function, self, delay, new Object[0]);
+		return scheduleFunction(function, self, delay, GameData.EMPTY_ARRAY);
 	}
 
 	public ScheduledEvent scheduleFunction(Object function, final Object self, long delay, final Object[] args){
@@ -329,12 +338,12 @@ public class ScriptHelper {
 	}
 
 	@SuppressLint("DefaultLocale")
-	public EventReceiver registerEvent(String name, String event, Object function){
+	public EventReceiver registerEvent(String name, String event, Object function, final Object... extraArgs){
 		EventType type = EventType.valueOf(event.toUpperCase());
 		EventReceiver receiver = new EventReceiver(name, "", type, function){
 			@Override
 			public void onEvent(Game game, Object... args){
-				super.onEvent(game, args);
+				super.onEvent(game, ArrayUtil.concat(args, extraArgs));
 				game.unregisterEvent(this);
 			}
 		};
@@ -348,13 +357,13 @@ public class ScriptHelper {
 				return receiver;
 		return null;
 	}
-
-	public void openShop(String name){
-		openShop(Shop.get(name));
-	}
-
-	public void openShop(Shop shop){
-		shop.open(game);
+	
+	public void openShop(EntityLiving owner){
+		ShopLinker shop = ShopLinker.getLinker(owner);
+		if(shop != null)
+			shop.open(game);
+		else
+			Log.e("ScriptHelper", "Tried to open unlinked shop (entity=" + owner.getName() + ").");
 	}
 
 	public static final String WINDOW_PACKAGE = "net.site40.rodit.tinyrpg.game.gui.windows";
