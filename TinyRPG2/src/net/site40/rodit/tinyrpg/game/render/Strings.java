@@ -20,10 +20,18 @@ public class Strings {
 		public static final Rect EMPTY_RECT = new Rect();
 		public static final RectF EMPTY_RECT_F = new RectF();
 	}
-
+	
+	public static class GameDates{
+		
+		//TODO: Not steal these from Skyrim...
+		public static String[] DAY_NAMES = new String[] { "Morridas", "Tirdas", "Middas", "Turdas", "Fredas", "Loredas", "Sundas" };
+		public static String[] MONTH_NAMES = new String[] { "Morning Star", "Sun's Dawn", "First Seed", "Rain's Hand", "Second Seed", "Mid Year", "Sun's Height", "Last Seed", "Hearthfire", "Frost Fall", "Sun's Dusk", "Evening Star" };
+	}
+	
 	public static class Benchmarks{
 		
 		public static final String INIT = "init";
+		public static final String LOAD = "load";
 		public static final String UPDATE = "update";
 		public static final String DRAW = "draw";
 		public static final String DRAW_OBJ = "draw_obj";
@@ -54,13 +62,18 @@ public class Strings {
 		public static String ESCAPE_SUCCESSFUL = "You escaped successfully.";
 		public static String ESCAPE_FAILURE = "You tried to escape but your attempt failed miserably.";
 		
-		public static String BATTLE_WIN = "Congratulations! You have won the battle!~You earned %s gold!";
+		public static String BATTLE_KILL = "%s was defeated! You earned %s gold.";
+		public static String BATTLE_REWARD_XP = "You earned %s xp.";
+		public static String BATTLE_AI_KILL = "%s was defeated!";
+		public static String BATTLE_WIN = "Congratulations! You have won the battle!";
 		public static String BATTLE_LOSE = "Oh no! You were killed in the battle!~You forfeited %s gold!";
 		
 		public static String BATTLE_INPUT_ASK = "What would you like to do?";
 		public static String[] BATTLE_INPUT_OPTIONS = new String[] { "Use Weapon", "Sp. Attack", "Inventory", "Run" };
 		public static String BATTLE_ASK_TARGET = "Who will you target?";
 		public static String BATTLE_NO_OPPOSITION = "There is no opposition to select a target from.";
+		
+		public static String BATTLE_MP_WAIT = "Waiting for %s to take their turn...";
 		
 		public static String AI_NOTHING = "%s forgot to take their turn!";
 		public static String AI_WEAPONS = "%s used their weapon(s).";
