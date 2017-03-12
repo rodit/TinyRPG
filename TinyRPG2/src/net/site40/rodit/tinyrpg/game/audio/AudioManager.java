@@ -2,6 +2,8 @@ package net.site40.rodit.tinyrpg.game.audio;
 
 import java.util.ArrayList;
 
+import net.site40.rodit.tinyrpg.game.Game;
+import net.site40.rodit.tinyrpg.game.render.ResourceManager;
 import android.content.Context;
 import android.media.MediaPlayer;
 import android.util.SparseArray;
@@ -13,11 +15,11 @@ public class AudioManager {
 	private volatile ArrayList<Integer> paused;
 	private SoundEffectManager soundEffects;
 	
-	public AudioManager(Context context){
+	public AudioManager(Context context, ResourceManager resources){
 		this.context = context;
 		this.playerCache = new SparseArray<MediaPlayer>();
 		this.paused = new ArrayList<Integer>();
-		this.soundEffects = new SoundEffectManager(context.getAssets());
+		this.soundEffects = Game.USE_OPENAL ? new ALManager(resources) : new SoundEffectManager(resources);
 	}
 	
 	public MediaPlayer get(int id){
@@ -27,16 +29,8 @@ public class AudioManager {
 		return player;
 	}
 	
-	public int playEffect(String name){
-		return playEffect(name, false);
-	}
-	
-	public int playEffect(String name, boolean repeat){
-		return soundEffects.play(name, repeat);
-	}
-	
-	public void stopEffect(int id){
-		soundEffects.stop(id);
+	public SoundEffectManager getEffects(){
+		return soundEffects;
 	}
 	
 	public void pauseAll(){
