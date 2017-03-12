@@ -3,21 +3,20 @@ package net.site40.rodit.tinyrpg.game.gui.windows;
 import net.site40.rodit.tinyrpg.game.Dialog.DialogCallback;
 import net.site40.rodit.tinyrpg.game.Game;
 import net.site40.rodit.tinyrpg.game.SuperCalc;
-import net.site40.rodit.tinyrpg.game.entity.Entity;
 import net.site40.rodit.tinyrpg.game.entity.EntityLiving;
 import net.site40.rodit.tinyrpg.game.gui.windows.WindowSlotted.ProviderInfo;
 import net.site40.rodit.tinyrpg.game.gui.windows.WindowUserInput.InputCallback;
 import net.site40.rodit.tinyrpg.game.gui.windows.WindowUserInput.InputResult;
 import net.site40.rodit.tinyrpg.game.item.ItemStack;
 import net.site40.rodit.tinyrpg.game.render.Strings.GameData;
-import net.site40.rodit.tinyrpg.game.shop.Shop;
+import net.site40.rodit.tinyrpg.game.shop.ShopLinker;
 import net.site40.rodit.util.Util;
 
 public class WindowShopItemInfo extends WindowItemInfo{
 
-	private Shop shop;
+	private ShopLinker shop;
 
-	public WindowShopItemInfo(Game game, Shop shop, ItemStack stack, ProviderInfo info){
+	public WindowShopItemInfo(Game game, ShopLinker shop, ItemStack stack, ProviderInfo info){
 		super(game, stack, info);
 		this.shop = shop;
 		initialize(game);
@@ -33,8 +32,8 @@ public class WindowShopItemInfo extends WindowItemInfo{
 		return !info.provider.getOwner().isPlayer();
 	}
 
-	public Entity getShopOwner(){
-		return shop.getOwner();
+	public EntityLiving getShopOwner(){
+		return shop.getLinkedOwner();
 	}
 
 	@Override
@@ -62,7 +61,7 @@ public class WindowShopItemInfo extends WindowItemInfo{
 					game.getWindows().get(WindowShop.class).hide();
 					DialogCallback callback = new DialogCallback(){
 						@Override
-						public void onSelected(int u){
+						public void onSelected(int u, Object[] args){
 							game.getWindows().get(WindowShop.class).show();
 							WindowShopItemInfo.this.show();
 						}
@@ -88,14 +87,14 @@ public class WindowShopItemInfo extends WindowItemInfo{
 									stack.setAmount(stack.getAmount() - count);
 									if(stack.getAmount() == 0){
 										if(isShop)
-											shop.getInventory().getItems().remove(stack);
+											shop.getStock().getItems().remove(stack);
 										else
 											game.getPlayer().getInventory().getItems().remove(stack);
 									}
 									if(isShop)
 										game.getPlayer().getInventory().add(nStack);
 									else
-										shop.getInventory().add(nStack);
+										shop.getStock().add(nStack);
 								}
 								close();
 								return true;
@@ -119,7 +118,7 @@ public class WindowShopItemInfo extends WindowItemInfo{
 		game.getWindows().get(WindowShop.class).hide();
 		DialogCallback callback = new DialogCallback(){
 			@Override
-			public void onSelected(int u){
+			public void onSelected(int u, Object[] args){
 				game.getWindows().get(WindowShop.class).show();
 				WindowShopItemInfo.this.show();
 			}
@@ -137,27 +136,27 @@ public class WindowShopItemInfo extends WindowItemInfo{
 
 	public boolean tradeItem(Game game, ItemStack stack, boolean buying, boolean shiftStack){
 		long itemValue = buying ? SuperCalc.getStackValueFromShop(stack, game.getPlayer()) : SuperCalc.getStackValue(stack, game.getPlayer());
-		boolean canAfford = buying ? game.getPlayer().getMoney() >= itemValue : shop.getOwner().getMoney() >= itemValue;
+		boolean canAfford = buying ? game.getPlayer().getMoney() >= itemValue : shop.getMoney() >= itemValue;
 		if(!canAfford)
 			return false;
 		if(buying){
 			if(shiftStack){
-				shop.getOwner().getInventory().getItems().remove(stack);
+				shop.getStock().getItems().remove(stack);
 				game.getPlayer().getInventory().add(stack);
 			}
-			shop.getOwner().addMoney(itemValue);
+			shop.addMoney(itemValue);
 			game.getPlayer().subtractMoney(itemValue);
 		}else{
 			if(shiftStack){
 				game.getPlayer().getInventory().getItems().remove(stack);
-				shop.getOwner().getInventory().add(stack);
+				shop.getStock().add(stack);
 			}
 			game.getPlayer().addMoney(itemValue);
-			shop.getOwner().subtractMoney(itemValue);
+			shop.subMoney(itemValue);
 		}
 		return true;
 	}
-
+	
 	@Override
 	public void initAfterInit(Game game){
 		super.initAfterInit(game);

@@ -1,0 +1,11 @@
+<shops>
+	<shop name="merek_home" money="5000">
+		<item name="iron_ring_1" count="1"/>
+		<item name="luck_ring_1" count="1"/>
+		<item name="dagger_bone_1" count="1"/>
+		<item name="dagger_iron_1" count="1"/>
+		<item name="iron_helmet_1" count="1"/>
+		<item name="iron_chestplate_1" count="1"/>
+		<item name="iron_shoulders_1" count="1"/>
+	</shop>
+</shops>

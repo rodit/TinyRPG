@@ -1,22 +1,22 @@
 package net.site40.rodit.tinyrpg.game.gui.windows;
 
 import net.site40.rodit.tinyrpg.game.Game;
-import net.site40.rodit.tinyrpg.game.Values;
 import net.site40.rodit.tinyrpg.game.entity.Entity;
 import net.site40.rodit.tinyrpg.game.entity.EntityLiving;
 import net.site40.rodit.tinyrpg.game.item.Inventory.InventoryProvider;
 import net.site40.rodit.tinyrpg.game.item.ItemStack;
-import net.site40.rodit.tinyrpg.game.shop.Shop;
+import net.site40.rodit.tinyrpg.game.render.Strings.Values;
+import net.site40.rodit.tinyrpg.game.shop.ShopLinker;
 import android.graphics.Paint.Align;
 
 public class WindowShop extends WindowContainer {
 	
-	private Shop shop;
+	private ShopLinker shop;
 	private WindowComponent txtBuyerInfo;
 	private WindowComponent txtSellerInfo;
 	
-	public WindowShop(Game game, Shop shop){
-		super(game, shop.getInventoryOwner());
+	public WindowShop(Game game, ShopLinker shop){
+		super(game, shop.getStockOwner());
 		this.shop = shop;
 		initialize(game);
 	}
@@ -52,9 +52,9 @@ public class WindowShop extends WindowContainer {
 		super.update(game);
 		
 		EntityLiving buyer = getProvider(PLAYER_KEY).getOwnerLiving();
-		Entity seller = shop.getOwner();
+		Entity seller = shop.getLinkedOwner();
 		txtBuyerInfo.setText(buyer.getDisplayName() + "\n" + "Gold: " + buyer.getMoney());
-		txtSellerInfo.setText(seller.getDisplayName() + "\n" + "Gold: " + seller.getMoney());
+		txtSellerInfo.setText(seller.getDisplayName() + "\n" + "Gold: " + shop.getMoney());
 	}
 	
 	@Override
