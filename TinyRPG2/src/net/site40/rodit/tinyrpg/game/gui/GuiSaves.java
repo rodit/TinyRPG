@@ -3,10 +3,11 @@ package net.site40.rodit.tinyrpg.game.gui;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import net.site40.rodit.tinyrpg.R;
 import net.site40.rodit.tinyrpg.game.Game;
-import net.site40.rodit.tinyrpg.game.Values;
 import net.site40.rodit.tinyrpg.game.gui.ComponentListener.ComponentListenerImpl;
-import net.site40.rodit.tinyrpg.game.saves.SaveGame;
+import net.site40.rodit.tinyrpg.game.render.Strings.Values;
+import net.site40.rodit.tinyrpg.game.saves.SaveSlot;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.graphics.Canvas;
@@ -20,6 +21,8 @@ public class GuiSaves extends Gui{
 
 	private int selectedIndex = 0;
 
+	private ArrayList<SaveSlot> slots;
+
 	public GuiSaves(){
 		super("");
 	}
@@ -27,6 +30,14 @@ public class GuiSaves extends Gui{
 	@Override
 	public void onShown(){
 		selectedIndex = 0;
+	}
+
+	@Override
+	public void onHidden(){
+		readSaves = false;
+		if(slots != null)
+			slots.clear();
+		slots = null;
 	}
 
 	@Override
@@ -38,15 +49,14 @@ public class GuiSaves extends Gui{
 		txtTitle.getPaint().setTextSize(Values.FONT_SIZE_LARGE);
 		add(txtTitle);
 
-		Component savesRender = new Component("savesRender"){			
+		Component savesRender = new Component("savesRender"){
 			@Override
 			public void draw(Game game, Canvas canvas){
-				canvas.drawRect(getBoundsF(), paint);
+				canvas.drawRect(getBounds().get(), paint);
 
-				ArrayList<SaveGame> all = game.getSaves().all();
-				for(int i = selectedIndex; i < all.size() && i < selectedIndex + SAVES_PER_PAGE; i++){
-					SaveGame save = all.get(i);
-					String saveText = save.getName() + " " + save.getHumanReadableTime();
+				for(int i = selectedIndex; i < slots.size() && i < selectedIndex + SAVES_PER_PAGE; i++){
+					SaveSlot save = slots.get(i);
+					String saveText = save.getRoot().getName() + " " + save.getHumanReadablePlayTime();
 					if(i == selectedIndex)
 						paint.setTextSize(Values.FONT_SIZE_MEDIUM + 4f);
 					else
@@ -71,7 +81,7 @@ public class GuiSaves extends Gui{
 		btnBack.setWidth(256f);
 		btnBack.setHeight(92f);
 		btnBack.setX(16f);
-		btnBack.setY(720f - btnBack.getHeight());
+		btnBack.setY(720f - btnBack.getBounds().getHeight());
 		btnBack.addListener(new ComponentListenerImpl(){
 			public void touchUp(Component component, Game game){
 				game.getGuis().hide(GuiSaves.class);
@@ -88,21 +98,25 @@ public class GuiSaves extends Gui{
 		btnLoad.setBackgroundSelected("gui/button_selected.png");
 		btnLoad.setWidth(256f);
 		btnLoad.setHeight(92f);
-		btnLoad.setX(1280f - btnLoad.getWidth() - 16f);
-		btnLoad.setY(btnBack.getY());
+		btnLoad.setX(1280f - btnLoad.getBounds().getWidth() - 16f);
+		btnLoad.setY(btnBack.getBounds().getY());
 		btnLoad.addListener(new ComponentListenerImpl(){
 			public void touchUp(Component component, Game game){
-				SaveGame save = game.getSaves().all().get(selectedIndex);
 				try{
-					save.load(game);
+					game.getSaves().loadSlot(game.getSaves().getLastSlot());
+					game.getSaves().load(game);
+					game.removeObject(((GuiMenu)game.getGuis().get(GuiMenu.class)).r);
+					game.getGuis().hide(GuiSaves.class);
+					game.getGuis().show(GuiIngame.class);
+					game.getAudio().get(R.raw.menu_music).stop();
 				}catch(IOException e){
 					e.printStackTrace();
-					game.getHelper().dialog("There was an error while loading this save file.");
+					game.showMessage("There was an error while loading your save.\n" + e.getClass().getName() + ": " + e.getMessage() + "\n" + e.getLocalizedMessage(), GuiSaves.this);
 				}
 			}
 
 			public void update(Component component, Game game){
-				if(selectedIndex >= game.getSaves().all().size()){
+				if(selectedIndex >= slots.size()){
 					btnLoad.setFlag(Component.INACTIVE);
 					btnDelete.setFlag(Component.INACTIVE);
 				}else{
@@ -117,8 +131,8 @@ public class GuiSaves extends Gui{
 		btnDelete.setBackgroundSelected("gui/button_selected.png");
 		btnDelete.setWidth(256f);
 		btnDelete.setHeight(92f);
-		btnDelete.setX(1280f - btnDelete.getWidth() - 16f);
-		btnDelete.setY(btnLoad.getY() - btnLoad.getHeight() - 16f);
+		btnDelete.setX(1280f - btnDelete.getBounds().getWidth() - 16f);
+		btnDelete.setY(btnLoad.getBounds().getY() - btnLoad.getBounds().getHeight() - 16f);
 		btnDelete.addListener(new ComponentListenerImpl(){
 			public void touchUp(Component component, final Game game){
 				DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
@@ -126,11 +140,11 @@ public class GuiSaves extends Gui{
 					public void onClick(DialogInterface dialog, int which) {
 						switch (which){
 						case DialogInterface.BUTTON_POSITIVE:
-							SaveGame save = game.getSaves().all().get(selectedIndex);
-							if(!save.getFile().delete())
+							SaveSlot save = slots.get(selectedIndex);
+							if(!save.destroy())
 								game.getHelper().dialog("There was an error while deleting this save file.");
 							else
-								game.getSaves().refresh(game);
+								slots = game.getSaves().getSlots();
 							break;
 						default:
 						case DialogInterface.BUTTON_NEGATIVE:
@@ -148,8 +162,8 @@ public class GuiSaves extends Gui{
 		Component btnUp = new Component("btnUp");
 		btnUp.setBackground("gui/scroll_up.png");
 		btnUp.setBackgroundSelected("gui/scroll_up_selected.png");
-		btnUp.setX(savesRender.getX() + savesRender.getWidth() + 16f);
-		btnUp.setY(savesRender.getY() + 64f);
+		btnUp.setX(savesRender.getBounds().getX() + savesRender.getBounds().getWidth() + 16f);
+		btnUp.setY(savesRender.getBounds().getY() + 64f);
 		btnUp.setWidth(64f);
 		btnUp.setHeight(64f);
 		btnUp.addListener(new ComponentListenerImpl(){
@@ -157,7 +171,7 @@ public class GuiSaves extends Gui{
 				if(selectedIndex > 0)
 					selectedIndex--;
 				else
-					selectedIndex = game.getSaves().all().size() - 1;
+					selectedIndex = slots.size() - 1;
 			}
 		});
 		add(btnUp);
@@ -165,18 +179,29 @@ public class GuiSaves extends Gui{
 		Component btnDown = new Component("btnDown");
 		btnDown.setBackground("gui/scroll_down.png");
 		btnDown.setBackgroundSelected("gui/scroll_down_selected.png");
-		btnDown.setX(savesRender.getX() + savesRender.getWidth() + 16f);
-		btnDown.setY(savesRender.getY() + 192f);
+		btnDown.setX(savesRender.getBounds().getX() + savesRender.getBounds().getWidth() + 16f);
+		btnDown.setY(savesRender.getBounds().getY() + 192f);
 		btnDown.setWidth(64f);
 		btnDown.setHeight(64f);
 		btnDown.addListener(new ComponentListenerImpl(){
 			public void touchUp(Component component, Game game){
-				if(selectedIndex < game.getSaves().all().size() - 1)
+				if(selectedIndex < slots.size() - 1)
 					selectedIndex++;
 				else
 					selectedIndex = 0;
 			}
 		});
 		add(btnDown);
+	}
+
+	private boolean readSaves;
+
+	@Override
+	public void update(Game game){
+		super.update(game);
+		if(!readSaves){
+			readSaves = true;
+			slots = game.getSaves().getSlots();
+		}
 	}
 }
